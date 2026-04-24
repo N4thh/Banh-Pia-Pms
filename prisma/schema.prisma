@@ -1,0 +1,81 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  fullName     String
+  updatedAt    DateTime @updatedAt
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  phone     String    @unique
+  fullName  String?
+  addresses Address[]
+  orders    Order[]
+  createdAt DateTime  @default(now())
+}
+
+model Address {
+  id          Int     @id @default(autoincrement())
+  houseNumber String
+  street      String
+  ward        String
+  district    String
+  city        String
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+  orders      Order[]
+}
+
+model Cake {
+  id           Int            @id @default(autoincrement())
+  kind         String @unique
+  description  String?
+  basePrice    Decimal
+  availability Availability[]
+  orderItems   OrderItem[]
+}
+
+model Availability {
+  id            Int      @id @default(autoincrement())
+  cakeId        Int
+  cake          Cake     @relation(fields: [cakeId], references: [id])
+  date          DateTime
+  maxCapacity   Int      @default(50)
+  bufferLimit   Int      @default(2)
+  currentBooked Int      @default(0)
+
+  @@unique([cakeId, date])
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  addressId     Int
+  address       Address     @relation(fields: [addressId], references: [id])
+  totalMoney    Decimal
+  paymentStatus String      @default("PENDING")
+  shipStatus    String      @default("PREPARING")
+  orderDate     DateTime    @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  orderId         Int
+  order           Order   @relation(fields: [orderId], references: [id])
+  cakeId          Int
+  cake            Cake    @relation(fields: [cakeId], references: [id])
+  quantity        Int
+  priceAtPurchase Decimal
+}
