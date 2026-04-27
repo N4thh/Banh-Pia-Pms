@@ -49,7 +49,7 @@ model Availability {
   id            Int      @id @default(autoincrement())
   cakeId        Int
   cake          Cake     @relation(fields: [cakeId], references: [id])
-  date          DateTime
+  date          DateTime @db.Date
   maxCapacity   Int      @default(50)
   bufferLimit   Int      @default(2)
   currentBooked Int      @default(0)
