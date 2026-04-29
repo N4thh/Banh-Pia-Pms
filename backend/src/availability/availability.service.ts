@@ -9,6 +9,8 @@ export class AvailabilityService {
     
     async bookSlot(dto: BookSlotDto) { 
         return this.prisma.$transaction(async (tx) => {
+            await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
+            
             const rows = await tx.$queryRaw<any[]>`
             SELECT * FROM "Availability"
             WHERE "cakeId" = ${dto.cakeId}
@@ -22,7 +24,7 @@ export class AvailabilityService {
             const newBooked = slot.currentBooked + dto.quantity;
             if(newBooked > slot.bufferLimit)
                 throw new ConflictException("Hôm nay mẹ con làm hết nổi rồi cô chú ơi. Cô chú đặt sang ngày khác dùm mẹ con với ạ")
-            
+
             await tx.$executeRaw`
             UPDATE "Availability"
             SET "currentBooked" = ${newBooked}
@@ -30,7 +32,7 @@ export class AvailabilityService {
 
             const status = newBooked > slot.maxCapacity ? 'WAITLIST' : 'CONFIRMED'; 
             return {status, currentBooked: newBooked}
-        })
+        },{ timeout: 5000 });
     }
 
     async createSlot(dto: CreateSlotDto) {
