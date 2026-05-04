@@ -2,6 +2,7 @@ import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common
 import { AvailabilityService } from './availability.service';
 import { BookSlotDto } from './dto/book-slot.dto';
 import { CreateSlotDto } from './dto/create-slot.dto';
+import { HoldSlotDto } from './dto/hold-slot.dto';
 
 
 @Controller('availability')
@@ -17,6 +18,11 @@ export class AvailabilityController {
     @Post('setup')
     create(@Body() createSlotDto: CreateSlotDto) { 
         return this.avaibilityService.createSlot(createSlotDto);
+    }
+
+    @Post('hold')
+    async hold(@Body() holdSlotDto: HoldSlotDto) {
+        return this.avaibilityService.holdSlot(holdSlotDto);
     }
 
 }
