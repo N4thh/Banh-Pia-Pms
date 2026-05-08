@@ -18,8 +18,19 @@ export class RedisService implements OnModuleDestroy {
     await this.redisClient.del(key);
   }
 
+  async blacklistToken(jti: string, ttlSecond: number) { 
+    await this.redisClient.set(`blacklist:${jti}`, '1', 'EX' , ttlSecond);
+  }
+
+  async isTokenBlacklisted(jti: string): Promise<boolean>{ 
+    const result = await this.redisClient.get(`blacklist:${jti}`); 
+    return result === '1';
+  }
+
   onModuleDestroy() {
     console.log('Closing Redis connection...'), 
     this.redisClient.disconnect();
   }
+  
+  
 }

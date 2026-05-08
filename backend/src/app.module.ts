@@ -5,9 +5,10 @@ import { CakesModule } from './cakes/cakes.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { RedisModule } from './redis/redis.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [CakesModule, PrismaModule, AvailabilityModule, RedisModule],
+  imports: [CakesModule, PrismaModule, AvailabilityModule, RedisModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
