@@ -18,6 +18,13 @@ export class RedisService implements OnModuleDestroy {
     await this.redisClient.del(key);
   }
 
+  async set(key: string, value: string, ttlSecond: number) : Promise<void> { 
+    await this.redisClient.set(key,value, 'EX', ttlSecond);
+  }
+  async incr(key:string) {
+    return await this.redisClient.incr(key);
+  }
+
   async blacklistToken(jti: string, ttlSecond: number) { 
     await this.redisClient.set(`blacklist:${jti}`, '1', 'EX' , ttlSecond);
   }
