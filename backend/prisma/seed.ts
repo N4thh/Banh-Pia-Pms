@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // Seed cakes
   await prisma.cake.upsert({
     where: { kind: 'Dau Xanh' },
     update: {},
@@ -20,6 +22,22 @@ async function main() {
       kind: 'Sau Rieng',
       description: 'Banh rat ngon',
       basePrice: 70,
+    },
+  });
+
+  // Hash password
+  const passwordHash = await bcrypt.hash('Loan1902', 10);
+
+  // Seed admin account
+  await prisma.admin.upsert({
+    where: {
+      username: 'me',
+    },
+    update: {},
+    create: {
+      username: 'me',
+      fullName: 'Me',
+      passwordHash,
     },
   });
 }

@@ -1,0 +1,23 @@
+services:
+  postgres_pms:
+    image: postgres:15-alpine
+    container_name: banh-pia-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: banh_pia_pms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis_pms:
+    image: redis:7-alpine
+    container_name: banh-pia-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+volumes:
+  postgres_data:

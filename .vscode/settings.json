@@ -1,0 +1,15 @@
+{
+  // 1. Tắt việc AI tự động hoàn thiện nguyên cả dòng code (GitHub Copilot / Inline Suggestions)
+  "editor.inlineSuggest.enabled": false,
+
+  // 2. Chỉ hiện danh sách gợi ý khi bạn gõ, không tự động điền (Tab completion)
+  "editor.tabCompletion": "off",
+
+  // 3. Tắt việc tự động chèn các "Code Snippets" dài loằng ngoằng vào danh sách gợi ý
+  "editor.snippetSuggestions": "none",
+
+  // 4. Giới hạn số lượng gợi ý hiển thị để bạn phải tự suy nghĩ
+  "editor.suggest.maxVisibleSuggestions": 5,
+
+
+}
