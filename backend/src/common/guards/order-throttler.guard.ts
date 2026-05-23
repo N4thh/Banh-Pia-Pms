@@ -3,9 +3,11 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
 } from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
 
+@Injectable()
 export class OrderThrottlerGuard implements CanActivate {
   constructor(private readonly redisService: RedisService) {}
 
