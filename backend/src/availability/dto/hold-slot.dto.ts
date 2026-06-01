@@ -5,7 +5,7 @@ export class HoldSlotDto{
     cakeId!: number
 
     @IsString()
-    phone!: number
+    phone!: string
 
     @IsInt()
     @Min(1)

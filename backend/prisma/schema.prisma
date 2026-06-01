@@ -25,12 +25,12 @@ model User {
 }
 
 model Address {
-  id          Int     @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   houseNumber String
   street      String
   ward        String
   district    String
-  city        String
+  city        String @default("Hồ Chí Minh")
   userId      Int
   user        User    @relation(fields: [userId], references: [id])
   orders      Order[]
@@ -66,6 +66,7 @@ model Order {
   totalMoney    Decimal
   paymentStatus String      @default("PENDING")
   shipStatus    String      @default("PREPARING")
+  note          String?
   orderDate     DateTime    @default(now())
   items         OrderItem[]
 }

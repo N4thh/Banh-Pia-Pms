@@ -17,39 +17,48 @@ export class AvailabilityService {
     private readonly redisService: RedisService,
   ) {}
 
-  async bookSlot(dto: BookSlotDto) {
+  async bookSlot(dto: BookSlotDto, tx?: any) {
+    if (tx) {
+      return this.executeBookingLogic(dto, tx);
+    }
+
     return this.prisma.$transaction(
-      async (tx) => {
-        await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
-
-        const rows = await tx.$queryRaw<any[]>`
-            SELECT * FROM "Availability"
-            WHERE "cakeId" = ${dto.cakeId}
-            AND "date" = ${dto.date}::date
-            FOR UPDATE`;
-
-        if (rows.length === 0)
-          throw new NotFoundException(`Chưa có slot cho ngày này`);
-
-        const slot = rows[0];
-        const newBooked = slot.currentBooked + dto.quantity;
-        if (newBooked > slot.bufferLimit)
-          throw new ConflictException(
-            'Hôm nay mẹ con làm hết nổi rồi cô chú ơi. Cô chú đặt sang ngày khác dùm mẹ con với ạ',
-          );
-
-        await tx.$executeRaw`
-            UPDATE "Availability" 
-            SET "currentBooked" = ${newBooked}
-            WHERE "id" = ${slot.id}`;
-
-        const status = newBooked > slot.maxCapacity ? 'WAITLIST' : 'CONFIRMED';
-        return { status, currentBooked: newBooked };
+      async (newTx) => {
+        return this.executeBookingLogic(dto, newTx);
       },
       { timeout: 5000 },
     );
   }
 
+  private async executeBookingLogic(dto: BookSlotDto, prismaClient: any) {
+    await prismaClient.$executeRaw`SET LOCAL lock_timeout = '3s'`;
+
+    const rows = await prismaClient.$queryRaw<any[]>`
+          SELECT * FROM "Availability"
+          WHERE "cakeId" = ${dto.cakeId}
+          AND "date" = ${dto.date}::date
+          FOR UPDATE`;
+    if (rows.length === 0)
+      throw new NotFoundException(`Chưa có slot cho ngày này`);
+
+    const slot = rows[0];
+
+    const newBooked = slot.currentBooked + dto.quantity;
+
+    if (newBooked > slot.bufferLimit)
+      throw new ConflictException(
+        'Hôm nay chúng tôi chưa thể xử lý thêm đơn hàng. Bạn vui lòng đặt sang ngày khác giúp chúng tôi nhé',
+      );
+
+    await prismaClient.$executeRaw`
+        UPDATE "Availability"
+        SET "currentBooked" = ${newBooked}
+        WHERE "id" = ${slot.id}`;
+
+    const status = newBooked > slot.maxCapacity ? 'WAITLIST' : 'CONFIRMED';
+
+    return { status, currentBooked: newBooked };
+  }
   async createSlot(dto: CreateSlotDto) {
     const bufferLimit = Math.ceil(dto.maxCapacity * 1.03);
     return this.prisma.availability.upsert({
@@ -79,7 +88,7 @@ export class AvailabilityService {
     const existkey = await this.redisService.get(redisKey);
     if (existkey)
       throw new BadRequestException(
-        'Dạ mình có một hóa đơn chưa thanh toán ạ, cô/chú kiểm tra lại trong phần thanh toán giúp con nha',
+        'Bạn đang có một hóa đơn chưa thanh toán. Vui lòng kiểm tra lại trong mục thanh toán giúp chúng tôi',
       );
 
     try {
@@ -95,7 +104,7 @@ export class AvailabilityService {
           `;
 
         if (row.length === 0)
-          throw new NotFoundException('Chưa có slot cho ngày này');
+          throw new NotFoundException('Hiện chưa có slot cho ngày này');
 
         const slot = row[0];
         const newbook = dto.quantity + slot.currentBooked;

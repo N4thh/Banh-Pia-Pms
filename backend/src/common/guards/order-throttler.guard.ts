@@ -22,7 +22,7 @@ export class OrderThrottlerGuard implements CanActivate {
     const MAX_REQUEST = 3;
     if (requestCount > MAX_REQUEST) {
       throw new HttpException(
-        'Cô Chú thao tác nhanh quá ạ, đợi tụi con 1 phút rồi đặt tiếp nha cô chú',
+        'Bạn thao tác quá nhanh. Vui lòng đợi chúng tôi 1 phút rồi tiếp tục đặt nhé',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

@@ -5,7 +5,7 @@ export class BookSlotDto {
   cakeId!: number;
 
   @IsDateString()
-  date!: string;
+  date!: Date;
   
   @IsInt()
   @Min(1)
