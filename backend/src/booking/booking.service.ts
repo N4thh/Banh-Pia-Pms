@@ -2,7 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { AvailabilityService } from 'src/availability/availability.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, ShippingMethod } from './dto/create-order.dto';
+import { OrderStatus } from '@prisma/client';
 import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
@@ -25,11 +26,15 @@ export class BookingService {
         dto.phone,
         tx,
       );
-
-      const finalAddressId =
-        dto.addressId ?? user.addresses[user.addresses.length - 1]?.id;
-      if (!finalAddressId) {
-        throw new BadRequestException('Không tìm thấy địa chỉ giao hàng');
+      let finalAddressId: number | null = null;
+      if (dto.shippingMethod === ShippingMethod.DELIVERY) {
+        finalAddressId =
+          dto.addressId ?? user.addresses[user.addresses.length - 1]?.id;
+        if (!finalAddressId) {
+          throw new BadRequestException(
+            'Không tìm thấy địa chỉ giao hàng',
+          );
+        }
       }
 
       ///
@@ -72,14 +77,15 @@ export class BookingService {
         (item) => item.status === 'WAITLIST',
       );
       const finalPaymentStatus = hasWaitlist ? 'PENDING_WAITLIST' : 'PENDING';
-
+      const finalStatus = hasWaitlist ? OrderStatus.NEW : OrderStatus.NEW;
       const order = await tx.order.create({
         data: {
           userId: user.id,
           addressId: finalAddressId,
           totalMoney: totalMoney,
-          paymentStatus: finalPaymentStatus,
-          shipStatus: 'PENDING',
+          status: finalStatus,
+          shippingMethod: dto.shippingMethod,
+          paymentMethod: dto.paymentMethod,
           note: dto.note,
           items: {
             create: itemStatuses.map((item) => ({

@@ -1,8 +1,17 @@
 import { Type } from "class-transformer";
-import { ArrayMinSize, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsEnum, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, ValidateIf, ValidateNested } from "class-validator";
 import { CreateAddressDto } from "src/customer/dto/create-address.dto";
 import { OrderItemDto } from "./order-item.dto";
 
+export enum ShippingMethod {
+  DELIVERY = 'DELIVERY',
+  PICKUP = 'PICKUP'
+}
+
+export enum PaymentMethod {
+  CASH = 'CASH',
+  BANK_TRANSFER = 'BANK_TRANSFER'
+}
 export class CreateOrderDto { 
     @IsString()
     @IsNotEmpty({message: "Vui Lòng nhập số điện thoại"})
@@ -10,7 +19,14 @@ export class CreateOrderDto {
 
     @IsOptional()
     @IsString()
-    fullName!: string; 
+    fullName!: string;
+    @IsEnum(ShippingMethod)
+    @IsNotEmpty({ message: "Vui lòng chọn hình thức nhận hàng" })
+    shippingMethod!: ShippingMethod;
+
+    @IsEnum(PaymentMethod)
+    @IsNotEmpty({ message: "Vui lòng chọn phương thức thanh toán" })
+    paymentMethod!: PaymentMethod;
 
     @ValidateIf((o) => !o.newAddress)
     @IsInt()
