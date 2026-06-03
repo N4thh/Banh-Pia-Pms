@@ -9,7 +9,7 @@ import {
   Patch,
   Delete,
 } from '@nestjs/common';
-
+import { Public } from '../common/decorators/public.decorator.js'
 import { CakesService } from './cake.service';
 import { CreateCakeDto } from './dto/create-cake.dto';
 import { ValidationPipe } from '@nestjs/common';
@@ -22,12 +22,15 @@ export class CakeController {
     private readonly cakeService: CakesService,
     private readonly redisService: RedisService,
   ) {}
+  
   @Get()
+  @Public()
   findAll() {
     return this.cakeService.getAllCakes();
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.cakeService.findOne(id);
   }
