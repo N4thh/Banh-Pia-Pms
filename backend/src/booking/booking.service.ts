@@ -5,18 +5,24 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto, ShippingMethod } from './dto/create-order.dto';
 import { OrderStatus } from '@prisma/client';
 import { RedisService } from 'src/redis/redis.service';
+import {
+  BOOKING_EVENTS,
+  OrderCreatedEventPayload,
+} from './constants/booking-event.constants';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class BookingService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly customerService: CustomerService,
     private readonly avaibilityService: AvailabilityService,
     private readonly redisService: RedisService,
   ) {}
 
   async createOrder(dto: CreateOrderDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const updateCustomerDto = {
         fullName: dto.fullName,
         address: dto.newAddress,
@@ -31,9 +37,7 @@ export class BookingService {
         finalAddressId =
           dto.addressId ?? user.addresses[user.addresses.length - 1]?.id;
         if (!finalAddressId) {
-          throw new BadRequestException(
-            'Không tìm thấy địa chỉ giao hàng',
-          );
+          throw new BadRequestException('Không tìm thấy địa chỉ giao hàng');
         }
       }
 
@@ -73,16 +77,15 @@ export class BookingService {
         });
       }
 
-      const hasWaitlist = itemStatuses.some(
-        (item) => item.status === 'WAITLIST',
-      );
-      const finalPaymentStatus = hasWaitlist ? 'PENDING_WAITLIST' : 'PENDING';
-      const finalStatus = hasWaitlist ? OrderStatus.NEW : OrderStatus.NEW;
+     
+      const finalStatus =  OrderStatus.NEW;
       const order = await tx.order.create({
         data: {
           userId: user.id,
+          user: user.name,
           addressId: finalAddressId,
           totalMoney: totalMoney,
+          receiveDate: new Date(dto.receiveDate),
           status: finalStatus,
           shippingMethod: dto.shippingMethod,
           paymentMethod: dto.paymentMethod,
@@ -95,13 +98,42 @@ export class BookingService {
             })),
           },
         },
+        include: {
+          user: true,
+          items: true,
+        },
       });
 
       for (const item of itemStatuses) {
         const redisKey = `hold:${order.id}:${item.cakeId}:${item.date}`;
         await this.redisService.setHold(redisKey, item.quantity, 600);
       }
-      return order;
+      return { order, itemStatuses };
     });
+
+    const eventPayload: OrderCreatedEventPayload = {
+      orderId: result.order.id,
+      customerName: result.order.user.fullName,
+      totalMoney: Number(result.order.totalMoney),
+      phone: result.order.user.phone,
+      receiveDate: result.order.receiveDate.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }),      
+      paymentMethod: result.order.paymentMethod,
+      items: result.itemStatuses.map((item) => ({
+        cakeId: item.cakeId,
+        quantity: item.quantity,
+        orderDate: new Date(item.date),
+      })),
+    };
+    this.eventEmitter.emit(BOOKING_EVENTS.ORDER_CREATED, eventPayload);
+
+    return {
+      message: 'Đặt bánh thành công, đang chờ thanh toán!',
+      orderId: result.order.id,
+    };
   }
 }

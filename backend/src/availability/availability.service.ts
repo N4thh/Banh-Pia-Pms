@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,6 +10,7 @@ import { BookSlotDto } from './dto/book-slot.dto';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class AvailabilityService {
@@ -122,5 +124,34 @@ export class AvailabilityService {
     } catch (err) {
       throw err;
     }
+  }
+  async releaseHoldSlot(cakeId: number, date: string, quantity: number) {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
+
+      const slot = await tx.$queryRaw<any[]>`
+        SELECT id, "currentBooked"
+        FROM "Availability"
+        WHERE "cakeId" = ${cakeId} AND "date" = ${date}::date
+        FOR UPDATE
+      `;
+
+      if (!slot || slot.length === 0) {
+        throw new InternalServerErrorException(
+          'Không tìm thấy slot bánh để hoàn trả!',
+        );
+      }
+
+      const currentSlot = slot[0];
+      const newBooked = Math.max(0, currentSlot.currentBooked - quantity);
+
+      await tx.availability.update({
+        where: { id: currentSlot.id },
+        data: {
+          currentBooked: newBooked,
+        },
+      });
+      return { success: true, newBooked };
+    });
   }
 }
