@@ -1,13 +1,18 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { AvailabilityService } from 'src/availability/availability.service';
-import { BOOKING_EVENTS } from 'src/booking/constants/booking-event.constants';
+import {
+  BOOKING_EVENTS,
+  OrderCancelledAutoEventPayload,
+} from 'src/booking/constants/booking-event.constants';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Processor('order-expiry-queue')
 export class OrderExpiryProcessor extends WorkerHost {
+  private readonly logger = new Logger(OrderExpiryProcessor.name);
+
   constructor(
     private readonly avaibilityService: AvailabilityService,
     private readonly prisma: PrismaService,
@@ -15,17 +20,14 @@ export class OrderExpiryProcessor extends WorkerHost {
   ) {
     super();
   }
-  private readonly logger = new Logger(OrderExpiryProcessor.name);
 
   async process(job: Job<any, any, string>): Promise<any> {
     const { cakeId, date, quantity, orderId, receiveDate } = job.data;
-    this.logger.log(
-      `[Worker] Start processing Job #${job.id} - Name: ${job.name}`,
-    );
 
     this.logger.log(
-      `[Worker] Processing expiry for Order #${orderId} - Cake: ${cakeId} - Qty: ${quantity}`,
+      `[Worker] Start processing Job #${job.id} for Order #${orderId}`,
     );
+
     try {
       const order = await this.prisma.order.findUnique({
         where: { id: orderId },
@@ -33,48 +35,74 @@ export class OrderExpiryProcessor extends WorkerHost {
 
       if (!order) {
         this.logger.warn(
-          `[Worker] Không tìm thấy đơn hàng #${orderId} trong hệ thống. Bỏ qua Job.`,
+          `[Worker] Không tìm thấy đơn hàng #${orderId}. Bỏ qua Job.`,
         );
         return { status: 'skipped', orderId };
       }
-      
+
       const finalPaymentMethod = order.paymentMethod;
       if (finalPaymentMethod === 'CASH') {
         this.logger.log(
-          `[Worker] Đơn hàng #${orderId} thanh toán bằng TIỀN MẶT. Không áp dụng tự động hủy.`,
-        );
-        return { status: 'skipped', orderId };
-      }
-      if (order.status !== 'NEW') {
-        this.logger.log(
-          `[Worker] Đơn hàng #${orderId} đã được thanh toán hoặc hủy trước đó. Bỏ qua Job.`,
+          `[Worker] Đơn #${orderId} trả TIỀN MẶT. Không áp dụng tự động hủy.`,
         );
         return { status: 'skipped', orderId };
       }
 
-      await this.prisma.$transaction(async (tx) => {
-        await tx.order.update({
-          where: { id: orderId },
-          data: {
-            status: 'CANCELLED',
-          },
+      if (order.status === 'NEW') {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: orderId },
+            data: { status: 'CANCELLED' },
+          });
         });
-        await this.avaibilityService.releaseHoldSlot(cakeId, date, quantity);
-      });
 
-      this.eventEmitter.emit(BOOKING_EVENTS.ORDER_CANCELLED_AUTO, {
-        orderId,
-        paymentMethod: finalPaymentMethod,
-        quantity,
-        receiveDate
-      });
+        try {
+          await this.avaibilityService.releaseHoldSlot(cakeId, date, quantity);
+        } catch (slotError: any) {
+          this.logger.error(
+            `[Critical] Đơn #${orderId} đã hủy DB nhưng lỗi nhả slot bánh: ${slotError.message}`,
+          );
+        }
+
+        const cancelEvent: OrderCancelledAutoEventPayload = {
+          orderId,
+          paymentMethod: finalPaymentMethod,
+          quantity,
+          receiveDate,
+        };
+
+        this.eventEmitter.emit(
+          BOOKING_EVENTS.ORDER_CANCELLED_AUTO,
+          cancelEvent,
+        );
+
+        this.logger.log(
+          `[Worker] Tu dong huy don #${orderId} thanh cong, da phat event thong bao.`,
+        );
+        return { status: 'cancelled', orderId };
+      }
+
+      if (order.status === 'CANCELLED') {
+        try {
+          await this.avaibilityService.releaseHoldSlot(cakeId, date, quantity);
+          this.logger.log(
+            `[Worker] Đơn #${orderId} đã ở trạng thái CANCELLED, đã trả lại slot cho cake #${cakeId}.`,
+          );
+        } catch (slotError: any) {
+          this.logger.error(
+            `[Critical] Đơn #${orderId} đã hủy trước đó nhưng lỗi nhả slot bánh: ${slotError.message}`,
+          );
+        }
+        return { status: 'already_cancelled', orderId };
+      }
+
       this.logger.log(
-        `[Worker] Đã tự động hủy đơn #${orderId} và hoàn trả ${quantity} slot bánh.`,
+        `[Worker] Đơn #${orderId} trạng thái là ${order.status} (không phải NEW/CANCELLED). Bỏ qua Job.`,
       );
-      return { status: 'cancelled', orderId };
+      return { status: 'skipped', orderId };
     } catch (err: any) {
       this.logger.error(
-        `[Worker] Lỗi khi xử lý đơn hết hạn #${orderId}: ${err.message}`,
+        `[Worker Error] Loi khi xu ly don het han #${orderId}: ${err.message}`,
       );
       throw err;
     }

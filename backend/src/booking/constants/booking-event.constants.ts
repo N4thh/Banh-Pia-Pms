@@ -18,3 +18,10 @@ export interface OrderCreatedEventPayload {
     orderDate: Date;
   }[];
 }
+
+export interface OrderCancelledAutoEventPayload {
+  orderId: number;
+  quantity: number;
+  paymentMethod: string;
+  receiveDate: string;
+}

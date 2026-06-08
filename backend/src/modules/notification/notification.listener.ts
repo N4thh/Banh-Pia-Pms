@@ -5,7 +5,9 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Queue } from 'bullmq';
 import { firstValueFrom } from 'rxjs';
 import { BOOKING_EVENTS } from 'src/booking/constants/booking-event.constants';
-import type { OrderCreatedEventPayload } from 'src/booking/constants/booking-event.constants';
+import { PAYMENT_EVENTS } from 'src/payment/constants/payment-event.constants';
+import type { PaymentSuccessEventPayload } from 'src/payment/constants/payment-event.constants';
+import type * as BookingEventTypes from 'src/booking/constants/booking-event.constants';
 
 @Injectable()
 export class NotificationListener {
@@ -18,10 +20,12 @@ export class NotificationListener {
     private readonly httpService: HttpService,
     @InjectQueue('order-expiry-queue')
     private readonly orderExpiryQueue: Queue,
+    @InjectQueue('notification_queue')
+    private readonly notificationQueue: Queue,
   ) {}
 
   @OnEvent(BOOKING_EVENTS.ORDER_CREATED, { async: true })
-  async handleOrderCreatedEvent(payload: OrderCreatedEventPayload) {
+  async handleOrderCreatedEvent(payload: BookingEventTypes.OrderCreatedEventPayload) {
     this.logger.log(
       `[Event Received] Received a new order signal: #${payload.orderId}`,
     );
@@ -34,7 +38,7 @@ export class NotificationListener {
       );
       return;
     }
-    //set cancel 10'
+
     try {
       for (const item of payload.items) {
         await this.orderExpiryQueue.add(
@@ -47,7 +51,7 @@ export class NotificationListener {
             receiveDate: payload.receiveDate,
           },
           {
-            delay: 1 * 60 * 1000,
+            delay: 10 * 60 * 1000,
             attempts: 5,
             backoff: { type: 'exponential', delay: 2000 },
             removeOnComplete: true,
@@ -62,10 +66,9 @@ export class NotificationListener {
     }
   }
 
-  private async sendTelegramNotification(payload: OrderCreatedEventPayload) {
+  private async sendTelegramNotification(payload: BookingEventTypes.OrderCreatedEventPayload) {
     const url = `https://api.telegram.org/bot${this.TELEGRAM_TOKEN}/sendMessage`;
 
-    // Thiết kế nội dung tin nhắn đẹp đẽ, rõ ràng gửi cho Mẹ xem trên điện thoại
     const statusText =
       payload.paymentMethod === 'CASH'
         ? 'Thanh toán tiền mặt'
@@ -111,43 +114,60 @@ export class NotificationListener {
       );
     }
   }
-  @OnEvent(BOOKING_EVENTS.ORDER_CANCELLED_AUTO, { async: true })
-  async handleOrderCancelEvent(payload: {
-    orderId: number;
-    quantity: number;
-    paymentMethod: string;
-    receiveDate: string;
-  }) {
+
+  @OnEvent(PAYMENT_EVENTS.PAYMENT_SUCCESS, { async: true })
+  async handlePaymentSuccessEvent(payload: PaymentSuccessEventPayload) {
     this.logger.log(
-      `[Event] Đơn hàng #${payload.orderId} bị hủy tự động, Phương thức thanh toán: ${payload.paymentMethod}`,
+      `[Event Received] payment.success cho đơn #${payload.orderId}`,
     );
-    const url = `https://api.telegram.org/bot${this.TELEGRAM_TOKEN}/sendMessage`;
-    const textMessage = `
-      ━━━━━━━━━━
 
-      ❌ ĐƠN HÀNG TỰ ĐỘNG HỦY
-
-      🆔 Mã đơn: #${payload.orderId}
-
-      📅 Ngày nhận bánh:
-      ${payload.receiveDate}
-
-      ⏰ Lý do hủy:
-      Đơn hàng đã quá hạn thanh toán.
-
-      ━━━━━━━━━━
-      `.trim();
     try {
-      await firstValueFrom(
-        this.httpService.post(url, {
-          chat_id: this.TELEGRAM_CHAT_ID,
-          text: textMessage,
-          parse_mode: 'Markdown',
-        }),
+      await this.notificationQueue.add(
+        'order.paid',
+        {
+          orderId: payload.orderId,
+          amount: payload.amount,
+          customerName: payload.customerName,
+          paidAt: payload.paidAt,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+          removeOnComplete: true,
+        },
+      );
+      this.logger.log(
+        `[BullMQ] Đã đưa job order.paid vào notification_queue cho đơn #${payload.orderId}`,
       );
     } catch (err: any) {
       this.logger.error(
-        `[Telegram Bot Error] Không thể gửi tin nhắn: ${err.response?.data?.description || err.message}`,
+        `[Notification Queue Error] Không thể thêm job order.paid: ${err.message}`,
+      );
+    }
+  }
+
+  @OnEvent(BOOKING_EVENTS.ORDER_CANCELLED_AUTO, { async: true })
+  async handleOrderCancelledAutoEvent(payload: BookingEventTypes.OrderCancelledAutoEventPayload) {
+    this.logger.log(
+      `[Event Received] order.cancelled.auto cho đơn #${payload.orderId}`,
+    );
+
+    try {
+      await this.notificationQueue.add(
+        'order.cancelled.auto',
+        payload,
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+          removeOnComplete: true,
+        },
+      );
+      this.logger.log(
+        `[BullMQ] Đã đưa job order.cancelled.auto vào notification_queue cho đơn #${payload.orderId}`,
+      );
+    } catch (err: any) {
+      this.logger.error(
+        `[Notification Queue Error] Không thể thêm job order.cancelled.auto: ${err.message}`,
       );
     }
   }

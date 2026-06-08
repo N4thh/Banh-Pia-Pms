@@ -12,6 +12,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { BullModule } from '@nestjs/bullmq';
 import { NotificationModule } from './modules/notification/notification.module';
 import { OrderOrderExpiryModule } from './modules/order-expiry/order-expiry.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { OrderOrderExpiryModule } from './modules/order-expiry/order-expiry.modu
         port: Number(process.env.REDIS_PORT) || 6379,
       },
     }),
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
