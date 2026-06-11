@@ -9,18 +9,25 @@ import { REDIS_CLIENT } from './redis.constants';
     {
       provide: REDIS_CLIENT,
       useFactory: () => {
-        const redis = new Redis({
+        const redisConfig: any = {
           host: process.env.REDIS_HOST || 'localhost',
           port: Number(process.env.REDIS_PORT) || 6379,
-          password: process.env.REDIS_PASSWORD || undefined,
           retryStrategy: (times) => Math.min(times * 50, 2000),
           maxRetriesPerRequest: null,
+        };
+
+        if (process.env.REDIS_PASSWORD) {
+          redisConfig.password = process.env.REDIS_PASSWORD;
+        }
+
+        redisConfig.on('error', (err) => {
+          console.error('Redis connection error', err.message);
+        });
+        redisConfig.on('connect', () => {
+          console.log('Redis Client connect successfully');
         });
 
-        redis.on('error', (err) => {console.error('Redis connection error', err.message)}); 
-        redis.on('connect', () => {console.log('Redis Client connect successfully')}); 
-
-        return redis;
+        return redisConfig;
       },
     },
     RedisService,
