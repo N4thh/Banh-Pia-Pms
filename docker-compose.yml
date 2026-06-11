@@ -1,23 +1,39 @@
+
 services:
-  postgres_pms:
-    image: postgres:15-alpine
-    container_name: banh-pia-db
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: piacoloan_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: banh_pia_pms
+      POSTGRES_USER: na_admin
+      POSTGRES_PASSWORD: N4th159_password_postgres
+      POSTGRES_DB: banh_pia_pms_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
-
-  redis_pms:
+  
+  redis-cache: 
     image: redis:7-alpine
-    container_name: banh-pia-redis
+    container_name: piacoloan_redis
     ports:
       - "6379:6379"
-    restart: always
-
+  
+  nestjs-app:
+    build: ./backend
+    container_name: piacoloan_backend_app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://na_admin:N4th159_password_postgres@postgres-db:5432/banh_pia_pms_db?schema=public"
+      REDIS_HOST: "redis-cache"
+      REDIS_PORT: 6379
+      JWT_AT_SECRET: "your-jwt-access-token-secret-key-min-32-chars"
+      JWT_RT_SECRET: "your-jwt-refresh-token-secret-key-min-32-chars"
+    depends_on:
+      - postgres-db
+      - redis-cache
 volumes:
   postgres_data:
+
+
+

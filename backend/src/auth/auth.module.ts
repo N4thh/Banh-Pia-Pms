@@ -9,7 +9,10 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     PassportModule, 
-    JwtModule.register({}),
+    JwtModule.register({
+      secret: process.env.JWT_AT_SECRET,
+      signOptions: { expiresIn: '15m' },
+    }),
     PrismaModule,
   ],
   controllers: [AuthController],
