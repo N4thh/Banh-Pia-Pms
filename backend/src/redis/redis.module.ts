@@ -10,8 +10,9 @@ import { REDIS_CLIENT } from './redis.constants';
       provide: REDIS_CLIENT,
       useFactory: () => {
         const redis = new Redis({
-          host: process.env.REDIS_HOST || 'localhost',
-          port: Number(process.env.REDIS_PORT) || 6379,
+          host: process.env.REDISHOST || process.env.REDIS_HOST || 'localhost',
+          port: Number(process.env.REDISPORT || process.env.REDIS_PORT) || 6379,
+          password: process.env.REDISPASSWORD || undefined,
           retryStrategy: (times) => Math.min(times * 50, 2000),
           maxRetriesPerRequest: null,
         });
