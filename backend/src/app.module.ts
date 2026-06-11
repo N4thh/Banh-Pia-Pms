@@ -28,8 +28,8 @@ import { PaymentModule } from './payment/payment.module';
     OrderOrderExpiryModule,
     BullModule.forRoot({
       connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: Number(process.env.REDIS_PORT) || 6379,
+        host: process.env.REDIS_HOST || process.env.REDISHOST || 'localhost',
+        port: Number(process.env.REDIS_PORT ?? process.env.REDISPORT) || 6379,
       },
     }),
     PaymentModule,
