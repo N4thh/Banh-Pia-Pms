@@ -4,4 +4,4 @@ dockerfilePath = "backend/Dockerfile"
 root = "backend"
 
 [deploy]
-startCommand = "node dist/main.js"
+startCommand = "node dist/src/main.js"
