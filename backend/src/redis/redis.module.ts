@@ -13,7 +13,7 @@ import { REDIS_CLIENT } from './redis.constants';
           ? new Redis(process.env.REDIS_URL, {
               retryStrategy: (times) => Math.min(times * 50, 2000),
               maxRetriesPerRequest: null,
-            })
+            }) 
           : new Redis({
               host:
                 process.env.REDIS_HOST || process.env.REDISHOST || 'localhost',
