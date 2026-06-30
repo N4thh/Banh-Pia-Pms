@@ -11,7 +11,7 @@ export default function Hero() {
   `;
 
   return (
-    <section className="flex min-h-[min(100vh,839px)] w-full flex-col items-center overflow-hidden">
+    <section className="flex min-h-screen w-full flex-col items-center overflow-hidden">
 
       <div className="relative h-[40vh] w-full top-0 overflow-hidden">
         <div
@@ -31,13 +31,13 @@ export default function Hero() {
         <div className="flex flex-col items-center">
 
           <h1
-            className="font-serif font-bold text-center text-[#FDF6E8] tracking-wide leading-tight z-10 relative pt-[5%]
-            text-[clamp(60px,3.125vw,96px)]
+            className="font-vollkorn font-bold text-center text-[#FDF6E8] tracking-wide leading-tight z-10 relative pt-[4%]
+            text-[clamp(55px,3.125vw,96px)]
             [text-shadow:0px_4px_4px_rgba(0,0,0,0.25)]"
           >
             Bánh Tròn Vị Ngọt,
             <br />
-            Gói Trọn Yêu Thương.
+            Nối Trọn Yêu Thương.
           </h1>
 
           <div

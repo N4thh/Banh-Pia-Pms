@@ -1,0 +1,23 @@
+<svg width="1521" height="327" viewBox="0 0 1521 327" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_i_5098_8006)">
+<path d="M191.877 97.5131C209.884 109.695 228.232 122.704 251.052 127.914C299.622 139.013 348.416 111.742 398.819 108.401C450.665 104.964 498.988 126.905 544.752 146.372C590.516 165.84 643.029 184.007 693.034 172.698C735.427 163.109 766.381 134.213 806.911 120.52C874.589 97.6556 953.481 121.051 1025.81 110.117C1124.15 95.2557 1193.54 20.3278 1291.28 3.24323C1372.93 -11.0252 1464.21 22.9842 1501.87 81.7112C1539.53 140.438 1520.05 218.376 1456.91 261.518C1395.79 303.291 1308.86 310.001 1228.04 314.02C1067.12 322.018 905.912 326.966 744.662 327C584.564 327.034 424.459 322.223 264.833 312.577C212.849 309.436 159.988 305.611 111.738 290.072C63.4947 274.532 19.7315 245.322 4.53006 206.103C-10.8817 166.33 15.0631 118.246 51.6641 89.6863C93.6222 56.9538 152.275 70.7206 191.877 97.5131Z" fill="url(#paint0_radial_5098_8006)"/>
+</g>
+<defs>
+<filter id="filter0_i_5098_8006" x="0" y="0" width="1521" height="327" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="12.7"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.752941 0 0 0 0 0.121569 0 0 0 0 0.121569 0 0 0 0.5 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_5098_8006"/>
+</filter>
+<radialGradient id="paint0_radial_5098_8006" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(771.759 -24) rotate(90) scale(351 1845.76)">
+<stop stop-color="#C01F1F"/>
+<stop offset="0.322432" stop-color="#D8796C"/>
+<stop offset="0.769231" stop-color="#F7EACC"/>
+<stop offset="1" stop-color="#FDF6E8"/>
+</radialGradient>
+</defs>
+</svg>

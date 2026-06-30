@@ -1,6 +1,6 @@
 import Hero from "@/src/components/landing/Hero";
 import Product from "../components/landing/Product/ProductBG";
-import Guide from "../components/landing/Guide";
+import Guide from "../components/landing/Guide/GuideBG";
 
 export default function HomePage() {
   return (
@@ -32,7 +32,9 @@ export default function HomePage() {
 
       <div className="relative z-10 w-full flex flex-col">
         <Hero />
-        <Product />
+         <div className="-mb-12">
+          <Product />
+        </div>
         <Guide />
       </div>
 
