@@ -2,7 +2,7 @@ import Guide from "./Guide"
 export default function GuideBG() {
   return(
     <section
-      className=" relative h-screen w-full overflow-hidden
+      className=" relative h-[110vh] w-full overflow-hidden
         bg-[linear-gradient(#C01F1F_0%,#F5E2C5_30%,#F5E2C5_75%,#C01F1F_100%)]"
         style={{
           clipPath: "ellipse(180% 100% at 50% 100%)",
@@ -73,7 +73,7 @@ export default function GuideBG() {
       <div
         className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 z-10
           w-[88vw] sm:w-[85vw] md:w-[79.125vw]
-          h-[clamp(420px,80vh,560px)] md:h-auto md:aspect-1140/578"
+          h-[clamp(420px,80vh,560px)] md:h-auto md:aspect-1140/387"
       >
         <Guide />
       </div>

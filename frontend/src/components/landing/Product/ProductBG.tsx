@@ -95,7 +95,7 @@ export default function ProductBG() {
 
       {/* Product */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10
+        className="absolute left-1/2 top-[47%] -translate-x-1/2 -translate-y-1/2 z-10
           w-[88vw] sm:w-[85vw] md:w-[79.125vw]
           h-[clamp(420px,75vh,560px)] md:h-auto md:aspect-1124/444"
       >
