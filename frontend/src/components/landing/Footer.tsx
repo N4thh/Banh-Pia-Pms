@@ -21,7 +21,7 @@ export default function Footer(){
                     border border-[#C01F1F] rounded-xl px-6 py-3 bg-[#C01F1F]
                     text-[clamp(10.5px,0.8vw,16px)]">
                     <MapPin size={18} />
-                    57/38/4, ĐƯỜNG DƯƠNG VĂN CAM, PHƯỜNG LINH TÂY, TP THỦ ĐỨC</p>
+                    57/38/4, ĐƯỜNG DƯƠNG VĂN CAM, PHƯỜNG LINH XUÂN, TP THỦ ĐỨC</p>
 
                     <p className="flex gap-2 items-center
                     border border-[#C01F1F] rounded-xl px-6 py-3 bg-[#C01F1F]

@@ -1,4 +1,12 @@
+'use client'
+import { useState } from "react";
+import Saurieng from "./Saurieng";
+import Dauxanh from "./Dauxanh";
+
 export default function Product() {
+    const [openDauxanh, setOpenDauxanh] = useState(false);
+    const [openSaurieng, setOpenSaurieng] = useState(false);
+
     return(
         <div className="flex flex-col h-full gap-4 sm:gap-6 md:gap-8 px-2 sm:px-4">
             <div className="flex flex-col items-center justify-center">
@@ -49,7 +57,11 @@ export default function Product() {
             {/* Product */}
             <div className="flex flex-col md:flex-row flex-1 w-full gap-3 sm:gap-5 md:gap-10 min-h-0 sm:pt-[2vh]">
 
-                <button className="flex flex-row md:flex-row w-full md:w-1/2 border rounded-2xl p-1.5 sm:p-2 bg-[#FDF6E8] text-left overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => setOpenDauxanh(true)}
+                    className="flex flex-row md:flex-row w-full md:w-1/2 border rounded-2xl p-1.5 sm:p-2 bg-[#FDF6E8] text-left overflow-hidden"
+                >
                     <div className="w-2/5 sm:w-1/2 shrink-0">
                     
                     </div>
@@ -70,11 +82,15 @@ export default function Product() {
                     </div>
                 </button>
 
-                <button className="flex flex-row md:flex-row w-full md:w-1/2 border rounded-2xl p-1.5 sm:p-2 bg-[#FDF6E8] text-left overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => setOpenSaurieng(true)}
+                    className="flex flex-row md:flex-row w-full md:w-1/2 border rounded-2xl p-1.5 sm:p-2 bg-[#FDF6E8] text-left overflow-hidden"
+                >
                     <div className="w-2/5 sm:w-1/2 shrink-0"></div>
                     <div className=" w-3/5 sm:w-1/2 flex flex-col items-start justify-start p-2 sm:p-3 md:p-4 min-w-0">
                         <h1 className="font-vollkorn font-semibold text-[#3D2008] text-[clamp(14px,1.6vw,22px)] leading-tight">
-                            Nhân Đậu Xanh
+                            Nhân Sầu Riêng
                         </h1>
 
                         <h2 className="text-[#C2973F] text-[clamp(11px,1.3vw,18px)] leading-snug mt-1">
@@ -89,6 +105,9 @@ export default function Product() {
                 </button>
                 
             </div>
+        
+            <Dauxanh open={openDauxanh} onClose={() => setOpenDauxanh(false)} />
+            <Saurieng open={openSaurieng} onClose={() => setOpenSaurieng(false)} />
         </div>
     );
 }
