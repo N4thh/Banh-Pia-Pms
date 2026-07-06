@@ -1,9 +1,18 @@
+"use client"
+import { useState } from "react";
 import Hero from "@/src/components/landing/Hero";
 import Product from "../components/landing/Product/ProductBG";
 import Guide from "../components/landing/Guide/GuideBG";
 import Footer from "../components/landing/Footer";
+import Header from "../components/Header";
 
 export default function HomePage() {
+  const [cartRefreshTrigger, setCartRefreshTrigger] = useState(0);
+
+  function handleCartUpdate() {
+    setCartRefreshTrigger((n) => n + 1);
+  }
+
   return (
     <div className="relative w-full text-white overflow-x-hidden bg-[#630002]">
 
@@ -32,18 +41,27 @@ export default function HomePage() {
       </div>
 
       <div className="relative z-10 w-full flex flex-col">
-        <Hero />
 
-        <div className="-mb-10">
-          <Product />
+        <div className="justify-center items-center w-[80vw]">
+          <Header cartRefreshTrigger={cartRefreshTrigger}
+          onCartUpdate={handleCartUpdate} />
         </div>
-        
-        <Guide />
+        <section>
+          <Hero />
+        </section>
 
-        <div className="-mt-3">
+        <section id="product" className="-mb-10">
+          <Product onCartUpdate={handleCartUpdate} />
+        </section>
+
+        <section id="guide">
+          <Guide />
+        </section>
+
+        <section className="-mt-3">
           <Footer />
-        </div>
-        
+        </section>
+
       </div>
 
     </div>

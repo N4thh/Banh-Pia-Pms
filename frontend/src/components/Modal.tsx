@@ -9,6 +9,7 @@ type ModalProps = {
     children: ReactNode;
     panelClassName?: string;
     closeOnOverlayClick?: boolean;
+    containerClassName?: string;
 };
 
 export default function Modal({
@@ -17,6 +18,7 @@ export default function Modal({
     children,
     panelClassName = "",
     closeOnOverlayClick = true,
+    containerClassName,
 }: ModalProps) {
     useEffect(() => {
         if (!open) return;
@@ -35,7 +37,7 @@ export default function Modal({
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ${containerClassName}`}
             onClick={() => {
                 if (closeOnOverlayClick) onClose();
             }}

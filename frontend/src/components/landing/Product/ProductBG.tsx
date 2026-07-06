@@ -1,5 +1,10 @@
 import Product from "./Product";
-export default function ProductBG() {
+
+type ProductBGProps = {
+    onCartUpdate?: () => void;
+};
+
+export default function ProductBG({ onCartUpdate }: ProductBGProps) {
   return (
     <section
       className=" relative h-[110vh] flex flex-col
@@ -99,7 +104,7 @@ export default function ProductBG() {
           w-[88vw] sm:w-[85vw] md:w-[79.125vw]
           h-[clamp(420px,75vh,560px)] md:h-auto md:aspect-1124/444"
       >
-        <Product />
+        <Product onCartUpdate={onCartUpdate} />
       </div>
     </section>
   );

@@ -3,7 +3,11 @@ import { useState } from "react";
 import Saurieng from "./Saurieng";
 import Dauxanh from "./Dauxanh";
 
-export default function Product() {
+type ProductProps = {
+    onCartUpdate?: () => void;  // propagate cart update to Header
+};
+
+export default function Product({ onCartUpdate }: ProductProps) {
     const [openDauxanh, setOpenDauxanh] = useState(false);
     const [openSaurieng, setOpenSaurieng] = useState(false);
 
@@ -43,7 +47,7 @@ export default function Product() {
                     > ĐẬU XANH </div>
 
                     <div className="border border-amber-50 rounded-3xl inline-flex items-center justify-center
-                        py-1 sm:py-1.5 px-3 sm:px-7 md:px-8
+                        py-1 sm:py-1.5 px-3 sm:px-5 md:px-7
                         font-semibold text-[clamp(11px,0.9vw,20.25px)] text-[#FDF6E8] whitespace-nowrap"
                     > BÙI</div>
 
@@ -63,7 +67,6 @@ export default function Product() {
                     className="flex flex-row md:flex-row w-full md:w-1/2 border rounded-2xl p-1.5 sm:p-2 bg-[#FDF6E8] text-left overflow-hidden"
                 >
                     <div className="w-2/5 sm:w-1/2 shrink-0">
-                    
                     </div>
 
                     <div className="w-3/5 sm:w-1/2 flex flex-col items-start justify-start p-2 sm:p-3 md:p-4 min-w-0">
@@ -103,11 +106,11 @@ export default function Product() {
                         </div>
                     </div>
                 </button>
-                
+
             </div>
-        
-            <Dauxanh open={openDauxanh} onClose={() => setOpenDauxanh(false)} />
-            <Saurieng open={openSaurieng} onClose={() => setOpenSaurieng(false)} />
+
+            <Dauxanh open={openDauxanh} onClose={() => setOpenDauxanh(false)} onAddToCart={onCartUpdate ?? (() => {})} />
+            <Saurieng open={openSaurieng} onClose={() => setOpenSaurieng(false)} onAddToCart={onCartUpdate ?? (() => {})} />
         </div>
     );
 }

@@ -1,0 +1,64 @@
+'use client';
+
+export type CartItem = {
+  id: string;    
+  productId: string;
+  productName: string;
+  saltedEgg: number;
+  quantity: number;
+  unitPrice: number;
+  addedAt: number;  
+};
+
+const CART_KEY = 'banh_pia_cart';
+const CART_EXPIRY_MS = 30 * 60 * 1000; 
+
+function cleanExpired(items: CartItem[]): CartItem[] {
+  const now = Date.now();
+  return items.filter((item) => now - item.addedAt < CART_EXPIRY_MS);
+}
+
+export function getCart(): CartItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    if (!raw) return [];
+    const items: CartItem[] = JSON.parse(raw);
+    return cleanExpired(items);
+  } catch {
+    return [];
+  }
+}
+
+export function saveCart(items: CartItem[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+}
+
+
+export function addToCart(item: Omit<CartItem, 'id' | 'addedAt'>): CartItem[] {
+  const cart = getCart();
+  const id = `${item.productId}-${item.saltedEgg}`;
+  const existing = cart.find((c) => c.id === id);
+
+  if (existing) {
+    existing.quantity += item.quantity;
+    existing.addedAt = Date.now();
+  } else {
+    cart.push({ ...item, id, addedAt: Date.now() });
+  }
+
+  saveCart(cart);
+  return cart;
+}
+
+export function removeFromCart(id: string): CartItem[] {
+  const cart = getCart().filter((item) => item.id !== id);
+  saveCart(cart);
+  return cart;
+}
+
+export function clearCart(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(CART_KEY);
+}

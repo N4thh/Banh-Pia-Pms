@@ -1,20 +1,29 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import Modal from "./Modal";
-import { CircleMinus, CirclePlus} from "lucide-react";
+import Modal from "../../Modal";
+import { CircleMinus, CirclePlus } from "lucide-react";
+import { addToCart } from "../../../utils/cartUtils";
 
 type DauxanhProps = {
     open: boolean;
     onClose: () => void;
+    onAddToCart: () => void;
 };
 
-export default function Saurieng({ open, onClose }: DauxanhProps) {
+export default function Dauxanh({ open, onClose, onAddToCart }: DauxanhProps) {
     const [quantity, setQuantity] = useState(0);
+    const [saltedEgg, setSaltedEgg] = useState(0);
+    const basePrice = 70000;
+    const totalPrice = basePrice + saltedEgg * 10000;
+
     useEffect(() => {
-        if(!open)
-            setQuantity(0)
-    })
+        if (!open) {
+            setQuantity(0);
+            setSaltedEgg(0);
+        }
+    }, [open]);
+
     return (
         <Modal
             open={open}
@@ -45,52 +54,72 @@ export default function Saurieng({ open, onClose }: DauxanhProps) {
                     <div className="flex flex-col gap-2 font-medium flex-1 min-h-0 overflow-y-auto pr-1">
                         <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[15px] 2xl:text-[16px] shrink-0">
                         Lựa chọn trứng muối</p>
-                        <button className="w-full flex justify-between items-center px-4 py-2 border rounded-2xl
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0">
-                        Không thêm trứng muối</button>
 
-                        <button className="w-full flex justify-between items-center  px-4 py-2 border rounded-2xl
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0">
-                        Thêm 1 trứng muối <span>+10.000đ /bánh</span></button>
+                        <button
+                            className={`w-full flex justify-between items-center px-4 py-2 border rounded-2xl
+                            text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0
+                            transition-all duration-200
+                            ${saltedEgg === 0 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""}`}
+                            onClick={() => setSaltedEgg(0)}>
+                            Không thêm trứng muối
+                        </button>
 
-                        <button className="w-full flex justify-between items-center  px-4 py-2 border rounded-2xl
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0">
-                        Thêm 2 trứng muối <span>+20.000đ /bánh</span></button>
+                        <button
+                            className={`w-full flex justify-between items-center px-4 py-2 border rounded-2xl
+                            text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0
+                            transition-all duration-200
+                            ${saltedEgg === 1 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""}`}
+                            onClick={() => setSaltedEgg(1)}>
+                            Thêm 1 trứng muối <span>+10.000đ /bánh</span>
+                        </button>
 
-                        <button className="w-full flex justify-between items-center  px-4 py-2 border rounded-2xl
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0">
-                        Thêm 3 trứng muối <span>+30.000đ /bánh</span></button>
+                        <button
+                            className={`w-full flex justify-between items-center px-4 py-2 border rounded-2xl
+                            text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0
+                            transition-all duration-200
+                            ${saltedEgg === 2 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""}`}
+                            onClick={() => setSaltedEgg(2)}>
+                            Thêm 2 trứng muối <span>+20.000đ /bánh</span>
+                        </button>
+
+                        <button
+                            className={`w-full flex justify-between items-center px-4 py-2 border rounded-2xl
+                            text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px] shrink-0
+                            transition-all duration-200
+                            ${saltedEgg === 3 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""}`}
+                            onClick={() => setSaltedEgg(3)}>
+                            Thêm 3 trứng muối <span>+30.000đ /bánh</span>
+                        </button>
 
                     </div>
                     {/* bot */}
                     <div className="flex flex-col gap-2 shrink-0 pt-2 border-t border-[#F7EACC]/30">
                         <div className="flex items-center justify-between">
                             <p>
-                                <span className=" font-semibold
-                                    text-[13px] sm:text-[14px] md:text-[17px] lg:text-[19px] xl:text-[21px] 2xl:text-[24px]">
-                                    70.000đ</span>
+                                <span className="font-semibold
+                                    text-[13px] sm:text-[14px] md:text-[17px] lg:text-[19px] xl:text-[21px] 2xl:text-[24px]
+                                    transition-all duration-200">
+                                    {totalPrice.toLocaleString("vi-VN")}đ</span>
                                 <span className="font-light text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">
                                 /bánh</span>
                             </p>
                             <div className="flex items-center justify-center gap-2 border rounded-2xl p-1
                                 bg-[radial-gradient(ellipse_3.5vw_50vh,#A01818_0%,#C01F1F_38%,#EDC6AD_100%)]">
                                 <button
-                                type="button"
-                                onClick={() => setQuantity((prev) => Math.max(0,prev - 1))}
-                                className="transition-all duration-150 hover:scale-90
-                                focus-visible:outline-none focus-visible:ring-2"> <CircleMinus />
+                                    type="button"
+                                    onClick={() => setQuantity((prev) => Math.max(0, prev - 1))}
+                                    className="transition-all duration-150 hover:scale-90
+                                    focus-visible:outline-none focus-visible:ring-2">
+                                    <CircleMinus />
                                 </button>
-
                                 <span className="font-medium">{quantity}</span>
-
                                 <button
-                                type="button"
-                                className="transition-all duration-150 hover:scale-90
-                                focus-visible:outline-none focus-visible:ring-2"
-                                onClick={() => setQuantity((prev) => prev + 1)}
-                                > <CirclePlus />
+                                    type="button"
+                                    className="transition-all duration-150 hover:scale-90
+                                    focus-visible:outline-none focus-visible:ring-2"
+                                    onClick={() => setQuantity((prev) => prev + 1)}>
+                                    <CirclePlus />
                                 </button>
-
                             </div>
                         </div>
                         {/* submit */}
@@ -98,6 +127,16 @@ export default function Saurieng({ open, onClose }: DauxanhProps) {
                             type="button"
                             disabled={quantity === 0}
                             onClick={() => {
+                                addToCart({
+                                    productId: 'dauxanh',
+                                    productName: 'Bánh Pía Nhân Đậu Xanh',
+                                    saltedEgg,
+                                    quantity,
+                                    unitPrice: totalPrice,
+                                });
+                                setQuantity(0);
+                                setSaltedEgg(0);
+                                onAddToCart();
                                 onClose();
                             }}
                             className="w-full rounded-2xl py-2 font-semibold border border-[#F7EACC]
@@ -109,10 +148,8 @@ export default function Saurieng({ open, onClose }: DauxanhProps) {
                             Thêm vào giỏ hàng
                         </button>
                     </div>
-
                 </div>
             </div>
-
         </Modal>
     );
 }
