@@ -1,26 +1,41 @@
 "use client";
 
 import { Star } from "lucide-react";
-import CartMenu from "./landing/Cart/CartMenu";
+import CartMenu from "../app/landing/Cart/CartMenu";
 import { useEffect, useState } from "react";
 import { CartItem, getCart } from "../utils/cartUtils";
+import { usePathname, useRouter } from "next/navigation";
 
 type HeaderProps = {
-  cartRefreshTrigger: number;
-  onCartUpdate: () => void;
+  cartRefreshTrigger?: number;
+  onCartUpdate?: () => void;
 };
 
 export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps) {
-    const scrollToSection = (id: string) => {
+   const router = useRouter(); 
+   const pathname = usePathname(); 
+   const [cart, setCart] = useState<CartItem[]>([]);
+   const [openCartMenu, setOpenCartMenu] = useState(false);
+   //scroll
+   const scrollToSection = (id: string) => {
+        if (pathname === "/") {
         document.getElementById(id)?.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
+        behavior: "smooth",
+        block: "start"
         });
+        } else {
+            router.push(`/`);
+        }
     };
+    //handleOpenCart
+    const handleOpen = (() =>{
+        if(pathname === "/booking") 
+            setOpenCartMenu(false);
+        else 
+            setOpenCartMenu(true);
+    })
 
-    const [cart, setCart] = useState<CartItem[]>([]);
-    const [openCartMenu, setOpenCartMenu] = useState(false);
-
+    //event
     useEffect(() => {
         setCart(getCart());
     }, [cartRefreshTrigger]);
@@ -46,15 +61,15 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
                     ĐƠN BÁNH CỦA TÔI
                 </button>
 
-                <button onClick={() => setOpenCartMenu(true)}>
-                    GIỎ HÀNG({cart.length})
+                <button onClick={() => handleOpen()}>
+                    GIỎ HÀNG ({cart.length})
                 </button>
 
                 <CartMenu
                     open={openCartMenu}
                     onClose={() => setOpenCartMenu(false)}
                     refreshTrigger={cartRefreshTrigger}
-                    changeInCart = {onCartUpdate}
+                    changeInCart = {() => onCartUpdate?.()}
                 />
             </div>
         </header>

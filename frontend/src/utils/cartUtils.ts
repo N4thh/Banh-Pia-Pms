@@ -11,7 +11,7 @@ export type CartItem = {
 };
 
 const CART_KEY = 'banh_pia_cart';
-const CART_EXPIRY_MS = 30 * 60 * 1000; 
+const CART_EXPIRY_MS = 60 * 60 * 1000; 
 
 function cleanExpired(items: CartItem[]): CartItem[] {
   const now = Date.now();
@@ -61,4 +61,15 @@ export function removeFromCart(id: string): CartItem[] {
 export function clearCart(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(CART_KEY);
+}
+
+export function refreshTimeCart(): void { 
+  const cart = getCart(); 
+
+  const updated = cart.map(item => ({
+    ...item, 
+    addedAt: Date.now(),
+  })); 
+
+  saveCart(updated); 
 }

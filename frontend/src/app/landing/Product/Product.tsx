@@ -1,4 +1,3 @@
-'use client'
 import { useState } from "react";
 import Saurieng from "./Saurieng";
 import Dauxanh from "./Dauxanh";

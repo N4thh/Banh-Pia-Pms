@@ -1,8 +1,8 @@
-'use client'
 import { useEffect, useState, useCallback } from "react";
-import Modal from "../../Modal";
+import { useRouter } from "next/navigation";
+import Modal from "../../../components/Modal";
 import { X, Trash2, CirclePlus, CircleMinus } from "lucide-react";
-import { getCart, removeFromCart, clearCart, saveCart, CartItem } from "../../../utils/cartUtils";
+import { getCart, removeFromCart, clearCart, saveCart, CartItem, refreshTimeCart } from "../../../utils/cartUtils";
 
 type CartMenuProps = {
     open: boolean;
@@ -17,7 +17,9 @@ function SaltedEggLabel(count: number) {
 }
 
 export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }: CartMenuProps) {
+    const router = useRouter();
     const [cart, setCart] = useState<CartItem[]>([]);
+
     const reload = useCallback(() => {
         setCart(getCart());
     }, []);
@@ -171,12 +173,17 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                                 {total.toLocaleString("vi-VN")} <span className="underline">đ</span>
                             </span>
                         </div>
-                        <button
-                            className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-white font-semibold text-sm
-                                hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
-                        >
-                            Đặt hàng ngay
-                        </button>
+                            <button
+                                className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-white font-semibold text-sm
+                                    hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
+                                    onClick={() => {
+                                        refreshTimeCart(); 
+                                        router.push("/booking")
+                                    }}
+                            >
+                                Đặt hàng ngay
+                            </button>
+                      
                         <p className="text-center text-[10px] text-gray-400 mt-2">
                             Giỏ hàng sẽ hết hạn sau 30 phút
                         </p>

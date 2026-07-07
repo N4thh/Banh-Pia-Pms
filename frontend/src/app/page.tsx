@@ -1,9 +1,9 @@
 "use client"
 import { useState } from "react";
-import Hero from "@/src/components/landing/Hero";
-import Product from "../components/landing/Product/ProductBG";
-import Guide from "../components/landing/Guide/GuideBG";
-import Footer from "../components/landing/Footer";
+import Hero from "@/src/app/landing/Hero";
+import Product from "./landing/Product/ProductBG";
+import Guide from "./landing/Guide/GuideBG";
+import Footer from "./landing/Footer";
 import Header from "../components/Header";
 
 export default function HomePage() {
