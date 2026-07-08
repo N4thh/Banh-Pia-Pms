@@ -41,7 +41,7 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
     }, [cartRefreshTrigger]);
 
     return (
-        <header className="fixed top-0 left-0 w-full z-50 flex justify-center">
+        <header className="fixed top-4 left-0 w-full z-50 flex justify-center">
             <div className="w-[80vw] flex items-center justify-between
                 py-4 px-6 gap-6
                 rounded-2xl bg-white/1 backdrop-blur-[2px] border border-white/20 shadow-lg

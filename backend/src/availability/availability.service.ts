@@ -10,7 +10,6 @@ import { BookSlotDto } from './dto/book-slot.dto';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
-import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class AvailabilityService {

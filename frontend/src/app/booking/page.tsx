@@ -9,7 +9,7 @@ export default function Booking() {
                 <Header />
             </div>
 
-            {/* Left background */}
+            {/* Right background */}
             <div className="absolute right-0 top-0 h-full w-[30vw] -z-10 overflow-hidden
             bg-[radial-gradient(ellipse_80vw_80vh_at_top,#A01818_0%,#C01F1F_16%,#F7EACC_77%,#FDF6E8_100%)]
             " >
