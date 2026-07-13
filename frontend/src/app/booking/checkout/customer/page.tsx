@@ -19,7 +19,9 @@ export default function Customer() {
 
     return(
         <div className="space-y-[2vh] text-[#3D2008]">
-            <p className="mt-6 mb-2 ">Thông tin người nhận</p>
+            <p className="mt-6 mb-2 font-semibold font-vollkorn
+            text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]"
+            >Thông tin người nhận</p>
             {/* input */}
             <div>
                 <input

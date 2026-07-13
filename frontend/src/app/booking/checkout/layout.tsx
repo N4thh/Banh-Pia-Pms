@@ -1,7 +1,7 @@
 "use client"; 
 import { useState, createContext, useContext } from "react"
 import { FormProvider, useForm } from "react-hook-form";
-
+import { CheckoutFormValues } from "./types";
 
 const StepContext = createContext<{
     step: 1 | 2; 
@@ -13,23 +13,23 @@ export const useCheckoutStep = () => useContext(StepContext);
 export default function CheckoutLayout({children,} : {
     children: React.ReactNode;
 }) { 
-    const methods = useForm({
-        defaultValues: {
-            phone: "",
-            fullName: "",
-            shippingMethod: "",
-            paymentMethod: "",
-            receiveDate: "",
-            newAddress: {
-                houseNumber: "",
-                street: "",
-                ward: "",
-                district: "",
-            }, 
-            items: [],
-            note: "", 
-        }
-    })
+    const methods = useForm<CheckoutFormValues>({
+    defaultValues: {
+        phone: "",
+        fullName: "",
+        shippingMethod: "",
+        paymentMethod: "",
+        receiveDate: "",
+        newAddress: {
+            houseNumber: "",
+            street: "",
+            ward: "",
+            district: "",
+        }, 
+        items: [],
+        note: "", 
+    }
+});
 
     const [step, setStep] = useState <1 | 2>(1); 
 

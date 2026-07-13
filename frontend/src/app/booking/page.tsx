@@ -3,7 +3,7 @@ import BoookingInfo from "./booking-info";
 
 export default function Booking() {
     return(
-        <div className="relative min-h-screen">
+        <div className="relative h-screen overflow-hidden">
             {/* Header */}
             <div className="w-[80vw] mx-auto">
                 <Header />

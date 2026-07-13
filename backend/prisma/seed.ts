@@ -4,14 +4,14 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Seed cakes
+  // ── Seed cakes ──
   await prisma.cake.upsert({
     where: { kind: 'Dau Xanh' },
     update: {},
     create: {
       kind: 'Dau Xanh',
-      description: 'Banh rat ngon',
-      basePrice: 70,
+      description: 'Bánh đậu xanh thơm béo',
+      basePrice: 70000,
     },
   });
 
@@ -20,34 +20,56 @@ async function main() {
     update: {},
     create: {
       kind: 'Sau Rieng',
-      description: 'Banh rat ngon',
-      basePrice: 70,
+      description: 'Bánh sầu riêng đậm vị',
+      basePrice: 85000,
     },
   });
 
-  // Hash password
-  const passwordHash = await bcrypt.hash('Loan1902', 10);
+  // ── Seed admin account: loan / 123 ──
+  const passwordHash = await bcrypt.hash('123', 10);
 
-  // Seed admin account
   await prisma.admin.upsert({
-    where: {
-      username: 'me',
-    },
+    where: { username: 'loan' },
     update: {},
     create: {
-      username: 'me',
-      fullName: 'Me',
+      username: 'loan',
+      fullName: 'Loan',
       passwordHash,
     },
   });
+
+  // ── Seed availability slots cho cake 1 & 2, vài ngày tới ──
+  const cakes = await prisma.cake.findMany();
+
+  const today = new Date();
+  for (const cake of cakes) {
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      await prisma.availability.upsert({
+        where: {
+          cakeId_date: { cakeId: cake.id, date },
+        },
+        update: {},
+        create: {
+          cakeId: cake.id,
+          date,
+          maxCapacity: 50,
+          bufferLimit: 52, // ~3% buffer
+          currentBooked: 0,
+        },
+      });
+    }
+  }
+
+  console.log('Seeding done ✓');
 }
 
 main()
-  .then(() => {
-    console.log('Seeding done');
-  })
   .catch((e) => {
     console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();

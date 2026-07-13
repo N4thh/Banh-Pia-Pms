@@ -10,6 +10,7 @@ import { BookSlotDto } from './dto/book-slot.dto';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
+import { GetSlotsDto } from './dto/get-slot.dto';
 
 @Injectable()
 export class AvailabilityService {
@@ -152,5 +153,53 @@ export class AvailabilityService {
       });
       return { success: true, newBooked };
     });
+  }
+  
+  async getSlot(dto: GetSlotsDto) { 
+    const today = new Date(); today.setHours(0,0,0,0); 
+    const endDay = new Date(today); endDay.setDate(today.getDate() + 30); 
+
+    if(dto.date) {
+      const slots = await this.prisma.availability.findMany({
+        where:  {date: new Date(dto.date)}, 
+        include: { cake: { select: {kind: true}}, 
+      }})
+      const totalMax = slots.reduce((s,c) => s + c.maxCapacity, 0);
+      const totalBooked = slots.reduce((s,c) => s + c.currentBooked, 0); 
+      return {
+        date: dto.date, 
+        totalMax, 
+        totalBooked, 
+        cakes: slots.map(s => ({
+          kind: s.cake.kind, 
+          remaining: s.maxCapacity - s.currentBooked,
+        })),
+      };
+    }
+
+    //
+    const slots = await this.prisma.availability.findMany({
+      where: {date: {gte: today, lt: endDay}},
+      orderBy: {date: 'asc'}, 
+      select: {date: true, maxCapacity: true, currentBooked: true},
+    });
+
+    const grouped = new Map<string, {totalMax: number, totalBooked: number}>(); 
+    for(const s of slots) { 
+      const key = s.date.toISOString().split('T')[0];
+      const prev = grouped.get(key) || {totalMax: 0, totalBooked: 0}; 
+
+      grouped.set(key, {
+        totalMax: prev.totalMax + s.maxCapacity, 
+        totalBooked: prev.totalBooked + s.currentBooked,
+      });
+    }
+
+    return Array.from(grouped.entries()).map(([date, d]) => ({
+      date, 
+      totalMax: d.totalMax,
+      totalBooked: d.totalBooked,
+      available: d.totalBooked < d.totalMax
+    }));
   }
 }
