@@ -111,6 +111,7 @@ model OrderItem {
   cakeId Int
   cake   Cake @relation(fields: [cakeId], references: [id])
 
+  eggCount        Int     @default(0)
   quantity        Int
   priceAtPurchase Decimal
 }
