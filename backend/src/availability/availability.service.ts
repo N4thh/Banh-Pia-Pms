@@ -162,7 +162,7 @@ export class AvailabilityService {
     if(dto.date) {
       const slots = await this.prisma.availability.findMany({
         where:  {date: new Date(dto.date)}, 
-        include: { cake: { select: {kind: true}}, 
+        include: { cake: { select: {id: true, kind: true}}, 
       }})
       const totalMax = slots.reduce((s,c) => s + c.maxCapacity, 0);
       const totalBooked = slots.reduce((s,c) => s + c.currentBooked, 0); 
@@ -171,6 +171,7 @@ export class AvailabilityService {
         totalMax, 
         totalBooked, 
         cakes: slots.map(s => ({
+          id: s.cake.id,
           kind: s.cake.kind, 
           remaining: s.maxCapacity - s.currentBooked,
         })),

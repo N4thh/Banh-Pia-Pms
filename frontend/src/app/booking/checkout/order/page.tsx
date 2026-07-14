@@ -6,40 +6,119 @@ import { useCheckoutStep } from "../layout";
 import { useEffect, useRef, useState } from "react";
 import { Clock, MapPin, OctagonAlert, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CartItem, getCart } from "@/src/utils/cartUtils";
+import axios from "axios";
 
-const info = [
+interface slot { 
+    date: string, 
+    totalMax: number, 
+    totalBooked: number, 
+    available: boolean, 
+};
 
-]
+interface CakeSlot {
+    id: number,
+    kind: string, 
+    remaining: number,
+};
+interface slotByDate { 
+    date: string, 
+    totalMax: number, 
+    totalBooked: number,
+    cakes: CakeSlot[],
+};
 
 export default function Order() {
+    // ── All hooks MUST be declared before any conditional return ──
     const {step, setStep} = useCheckoutStep(); 
-    const { register, watch, trigger, formState: { errors }  } = useFormContext<CheckoutFormValues>(); 
+    const { register, watch, trigger, formState: { errors } } = useFormContext<CheckoutFormValues>(); 
     const shippingMethod = watch("shippingMethod");
     const router = useRouter();
     const pickupRef = useRef<HTMLHeadingElement>(null);
     const deliveryRef = useRef<HTMLHeadingElement>(null);
-
+    const [slots, setSlots] = useState<slot[]>([]);
+    const [slotByDay, setSlotByDay] = useState<slotByDate | null>(null); 
     const [shippingMethodError, setShippingMethodError] = useState(false);
+    const [cart, setCart] = useState<CartItem[]>([]); 
+
+    const fetchSlots = async () => { 
+        const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/availability/slots`
+        );
+        setSlots(response.data); 
+    };
+
+    useEffect(() => { 
+        fetchSlots();
+        setCart(getCart());
+    }, []);
 
     useEffect(() => { 
         if(shippingMethod === "PICKUP") { 
             pickupRef.current?.scrollIntoView({
                 behavior: "smooth", 
                 block: "start",
-            })
+            });
         }
         if(shippingMethod === "DELIVERY") { 
             deliveryRef.current?.scrollIntoView({
                 behavior: "smooth", 
-                block: "start"
-            })
+                block: "start",
+            });
         }
-    }, [shippingMethod])
+    }, [shippingMethod]);
+
+    // ── Conditional return AFTER all hooks ──
+    if(step === 1) return null;
+
+    const totalByCake = new Map<string, {total: number}>();
+    for(const c of cart) { 
+        const prev = totalByCake.get(c.productId) || {total: 0};
+        totalByCake.set(c.productId, {
+            total: prev.total + c.quantity
+        });
+    }
+
+    let available = true;
+    const result: Array<{kind: string, ordered: number, remaining: number, enough: boolean}> = [];
+
+    if(slotByDay?.cakes) {
+        for(const cake of slotByDay.cakes) { 
+            const ordered = totalByCake.get(cake.id.toString());
+
+            if(!ordered)
+                continue;
+            if(ordered.total > cake.remaining) {
+                available = false;
+                result.push({
+                    kind: cake.kind,
+                    ordered: ordered.total,
+                    remaining: cake.remaining,
+                    enough: false
+                });
+            }
+            else{
+                result.push({
+                    kind: cake.kind,
+                    ordered: ordered.total,
+                    remaining: cake.remaining,
+                    enough: true
+                });
+            }
+        }
+    }
+    
+    const handleSelectSlot = async (date: string) => { 
+        const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/availability/slots?date=${date}`
+        ); 
+        setSlotByDay(response.data); 
+    };
 
     const handleNext = async () => { 
         let isValid = false;
         
-         if (!shippingMethod) {
+        if (!shippingMethod) {
             setShippingMethodError(true);
             return;
         }
@@ -59,8 +138,6 @@ export default function Order() {
             console.log("All valid!");
         }
     };
-
-    if(step === 1) return null;
 
     return(
        
@@ -212,7 +289,18 @@ export default function Order() {
 
             {/* Cake pickup date  */}
             <div>
+                {slots.map((slot) => (
+                <div key={slot.date}>
+                    <input
+                        type="radio"
+                        value={slot.date}
+                        onChange={() => handleSelectSlot(slot.date)}
+                    />
 
+                    <p>{slot.date}</p>
+                </div>
+                ))}
+               
             </div>
 
             <div className="flex justify-between items-center">

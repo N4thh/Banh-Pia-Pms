@@ -127,7 +127,7 @@ export default function Dauxanh({ open, onClose, onAddToCart }: DauxanhProps) {
                             disabled={quantity === 0}
                             onClick={() => {
                                 addToCart({
-                                    productId: 'dauxanh',
+                                    productId: '1',
                                     productName: 'Bánh Pía Nhân Đậu Xanh',
                                     saltedEgg,
                                     quantity,
