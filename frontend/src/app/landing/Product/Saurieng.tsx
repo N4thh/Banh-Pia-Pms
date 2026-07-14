@@ -126,7 +126,7 @@ export default function Saurieng({ open, onClose, onAddToCart }: SauriengProps) 
                             disabled={quantity === 0}
                             onClick={() => {
                                 addToCart({
-                                    productId: 'saurieng',
+                                    productId: '2',
                                     productName: 'Bánh Pía Nhân Sầu Riêng',
                                     saltedEgg,
                                     quantity,

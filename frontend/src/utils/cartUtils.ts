@@ -13,6 +13,23 @@ export type CartItem = {
 const CART_KEY = 'banh_pia_cart';
 const CART_EXPIRY_MS = 60 * 60 * 1000; 
 
+const LEGACY_PRODUCT_ID_MAP: Record<string, string> = {
+  'dauxanh': '1',
+  'saurieng': '2',
+};
+
+function migrateLegacyIds(items: CartItem[]): CartItem[] {
+  return items.map((item) => {
+    const newProductId = LEGACY_PRODUCT_ID_MAP[item.productId] ?? item.productId;
+    if (newProductId === item.productId) return item;
+    return {
+      ...item,
+      productId: newProductId,
+      id: `${newProductId}-${item.saltedEgg}`,
+    };
+  });
+}
+
 function cleanExpired(items: CartItem[]): CartItem[] {
   const now = Date.now();
   return items.filter((item) => now - item.addedAt < CART_EXPIRY_MS);
@@ -24,7 +41,7 @@ export function getCart(): CartItem[] {
     const raw = localStorage.getItem(CART_KEY);
     if (!raw) return [];
     const items: CartItem[] = JSON.parse(raw);
-    return cleanExpired(items);
+    return migrateLegacyIds(cleanExpired(items));
   } catch {
     return [];
   }
