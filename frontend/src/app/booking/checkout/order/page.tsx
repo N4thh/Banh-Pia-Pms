@@ -8,6 +8,18 @@ import { Clock, MapPin, OctagonAlert, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CartItem, getCart } from "@/src/utils/cartUtils";
 import axios from "axios";
+import SlotWarningModal, { SlotViolation } from "./SlotWarningModal";
+
+const KIND_TO_PRODUCT_NAME: Record<string, string> = {
+    "Dau Xanh": "Bánh Pía Đậu Xanh",
+    "Sau Rieng": "Bánh Pía Sầu Riêng",
+};
+
+function formatDateShortVN(isoDate: string): string {
+    const parts = isoDate.split("-");
+    if (parts.length !== 3) return isoDate;
+    return `${parts[2]}/${parts[1]}`;
+}
 
 interface slot { 
     date: string, 
@@ -29,7 +41,6 @@ interface slotByDate {
 };
 
 export default function Order() {
-    // ── All hooks MUST be declared before any conditional return ──
     const {step, setStep} = useCheckoutStep(); 
     const { register, watch, trigger, formState: { errors } } = useFormContext<CheckoutFormValues>(); 
     const shippingMethod = watch("shippingMethod");
@@ -39,7 +50,13 @@ export default function Order() {
     const [slots, setSlots] = useState<slot[]>([]);
     const [slotByDay, setSlotByDay] = useState<slotByDate | null>(null); 
     const [shippingMethodError, setShippingMethodError] = useState(false);
-    const [cart, setCart] = useState<CartItem[]>([]); 
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [warningData, setWarningData] = useState<{
+        date: string; 
+        violations: SlotViolation[];
+    } | null>(null);
+    const [pendingDate, setPendingDate] = useState<string | null>(null);
+    const { setValue } = useFormContext<CheckoutFormValues>();
 
     const fetchSlots = async () => { 
         const response = await axios.get(
@@ -68,9 +85,10 @@ export default function Order() {
         }
     }, [shippingMethod]);
 
-    // ── Conditional return AFTER all hooks ──
     if(step === 1) return null;
 
+
+    //Warning
     const totalByCake = new Map<string, {total: number}>();
     for(const c of cart) { 
         const prev = totalByCake.get(c.productId) || {total: 0};
@@ -107,14 +125,58 @@ export default function Order() {
             }
         }
     }
-    
-    const handleSelectSlot = async (date: string) => { 
-        const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/availability/slots?date=${date}`
-        ); 
-        setSlotByDay(response.data); 
+
+    const handleSelectSlot = async (date: string) => {
+        try {
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_API_URL}/availability/slots?date=${date}`
+            );
+            const data: slotByDate = response.data;
+            setSlotByDay(data);
+
+            const violations: SlotViolation[] = [];
+            for (const cake of data.cakes) {
+                const ordered = totalByCake.get(cake.id.toString());
+                const orderedQty = ordered?.total ?? 0;
+                const productName = KIND_TO_PRODUCT_NAME[cake.kind] ?? cake.kind;
+                violations.push({
+                    kind: cake.kind,
+                    productName,
+                    ordered: orderedQty,
+                    remaining: cake.remaining,
+                    enough: orderedQty <= cake.remaining,
+                });
+            }
+
+            const hasViolation = violations.some((v) => !v.enough);
+
+            if (hasViolation) {
+                setPendingDate(date);
+                setWarningData({
+                    date: formatDateShortVN(date),
+                    violations,
+                });
+            } else {
+                setWarningData(null);
+                setPendingDate(null);
+                setValue("receiveDate", date, { shouldValidate: true });
+            }
+        } catch (err) {
+            console.error("Lỗi khi lấy slot theo ngày:", err);
+        }
     };
 
+    const handleGoBackToCart = () => {
+        setWarningData(null);
+        router.push("/");
+    };
+
+    const handleChooseAnotherDate = () => {
+        setWarningData(null);
+        setPendingDate(null);
+    };
+
+    //HandleNext
     const handleNext = async () => { 
         let isValid = false;
         
@@ -140,7 +202,7 @@ export default function Order() {
     };
 
     return(
-       
+        
         <div className="space-y-[2vh] text-[#3D2008]">
             <p className="mt-6 mb-2 font-semibold font-vollkorn
             text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]"
@@ -288,19 +350,28 @@ export default function Order() {
             </div>
 
             {/* Cake pickup date  */}
-            <div>
-                {slots.map((slot) => (
-                <div key={slot.date}>
-                    <input
-                        type="radio"
-                        value={slot.date}
-                        onChange={() => handleSelectSlot(slot.date)}
-                    />
-
-                    <p>{slot.date}</p>
+            <div className="flex flex-col gap-[1vh]">
+                <p className="font-semibold
+                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px]">
+                    Chọn ngày nhận bánh
+                </p>
+                <div className="flex flex-wrap gap-[1vw]">
+                    {slots.map((slot) => (
+                        <button
+                            key={slot.date}
+                            type="button"
+                            onClick={() => handleSelectSlot(slot.date)}
+                            className={`px-4 py-2 rounded-lg border-2 transition-colors duration-200
+                                text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px]
+                                ${pendingDate === slot.date || slotByDay?.date === slot.date
+                                    ? "bg-[#3D2008] text-white border-[#3D2008]"
+                                    : "bg-white border-[#3D2008]/25 hover:border-[#3D2008]"
+                                }`}
+                        >
+                            {slot.date}
+                        </button>
+                    ))}
                 </div>
-                ))}
-               
             </div>
 
             <div className="flex justify-between items-center">
@@ -320,10 +391,14 @@ export default function Order() {
                     onClick={() => {handleNext()}}>Tiếp tục</button>
                 </div>
             </div>
+            {/* Slot warning modal */}
+            <SlotWarningModal
+                open={warningData !== null}
+                date={warningData?.date ?? ""}
+                violations={warningData?.violations ?? []}
+                onClose={handleChooseAnotherDate}
+                onGoBack={handleGoBackToCart}
+            />
         </div>
-
-        
-        
-        
     );
 }
