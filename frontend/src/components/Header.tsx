@@ -29,7 +29,7 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
     };
     //handleOpenCart
     const handleOpen = (() =>{
-        if(pathname === "/booking") 
+        if(pathname !== "/") 
             setOpenCartMenu(false);
         else 
             setOpenCartMenu(true);

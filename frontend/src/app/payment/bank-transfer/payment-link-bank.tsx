@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { QRCodeGenerator } from '@makozi/react-qr-code-generator';
 
 interface OrderItem {
     cakeId: number;
@@ -24,7 +25,7 @@ interface Props {
     secondsLeft: number;
 }
 
-export default function PaymentSuccessBank({ order, paymentLink, secondsLeft }: Props) {
+export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) {
     const router = useRouter();
     const minutes = Math.floor(secondsLeft / 60);
     const seconds = secondsLeft % 60;
@@ -39,7 +40,13 @@ export default function PaymentSuccessBank({ order, paymentLink, secondsLeft }: 
 
             {paymentLink ? (
                 <div className="flex flex-col items-center gap-4 p-6 border-2 border-[#3D2008]/25 rounded-2xl bg-white">
-                    <img src={paymentLink.qrCode} alt="QR Code" className="w-64 h-64" />
+                    <QRCodeGenerator
+                        value={paymentLink.qrCode}
+                        size={256}
+                        bgColor="#F7EACC"
+                        fgColor="#000000"
+                        logoSize={20}
+                    />
                     <a
                         href={paymentLink.checkoutUrl}
                         target="_blank"

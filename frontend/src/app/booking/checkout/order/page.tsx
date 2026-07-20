@@ -182,6 +182,16 @@ export default function Order() {
         setPendingDate(null);
     };
 
+    const generateIdempotencyKey = async (payload: string) => { 
+       const encoder = new TextEncoder();
+       const data = encoder.encode(payload); //`Uint8Array`
+       const hash = await crypto.subtle.digest("SHA-256", data);
+       const hashHex = Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+
+       return hashHex;
+    } 
     //HandleNext
     const handleNext = async () => { 
         let isValid = false;
@@ -224,12 +234,16 @@ export default function Order() {
 
                 console.log("Payload gửi lên BE:", { ...data, items });
 
-                const idempotencyKey = crypto.randomUUID();
+                //generate key for order
+                const phone = data.phone;
+                const receiveDate = data.receiveDate; 
+                const payload = JSON.stringify({phone, items, receiveDate, paymentMethod: data.paymentMethod })
+                const key = await generateIdempotencyKey(payload);
 
                 try{
                     const response = await axios.post(
                     `${process.env.NEXT_PUBLIC_API_URL}/booking/create`, {...data, items}, {
-                        headers: { 'x-idempotency-key': idempotencyKey },
+                        headers: { 'x-idempotency-key': key },
                     });
 
                     console.log("Response từ BE:", response.data);
@@ -246,14 +260,30 @@ export default function Order() {
                     }
                 } catch(err :any){
                     console.error("Booking API error:", err);
-                    console.error("Status:", err.response?.status);
-                    console.error("Response data:", JSON.stringify(err.response?.data, null, 2));
-                    console.error("Response headers:", err.response?.headers);
+                    
+                    if (err.response?.status === 409) {
+                        const message = err.response.data?.message || "";
+                        const match = message.match(/Mã đơn:\s*(\d+)/);
+                        
+                        if (match) {
+                            const existingOrderId = match[1];
+                            const orderRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/booking/${existingOrderId}`); 
+                            const existingOrder = orderRes.data; 
+
+                            if (existingOrder.paymentMethod === "CASH") {
+                                router.push(`/payment/success?orderId=${existingOrderId}&method=cash`);
+                            } else if (data.paymentMethod === "BANK_TRANSFER") {
+                                router.push(`/payment?orderId=${existingOrderId}`);
+                            }
+                            return;
+                        }
+                    }
+
                     toast.error(err.response?.data?.message || `Lỗi ${err.response?.status}: ${err.message}`);
                 }
                 
             }
-        } catch(err) { 
+        } catch(err: any) {
             console.error(err); 
         }finally{
             setLoading(false);
@@ -465,7 +495,7 @@ export default function Order() {
                         className="flex items-center gap-2 bg-[#C01F1F] text-white py-3 px-6 rounded-lg"
                         >
                         {loading && <LoaderCircle className="h-5 w-5 animate-spin" />}
-                        {loading ? "Đang xử lý..." : "Tiếp tục"}
+                        {loading ? "Đang xử lý..." : "Đặt hàng"}
                     </button>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import PaymentSuccessBank from "./payment-success-bank";
+import PaymentLink from "./bank-transfer/payment-link-bank"
 import { Loader2 } from "lucide-react";
 
 interface OrderContext {
@@ -96,7 +96,7 @@ export default function PaymentPage() {
     }
 
     return (
-        <PaymentSuccessBank
+        <PaymentLink
             order={order}
             paymentLink={paymentLink}
             secondsLeft={secondsLeft}
