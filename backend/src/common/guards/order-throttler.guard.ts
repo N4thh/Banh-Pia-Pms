@@ -19,7 +19,7 @@ export class OrderThrottlerGuard implements CanActivate {
     const currentRequest = await this.redisService.get(redisKey);
     const requestCount = currentRequest ? parseInt(currentRequest, 10) : 0;
 
-    const MAX_REQUEST = 3;
+    const MAX_REQUEST = 1;
     if (requestCount > MAX_REQUEST) {
       throw new HttpException(
         'Bạn thao tác quá nhanh. Vui lòng đợi chúng tôi 1 phút rồi tiếp tục đặt nhé',

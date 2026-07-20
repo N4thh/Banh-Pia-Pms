@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AvailabilityService } from 'src/availability/availability.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -134,6 +134,49 @@ export class BookingService {
     return {
       message: 'Đặt bánh thành công, đang chờ thanh toán!',
       orderId: result.order.id,
+    };
+  }
+
+  async getOrderById(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: {id: id},
+      include: { 
+        user: true, 
+        address: true, 
+        items: {
+          include: {cake: true}
+        }
+      }
+    })
+    if(order?.status === 'CANCELLED' || order?.status === 'COMPLETED')
+      throw new BadRequestException('Đơn hàng đã hủy hoặc đã hoàn thành, vui lòng kiểm tra lại');
+    
+    if(!order)
+      throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
+    return {
+      id: order.id,
+      totalMoney: Number(order.totalMoney),
+      status: order.status,
+      shippingMethod: order.shippingMethod,
+      paymentMethod: order.paymentMethod,
+      receiveDate: order.receiveDate,
+      note: order.note,
+      customer: {
+        fullName: order.user.fullName,
+        phone: order.user.phone,
+      },
+      address: order.address ? {
+        houseNumber: order.address.houseNumber,
+        street: order.address.street,
+        ward: order.address.ward,
+        district: order.address.district,
+      } : null,
+      items: order.items.map(item => ({
+        cakeId: item.cakeId,
+        cakeName: item.cake.kind,
+        quantity: item.quantity,
+        priceAtPurchase: Number(item.priceAtPurchase),
+      })),
     };
   }
 }

@@ -1,5 +1,5 @@
 // booking.controller.ts
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 // Giả định đường dẫn các Guard của em
@@ -14,5 +14,10 @@ export class BookingController {
   @UseGuards(OrderThrottlerGuard, IdempotencyGuard) // Bọc các chốt chặn bảo vệ hệ thống
   async createOrder(@Body() dto: CreateOrderDto) {
     return await this.bookingService.createOrder(dto);
+  }
+
+  @Get(':id')
+  getOne(@Param('id', ParseIntPipe) id: number) { 
+    return this.bookingService.getOrderById(id); 
   }
 }

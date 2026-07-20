@@ -14,6 +14,8 @@ RUN npx prisma generate
 
 RUN npm run build 
 
-EXPOSE 3000 
+ENV NODE_ENV=production
+
+EXPOSE 3001
 
 CMD ["node", "dist/src/main.js"] 

@@ -51,7 +51,7 @@ export default function CheckoutLayout({children,} : {
                         </div>
                     </div>
 
-                    <main>
+                    <main className="max-h-[calc(60vh-80px)]">
                         {children}
                     </main>
                 </div>

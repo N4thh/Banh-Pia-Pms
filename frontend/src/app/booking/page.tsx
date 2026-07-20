@@ -3,7 +3,7 @@ import BoookingInfo from "./booking-info";
 
 export default function Booking() {
     return(
-        <div className="relative h-screen overflow-hidden">
+        <div className="relative min-h-screen">
             {/* Header */}
             <div className="w-[80vw] mx-auto">
                 <Header />
@@ -30,12 +30,10 @@ export default function Booking() {
             </div>
 
             {/* BookingInfo */}
-            <div
-                className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 
-                        w-[88vw] sm:w-[85vw] md:w-[79.125vw]
-                        h-[clamp(420px,75vh,560px)] md:h-auto"
-            >
-                <BoookingInfo />
+            <div className="flex justify-center pt-20 pb-[10vh]">
+                <div className="w-[88vw] sm:w-[85vw] md:w-[79.125vw]">
+                    <BoookingInfo />
+                </div>
             </div>
         </div>
       

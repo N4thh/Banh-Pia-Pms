@@ -4,11 +4,12 @@ import { CheckoutFormValues } from "../types";
 import { useFormContext } from "react-hook-form";
 import { useCheckoutStep } from "../layout";
 import { useEffect, useRef, useState } from "react";
-import { Clock, MapPin, OctagonAlert, Phone } from "lucide-react";
+import { ChevronLeft, Clock, LoaderCircle, MapPin, OctagonAlert, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CartItem, getCart } from "@/src/utils/cartUtils";
 import axios from "axios";
 import SlotWarningModal, { SlotViolation } from "./SlotWarningModal";
+import toast from "react-hot-toast";
 
 const KIND_TO_PRODUCT_NAME: Record<string, string> = {
     "Dau Xanh": "Bánh Pía Đậu Xanh",
@@ -47,6 +48,7 @@ export default function Order() {
     const router = useRouter();
     const pickupRef = useRef<HTMLHeadingElement>(null);
     const deliveryRef = useRef<HTMLHeadingElement>(null);
+    const [loading, setLoading] = useState(false);
     const [slots, setSlots] = useState<slot[]>([]);
     const [slotByDay, setSlotByDay] = useState<slotByDate | null>(null); 
     const [shippingMethodError, setShippingMethodError] = useState(false);
@@ -56,8 +58,7 @@ export default function Order() {
         violations: SlotViolation[];
     } | null>(null);
     const [pendingDate, setPendingDate] = useState<string | null>(null);
-    const { setValue } = useFormContext<CheckoutFormValues>();
-
+    const { setValue, getValues } = useFormContext<CheckoutFormValues>();    
     const fetchSlots = async () => { 
         const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/availability/slots`
@@ -69,24 +70,29 @@ export default function Order() {
         fetchSlots();
         setCart(getCart());
     }, []);
-
+    
     useEffect(() => { 
-        if(shippingMethod === "PICKUP") { 
+        if(shippingMethod === "PICKUP") {
             pickupRef.current?.scrollIntoView({
-                behavior: "smooth", 
-                block: "start",
+                behavior: "smooth",
+                block: "center",
             });
         }
-        if(shippingMethod === "DELIVERY") { 
+        if(shippingMethod === "DELIVERY") {
             deliveryRef.current?.scrollIntoView({
-                behavior: "smooth", 
-                block: "start",
+                behavior: "smooth",
+                block: "center",
             });
         }
     }, [shippingMethod]);
 
     if(step === 1) return null;
 
+    //formatDate
+    const formatDate = (date: string) => {
+        const [, month, day] = date.split("-");
+        return `${day}/${month}`;
+    };
 
     //Warning
     const totalByCake = new Map<string, {total: number}>();
@@ -179,32 +185,85 @@ export default function Order() {
     //HandleNext
     const handleNext = async () => { 
         let isValid = false;
+        setLoading(true);
         
-        if (!shippingMethod) {
-            setShippingMethodError(true);
-            return;
+        try {
+            if (!shippingMethod) {
+                setShippingMethodError(true);
+                return;
+            }
+            
+            if (shippingMethod === "DELIVERY") {
+                isValid = await trigger([
+                    "newAddress.houseNumber",
+                    "newAddress.street",
+                    "newAddress.ward",
+                    "newAddress.district"
+                ]);
+            } else {
+                isValid = true;
+            }
+
+            if(isValid) {
+                if (cart.length === 0) {
+                    toast.error("Giỏ hàng đang trống. Vui lòng chọn ít nhất một sản phẩm.");
+                    return;
+                }
+
+                const data = getValues()
+                if (!data.receiveDate) {
+                    toast.error("Vui lòng chọn ngày nhận bánh");
+                    return;
+                }
+                //set items value to formprovider
+                const items = cart.map((c) => ({
+                    cakeId: Number(c.productId),
+                    date: data.receiveDate, 
+                    quantity: c.quantity,
+                }))
+
+                console.log("Payload gửi lên BE:", { ...data, items });
+
+                const idempotencyKey = crypto.randomUUID();
+
+                try{
+                    const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/booking/create`, {...data, items}, {
+                        headers: { 'x-idempotency-key': idempotencyKey },
+                    });
+
+                    console.log("Response từ BE:", response.data);
+
+                    const { orderId } = response.data;
+                    console.log("OrderId:", orderId);
+
+                    if (data.paymentMethod === "CASH") {
+                        console.log("Redirecting to CASH success page...");
+                        router.push(`/payment/success?orderId=${orderId}&method=cash`);
+                    } else if (data.paymentMethod === "BANK_TRANSFER") {
+                        console.log("Redirecting to payment page...");
+                        router.push(`/payment?orderId=${orderId}`);
+                    }
+                } catch(err :any){
+                    console.error("Booking API error:", err);
+                    console.error("Status:", err.response?.status);
+                    console.error("Response data:", JSON.stringify(err.response?.data, null, 2));
+                    console.error("Response headers:", err.response?.headers);
+                    toast.error(err.response?.data?.message || `Lỗi ${err.response?.status}: ${err.message}`);
+                }
+                
+            }
+        } catch(err) { 
+            console.error(err); 
+        }finally{
+            setLoading(false);
         }
-        
-        if (shippingMethod === "DELIVERY") {
-            isValid = await trigger([
-                "newAddress.houseNumber", 
-                "newAddress.street", 
-                "newAddress.ward", 
-                "newAddress.district"
-            ]);
-        } else {
-            isValid = true;
-        }
-        
-        if(isValid) {
-            console.log("All valid!");
-        }
+
     };
 
-    return(
-        
-        <div className="space-y-[2vh] text-[#3D2008]">
-            <p className="mt-6 mb-2 font-semibold font-vollkorn
+    return( 
+        <div className="space-y-[3vh] text-[#3D2008]">
+            <p className="mt-2 mb-1 font-semibold font-vollkorn
             text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]"
             >Phương thức nhận bánh</p>
 
@@ -255,7 +314,7 @@ export default function Order() {
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="overflow-hidden"
                             >
-                                <div className="flex flex-col gap-[2vh] mt-[2vh] p-[3vh]
+                                <div className="flex flex-col gap-3 mt-3 p-4
                                 border border-dashed border-[#3D2008] rounded-2xl bg-[#3D2008]/10">
                                     <h2 className="font-semibold font-vollkorn
                                      text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[18px]"
@@ -282,7 +341,7 @@ export default function Order() {
                                     transition={{ duration: 0.2, ease: "easeInOut" }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="space-y-2 mt-[2vh] p-[3vh] flex flex-col gap-[1vh]
+                                    <div className="space-y-2 mt-3 p-4 flex flex-col gap-2
                                        border border-dashed border-[#3D2008] rounded-2xl bg-[#3D2008]/10
                                        text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
                                     >
@@ -350,48 +409,67 @@ export default function Order() {
             </div>
 
             {/* Cake pickup date  */}
-            <div className="flex flex-col gap-[1vh]">
-                <p className="font-semibold
-                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px]">
-                    Chọn ngày nhận bánh
+            <div className="flex flex-col gap-1.5 max-h-[40vh]">
+                <p className="font-semibold font-vollkorn
+                    text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
+                    Ngày nhận bánh
                 </p>
-                <div className="flex flex-wrap gap-[1vw]">
+                <div className="flex flex-wrap gap-2 overflow-y-auto pt-2">
                     {slots.map((slot) => (
                         <button
                             key={slot.date}
                             type="button"
                             onClick={() => handleSelectSlot(slot.date)}
-                            className={`px-4 py-2 rounded-lg border-2 transition-colors duration-200
-                                text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px]
+                            className={`px-4 py-2 rounded-lg border-2 transition-colors duration-200 w-[7.5vw]
+                                text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]
                                 ${pendingDate === slot.date || slotByDay?.date === slot.date
-                                    ? "bg-[#3D2008] text-white border-[#3D2008]"
+                                    ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]" 
                                     : "bg-white border-[#3D2008]/25 hover:border-[#3D2008]"
                                 }`}
-                        >
-                            {slot.date}
+                        > <div className="flex flex-col font-medium">{formatDate(slot.date)} <span
+                         className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] xl:text-[11px] 2xl:text-[12px]">
+                        {slot.totalBooked}/{slot.totalMax} đơn</span></div>
                         </button>
                     ))}
                 </div>
             </div>
+            
+            <div className="flex flex-col gap-1.5">
+                <p className="font-semibold font-vollkorn
+                    text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
+                    Ghi chú cho đơn bánh
+                </p>
+                <textarea 
+                placeholder="Thêm ghi chú cho đơn bánh..."
+                className="border p-2 rounded-md h-[20vh] resize-none overflow-y-auto "
+                />
 
-            <div className="flex justify-between items-center">
-                <div className="flex gap-4 mt-4">
+            </div>
+
+            <div className="flex items-center justify-end gap-[3vw]">
+                <div>
                     <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className=""
+                        className="inline-flex items-center underline text-[#C01F1F] [text-decoration-skip-ink:none] font-semibold"
                     >
-                        Quay lại 
+                        <ChevronLeft size={20} />
+                        <span className="text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                        >Quay lại</span>
                     </button>
                 </div>
-                <div className="flex">
-                    <button className="ml-auto inset-0 border py-3 px-6 rounded-lg
-                    text-[#FDF6E8] font-semibold bg-[#C01F1F]"
-                    type="button"
-                    onClick={() => {handleNext()}}>Tiếp tục</button>
+                <div>
+                    <button
+                        onClick={() => handleNext()}
+                        disabled={loading}
+                        className="flex items-center gap-2 bg-[#C01F1F] text-white py-3 px-6 rounded-lg"
+                        >
+                        {loading && <LoaderCircle className="h-5 w-5 animate-spin" />}
+                        {loading ? "Đang xử lý..." : "Tiếp tục"}
+                    </button>
                 </div>
             </div>
-            {/* Slot warning modal */}
+            
             <SlotWarningModal
                 open={warningData !== null}
                 date={warningData?.date ?? ""}

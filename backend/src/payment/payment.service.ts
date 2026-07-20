@@ -8,6 +8,7 @@ import {
 import { PayOS } from '@payos/node';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PAYMENT_EVENTS, PaymentSuccessEventPayload } from 'src/payment/constants/payment-event.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentService {
@@ -17,6 +18,7 @@ export class PaymentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly configService: ConfigService,
   ) {
     this.payos = new PayOS({
       clientId: process.env.PAYOS_CLIENT_ID || '',
@@ -33,13 +35,16 @@ export class PaymentService {
     }
 
     const amountInVnd = Number(order.totalMoney) * 1000;
+    const frontendUrl = this.configService.get<string>("FRONTEND_URL");
+    if(!frontendUrl)
+      throw new InternalServerErrorException("FRONTEND_URL is not configured");
 
     const paymentData = {
       orderCode: orderId,
       amount: amountInVnd,
       description: 'Thanh toán đơn hàng',
-      cancelUrl: 'https://your-domain.com/cancel',
-      returnUrl: 'https://your-domain.com/success',
+      cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
+      returnUrl: `${frontendUrl}/payment/success?orderId=${orderId}`,
     };
 
     try {
