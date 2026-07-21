@@ -16,7 +16,8 @@ export class PaymentCronService {
 
         const expiredOrders = await this.prisma.order.findMany({
             where: {
-                status: OrderStatus.NEW, 
+                status: OrderStatus.NEW,
+                paymentMethod: "BANK_TRANSFER",
                 orderDate: {lt: tenMinutesAgo},
             },
             include: {paymentLink: true}
