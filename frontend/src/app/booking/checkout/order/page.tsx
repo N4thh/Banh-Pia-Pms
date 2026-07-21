@@ -253,7 +253,7 @@ export default function Order() {
 
                     if (data.paymentMethod === "CASH") {
                         console.log("Redirecting to CASH success page...");
-                        router.push(`/payment/success?orderId=${orderId}&method=cash`);
+                        router.push(`/payment/success-cash?orderId=${orderId}`);
                     } else if (data.paymentMethod === "BANK_TRANSFER") {
                         console.log("Redirecting to payment page...");
                         router.push(`/payment?orderId=${orderId}`);
@@ -271,8 +271,8 @@ export default function Order() {
                             const existingOrder = orderRes.data; 
 
                             if (existingOrder.paymentMethod === "CASH") {
-                                router.push(`/payment/success?orderId=${existingOrderId}&method=cash`);
-                            } else if (data.paymentMethod === "BANK_TRANSFER") {
+                                router.push(`/payment/success-cash?orderId=${existingOrderId}`);
+                            } else if (existingOrder.paymentMethod === "BANK_TRANSFER") {
                                 router.push(`/payment?orderId=${existingOrderId}`);
                             }
                             return;

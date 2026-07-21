@@ -4,7 +4,7 @@ import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import PaymentLink from "./bank-transfer/payment-link-bank"
+import PaymentLink from "./payment-link-bank"
 import { Loader2 } from "lucide-react";
 
 interface OrderContext {
@@ -88,10 +88,8 @@ export default function PaymentPage() {
         );
     }
 
-    // chỉ BANK_TRANSFER mới hiện QR
     if (order.paymentMethod !== "BANK_TRANSFER") {
-        // redirect về trang success nếu user lỡ vào đây với CASH
-        router.push(`/payment/success?orderId=${orderId}&method=cash`);
+        router.push(`/payment/success-cash?orderId=${orderId}`);
         return null;
     }
 
