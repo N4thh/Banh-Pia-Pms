@@ -10,10 +10,8 @@ function SaltedEggLabel(count: number) {
 
 export default function CartCard() {
     const [cart,setCart] = useState<CartItem[]>([]); 
-    const basePrice = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    const feeShip = 20000;
-    const discount = 20000;
-    const total = basePrice + feeShip - discount;
+    const total = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  
     useEffect(() => {
         setCart(getCart());
     }, []);
@@ -59,15 +57,15 @@ export default function CartCard() {
                     text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
                         <div className="flex justify-between">
                             <p>Tạm tính</p>
-                            <p>{basePrice.toLocaleString("vi-VN")} đ</p>
+                            <p>{total.toLocaleString("vi-VN")} đ</p>
                         </div>
                         <div className="flex justify-between">
                             <p>Giảm giá</p>
-                            <p>{discount.toLocaleString("vi-VN")} đ</p>
+                            <p> - </p>
                         </div>
                         <div className="flex justify-between">
-                            <p>Phí giao hàng</p>
-                            <p>{feeShip.toLocaleString("vi-VN")} đ</p>
+                            <p> Phí giao hàng</p>
+                            <p> - </p>
                         </div>    
                     </div>
 

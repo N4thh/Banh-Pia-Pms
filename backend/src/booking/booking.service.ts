@@ -46,6 +46,7 @@ export class BookingService {
         cakeId: number;
         date: string;
         quantity: number;
+        eggCount: number;
         priceAtPurchase: any;
         status: any;
       }[] = [];
@@ -72,6 +73,7 @@ export class BookingService {
           cakeId: item.cakeId,
           date: item.date,
           quantity: item.quantity,
+          eggCount: item.eggCount,
           priceAtPurchase: dbCake?.basePrice,
           status: slotStatus,
         });
@@ -94,6 +96,7 @@ export class BookingService {
             create: itemStatuses.map((item) => ({
               cakeId: item.cakeId,
               quantity: item.quantity,
+              eggCount: item.eggCount,
               priceAtPurchase: item.priceAtPurchase,
             })),
           },
@@ -145,7 +148,8 @@ export class BookingService {
         address: true, 
         items: {
           include: {cake: true}
-        }
+        },
+        paymentLink: true,
       }
     })
     if(order?.status === 'CANCELLED' || order?.status === 'COMPLETED')
@@ -160,6 +164,7 @@ export class BookingService {
       shippingMethod: order.shippingMethod,
       paymentMethod: order.paymentMethod,
       receiveDate: order.receiveDate,
+      orderDate: order.orderDate,
       note: order.note,
       customer: {
         fullName: order.user.fullName,
@@ -175,8 +180,19 @@ export class BookingService {
         cakeId: item.cakeId,
         cakeName: item.cake.kind,
         quantity: item.quantity,
+        eggCount: item.eggCount, 
         priceAtPurchase: Number(item.priceAtPurchase),
+        
       })),
+      paymentLink: order.paymentLink ? {
+        qrCode: order.paymentLink.qrCode,
+        checkoutUrl: order.paymentLink.checkoutUrl,
+        status: order.paymentLink.status,
+        amountPaid: Number(order.paymentLink.amountPaid),
+        amountRemaining: Number(order.paymentLink.amountRemaining),
+        createdAt: order.paymentLink.createdAt,
+        canceledAt: order.paymentLink.canceledAt,
+      } : null,
     };
   }
 }

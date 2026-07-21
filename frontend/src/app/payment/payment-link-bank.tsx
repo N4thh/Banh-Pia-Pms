@@ -5,12 +5,14 @@ import { QRCodeGenerator } from '@makozi/react-qr-code-generator';
 import Header from "@/src/components/Header";
 import PaymentSuccessBank from "./success-bank/page";
 import CancelPage from "./cancel/page";
+import { ChevronLeft } from "lucide-react";
 
 interface OrderItem {
     cakeId: number;
     cakeName: string;
     quantity: number;
     priceAtPurchase: number;
+    eggCount: number;
 }
 
 interface OrderContext {
@@ -33,6 +35,11 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
     const minutes = Math.floor(secondsLeft / 60);
     const seconds = secondsLeft % 60;
 
+    function SaltedEggLabel(count: number) {
+        if (count === 0) return "Không thêm trứng muối";
+        return `${count} trứng muối`;
+    }
+
     if(order.status === "PROCESSING" || order.status === "COMPLETED") { 
         return<PaymentSuccessBank
         
@@ -49,7 +56,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
             
             
             {paymentLink ? (
-                <div>
+                <div className="text-[#3D2008]">
                     <div className="w-[80vw] mx-auto">
                         <Header />
                     </div>
@@ -74,28 +81,136 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                         }} />
                     </div>
                     {/* Payment link */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="flex flex-col w-[50vw] min-w-[320px] border-2 border-[#3D2008]/25 rounded-2xl bg-whitee">
-                            <div className="flex flex-col h-1/2">
+                    <div className="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="flex flex-col w-full max-w-200 min-w-75 border-2 border-[#3D2008]/25 rounded-2xl
+                         bg-white drop-shadow-2xl py-[3vh] sm:py-[4vh] px-[4vw] sm:px-[2vw] gap-[2vh] my-auto mt-[15vh]">
+                            <div className="flex flex-col gap-[2vh] pb-[2vh] border-b border-[#3D2008]">
                                 <button
-                                    onClick={() => router.push("/")}
-                                    className=""
+                                    onClick={() => router.push("/booking")}
+                                    className="w-fit text-[#C01F1F] font-semibold flex "
                                 >
-                                   Đổi phương thức thanh toán
+                                    <ChevronLeft /> 
+                                    <span className="[text-decoration-skip-ink:none] underline
+                                    text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                                    >Đổi phương thức thanh toán</span>
                                 </button>
-                                <h1 className="text-2xl font-semibold mb-2">Chuyển khoảng</h1>
-                                <p className="text-sm mb-4">Đơn hàng #{order.id} - {order.customer.fullName}</p>
-                                <p className="text-lg font-semibold mb-6">
-                                    Tổng tiền: {Number(order.totalMoney).toLocaleString()}đ
-                                </p>
-                                <QRCodeGenerator
-                                    value={paymentLink.qrCode}
-                                    size={200}
-                                    bgColor="#F7EACC"
-                                    fgColor="#000000"
-                                />
+                                
+                                <div>
+                                    <h1 className="text-2xl font-semibold mb-2 font-vollkorn
+                                    text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]"
+                                    >Chuyển khoảng</h1>
+                                    <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                                    >Vui lòng quét mã QR hoặc chuyển khoảng theo thông tin bên dưới</p>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-[2vh] sm:gap-[2vw]">
+                                    <div className="w-full sm:w-1/2 bg-[#F7EACC] flex flex-col items-center gap-[2vh] pt-[2vh] sm:pt-[4vh] pb-[1vh] rounded-lg">
+                                        <QRCodeGenerator
+                                            className="w-full max-w-[180px] sm:max-w-[150px] h-auto"
+                                            value={paymentLink.qrCode}
+                                            size={150}
+                                            bgColor="#F7EACC"
+                                            fgColor="#000000"
+                                        />
+                                        <div className=" w-[60px] sm:w-[80px] h-[30px] sm:h-[40px] bg-no-repeat bg-contain
+                                        bg-[url('/mb.svg')]"> </div>
+                                    </div>
+                                    <div className="w-full sm:w-1/2 flex flex-col gap-[1vh] justify-center">
+                                        <h1 className="font-medium
+                                        text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px]"
+                                        >Thông tin chuyển khoản</h1>
+
+                                        <div className="flex items-center justify-between w-full ">
+                                            <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                                            >Chủ tài khoản</p>
+                                            <p className="font-medium
+                                            text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                            >Pham Thi Kim Loan</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between w-full ">
+                                            <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                                            >Số tài khoản</p>
+                                            <p className="font-medium
+                                            text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                            >VQRQAKPTV8052</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between w-full ">
+                                            <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                                            >Ngân hàng</p>
+                                            <p className="font-medium
+                                            text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                            >MB Bank</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between w-full ">
+                                            <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                                            >Tiền cần thanh toán</p>
+                                            <p className="font-medium
+                                            text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                            >{Number(order.totalMoney).toLocaleString()} đ</p>
+                                        </div>
+
+                                    </div>                                  
+                                </div>
                             </div>
-                            <div className="h-1/2 border">
+
+                            <div>
+                                <h1 className="font-vollkorn font-semibold
+                                text-[18px] sm:text-[19px] md:text-[20px] lg:text-[21px] xl:text-[22px] 2xl:text-[23px]"
+                                >Giỏ hàng của bạn</h1>
+
+                                {order.items.map((item, index) => (
+                                    <div key={`${item.cakeId}-${index}`}
+                                    className="flex flex-col gap-[2vh] py-1">
+                                        <div className="flex gap-[1vw]">
+                                            <div className="relative w-10 h-10 shrink-0">
+                                                <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
+                                                {/* small */}
+                                                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-md bg-[#C2973F] text-[#FFFDF7]
+                                                text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px] text-center"
+                                                >{item.quantity}</div>
+                                            </div>
+                                            <div className="flex justify-between w-full text-[#3D2008]">
+                                                <div>
+                                                    <h3 className="font-semibold font-vollkorn
+                                                    text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
+                                                    >{item.cakeName}</h3>
+                                                    <h4 className="text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                                                    >{SaltedEggLabel(item.eggCount)}</h4>
+                                                </div>
+                                                <h4 className="font-medium text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                                                {item.priceAtPurchase.toLocaleString("vi-VN")} đ</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="flex flex-col gap-[2vh] pb-[2vh] mt-[2vh]
+                                text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                                    <div className="flex justify-between">
+                                        <p>Tạm tính</p>
+                                        <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <p>Giảm giá</p>
+                                        <p> - </p>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <p> Phí giao hàng</p>
+                                        <p> - </p>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-dotted pt-[2vh] flex justify-between font-medium
+                                text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
+                                    <p>Tổng</p>
+                                    <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                                </div>
+                                
+                            </div>
+                            <div className="flex flex-col items-center">
                                 <a
                                     href={paymentLink.checkoutUrl}
                                     target="_blank"
@@ -104,10 +219,12 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                 >
                                     Hoặc click vào đây để mở cổng thanh toán
                                 </a>
+
+                                 <p className="text-red-500 mt-6 font-semibold">
+                                    Mã QR hết hạn sau: {minutes}:{seconds.toString().padStart(2, "0")}
+                                </p>       
                             </div>
-                            <p className="text-red-500 mt-6 font-semibold">
-                                Mã QR hết hạn sau: {minutes}:{seconds.toString().padStart(2, "0")}
-                            </p>
+                           
                         </div>
                     </div>
                 </div>

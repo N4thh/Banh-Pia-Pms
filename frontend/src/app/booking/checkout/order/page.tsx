@@ -11,15 +11,21 @@ import axios from "axios";
 import SlotWarningModal, { SlotViolation } from "./SlotWarningModal";
 import toast from "react-hot-toast";
 
-const KIND_TO_PRODUCT_NAME: Record<string, string> = {
-    "Dau Xanh": "Bánh Pía Đậu Xanh",
-    "Sau Rieng": "Bánh Pía Sầu Riêng",
-};
-
 function formatDateShortVN(isoDate: string): string {
     const parts = isoDate.split("-");
     if (parts.length !== 3) return isoDate;
     return `${parts[2]}/${parts[1]}`;
+}
+
+function getTodayInVietnam(): string {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
 }
 
 interface slot { 
@@ -63,7 +69,11 @@ export default function Order() {
         const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/availability/slots`
         );
-        setSlots(response.data); 
+        const today = getTodayInVietnam();
+        const upcomingSlots = (response.data as slot[])
+            .filter((slot) => slot.date >= today)
+            .sort((a, b) => a.date.localeCompare(b.date));
+        setSlots(upcomingSlots);
     };
 
     useEffect(() => { 
@@ -94,42 +104,17 @@ export default function Order() {
         return `${day}/${month}`;
     };
 
-    //Warning
-    const totalByCake = new Map<string, {total: number}>();
-    for(const c of cart) { 
-        const prev = totalByCake.get(c.productId) || {total: 0};
-        totalByCake.set(c.productId, {
-            total: prev.total + c.quantity
+    // Gom các biến thể (số trứng khác nhau) theo cakeId để so với tồn kho của ngày.
+    const totalByCake = new Map<number, { ordered: number; productName: string }>();
+    for (const item of cart) {
+        const cakeId = Number(item.productId);
+        if (!Number.isInteger(cakeId)) continue;
+
+        const previous = totalByCake.get(cakeId);
+        totalByCake.set(cakeId, {
+            ordered: (previous?.ordered ?? 0) + item.quantity,
+            productName: previous?.productName ?? item.productName,
         });
-    }
-
-    let available = true;
-    const result: Array<{kind: string, ordered: number, remaining: number, enough: boolean}> = [];
-
-    if(slotByDay?.cakes) {
-        for(const cake of slotByDay.cakes) { 
-            const ordered = totalByCake.get(cake.id.toString());
-
-            if(!ordered)
-                continue;
-            if(ordered.total > cake.remaining) {
-                available = false;
-                result.push({
-                    kind: cake.kind,
-                    ordered: ordered.total,
-                    remaining: cake.remaining,
-                    enough: false
-                });
-            }
-            else{
-                result.push({
-                    kind: cake.kind,
-                    ordered: ordered.total,
-                    remaining: cake.remaining,
-                    enough: true
-                });
-            }
-        }
     }
 
     const handleSelectSlot = async (date: string) => {
@@ -138,25 +123,29 @@ export default function Order() {
                 `${process.env.NEXT_PUBLIC_API_URL}/availability/slots?date=${date}`
             );
             const data: slotByDate = response.data;
-            setSlotByDay(data);
+            const slotsByCakeId = new Map(data.cakes.map((cake) => [cake.id, cake]));
+            const violations: SlotViolation[] = Array.from(totalByCake.entries()).map(
+                ([cakeId, orderedCake]) => {
+                    const cakeSlot = slotsByCakeId.get(cakeId);
+                    const remaining = cakeSlot?.remaining ?? 0;
+                    const hasSlot = cakeSlot !== undefined;
+                    const enough = hasSlot && orderedCake.ordered <= remaining;
 
-            const violations: SlotViolation[] = [];
-            for (const cake of data.cakes) {
-                const ordered = totalByCake.get(cake.id.toString());
-                const orderedQty = ordered?.total ?? 0;
-                const productName = KIND_TO_PRODUCT_NAME[cake.kind] ?? cake.kind;
-                violations.push({
-                    kind: cake.kind,
-                    productName,
-                    ordered: orderedQty,
-                    remaining: cake.remaining,
-                    enough: orderedQty <= cake.remaining,
-                });
-            }
+                    return {
+                        kind: cakeSlot?.kind ?? `cake-${cakeId}`,
+                        productName: orderedCake.productName,
+                        ordered: orderedCake.ordered,
+                        remaining,
+                        enough,
+                    };
+                },
+            );
 
             const hasViolation = violations.some((v) => !v.enough);
 
             if (hasViolation) {
+                setValue("receiveDate", "", { shouldValidate: true });
+                setSlotByDay(null);
                 setPendingDate(date);
                 setWarningData({
                     date: formatDateShortVN(date),
@@ -165,6 +154,7 @@ export default function Order() {
             } else {
                 setWarningData(null);
                 setPendingDate(null);
+                setSlotByDay(data);
                 setValue("receiveDate", date, { shouldValidate: true });
             }
         } catch (err) {
@@ -180,6 +170,7 @@ export default function Order() {
     const handleChooseAnotherDate = () => {
         setWarningData(null);
         setPendingDate(null);
+        setSlotByDay(null);
     };
 
     const generateIdempotencyKey = async (payload: string) => { 
@@ -230,6 +221,7 @@ export default function Order() {
                     cakeId: Number(c.productId),
                     date: data.receiveDate, 
                     quantity: c.quantity,
+                    eggCount: c.saltedEgg,
                 }))
 
                 console.log("Payload gửi lên BE:", { ...data, items });

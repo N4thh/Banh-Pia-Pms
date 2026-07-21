@@ -11,6 +11,12 @@ import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { GetSlotsDto } from './dto/get-slot.dto';
+import {
+  addDaysToDateOnly,
+  getBusinessDateOnly,
+  normalizeDateOnly,
+  toPrismaDate,
+} from 'src/common/utils/date-only.util';
 
 @Injectable()
 export class AvailabilityService {
@@ -34,11 +40,12 @@ export class AvailabilityService {
 
   private async executeBookingLogic(dto: BookSlotDto, prismaClient: any) {
     await prismaClient.$executeRaw`SET LOCAL lock_timeout = '3s'`;
+    const date = this.getDateOnly(dto.date);
 
     const rows = await prismaClient.$queryRaw<any[]>`
           SELECT * FROM "Availability"
           WHERE "cakeId" = ${dto.cakeId}
-          AND "date" = ${dto.date}::date
+          AND "date" = ${date}::date
           FOR UPDATE`;
     if (rows.length === 0)
       throw new NotFoundException(`Chưa có slot cho ngày này`);
@@ -63,11 +70,13 @@ export class AvailabilityService {
   }
   async createSlot(dto: CreateSlotDto) {
     const bufferLimit = Math.ceil(dto.maxCapacity * 1.03);
+    const date = toPrismaDate(this.getDateOnly(dto.date));
+
     return this.prisma.availability.upsert({
       where: {
         cakeId_date: {
           cakeId: dto.cakeId,
-          date: new Date(dto.date),
+          date,
         },
       },
       update: {
@@ -76,7 +85,7 @@ export class AvailabilityService {
       },
       create: {
         cakeId: dto.cakeId,
-        date: new Date(dto.date),
+        date,
         maxCapacity: dto.maxCapacity,
         bufferLimit: bufferLimit,
       },
@@ -84,7 +93,8 @@ export class AvailabilityService {
   }
 
   async holdSlot(dto: HoldSlotDto) {
-    const { cakeId, date, quantity, phone } = dto;
+    const { cakeId, quantity, phone } = dto;
+    const date = this.getDateOnly(dto.date);
     const redisKey = `hold:cake:${cakeId}:date:${date}:user:${phone}`;
 
     const existkey = await this.redisService.get(redisKey);
@@ -101,7 +111,7 @@ export class AvailabilityService {
         const row = await tx.$queryRaw<any[]>`
           SELECT * FROM "Availability"
           WHERE "cakeId" = ${dto.cakeId} 
-          AND "date" = ${dto.date}::date
+          AND "date" = ${date}::date
           FOR UPDATE
           `;
 
@@ -126,13 +136,15 @@ export class AvailabilityService {
     }
   }
   async releaseHoldSlot(cakeId: number, date: string, quantity: number) {
+    const dateOnly = this.getDateOnly(date);
+
     await this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
 
       const slot = await tx.$queryRaw<any[]>`
         SELECT id, "currentBooked"
         FROM "Availability"
-        WHERE "cakeId" = ${cakeId} AND "date" = ${date}::date
+        WHERE "cakeId" = ${cakeId} AND "date" = ${dateOnly}::date
         FOR UPDATE
       `;
 
@@ -155,25 +167,31 @@ export class AvailabilityService {
     });
   }
   
-  async getSlot(dto: GetSlotsDto) { 
-    const today = new Date(); today.setHours(0,0,0,0); 
-    const endDay = new Date(today); endDay.setDate(today.getDate() + 30); 
+  async getSlot(dto: GetSlotsDto) {
+    const businessToday = getBusinessDateOnly();
+    const today = toPrismaDate(businessToday);
+    const endDay = addDaysToDateOnly(businessToday, 30);
 
-    if(dto.date) {
+    if (dto.date) {
+      const requestedDate = this.getDateOnly(dto.date);
+      if (requestedDate < businessToday) {
+        throw new BadRequestException('Ngày nhận bánh đã qua');
+      }
+
       const slots = await this.prisma.availability.findMany({
-        where:  {date: new Date(dto.date)}, 
-        include: { cake: { select: {id: true, kind: true}}, 
-      }})
+        where: { date: toPrismaDate(requestedDate) },
+        include: { cake: { select: { id: true, kind: true } } },
+      });
       const totalMax = slots.reduce((s,c) => s + c.maxCapacity, 0);
       const totalBooked = slots.reduce((s,c) => s + c.currentBooked, 0); 
       return {
-        date: dto.date, 
-        totalMax, 
+        date: requestedDate,
+        totalMax,
         totalBooked, 
         cakes: slots.map(s => ({
           id: s.cake.id,
           kind: s.cake.kind, 
-          remaining: s.maxCapacity - s.currentBooked,
+          remaining: Math.max(0, s.maxCapacity - s.currentBooked),
         })),
       };
     }
@@ -187,7 +205,7 @@ export class AvailabilityService {
 
     const grouped = new Map<string, {totalMax: number, totalBooked: number}>(); 
     for(const s of slots) { 
-      const key = s.date.toISOString().split('T')[0];
+      const key = normalizeDateOnly(s.date);
       const prev = grouped.get(key) || {totalMax: 0, totalBooked: 0}; 
 
       grouped.set(key, {
@@ -197,10 +215,18 @@ export class AvailabilityService {
     }
 
     return Array.from(grouped.entries()).map(([date, d]) => ({
-      date, 
+      date,
       totalMax: d.totalMax,
       totalBooked: d.totalBooked,
-      available: d.totalBooked < d.totalMax
+      available: d.totalBooked < d.totalMax,
     }));
+  }
+
+  private getDateOnly(value: string | Date): string {
+    try {
+      return normalizeDateOnly(value);
+    } catch {
+      throw new BadRequestException('Ngày không hợp lệ, vui lòng dùng định dạng YYYY-MM-DD');
+    }
   }
 }

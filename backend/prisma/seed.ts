@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import {
+  addDaysToDateOnly,
+  getBusinessDateOnly,
+} from '../src/common/utils/date-only.util';
 
 const prisma = new PrismaClient();
 
@@ -38,28 +42,30 @@ async function main() {
     },
   });
 
-  // ── Seed availability slots cho cake 1 & 2, vài ngày tới ──
-  const cakes = await prisma.cake.findMany();
+  // Không tự sinh các ngày liên tiếp trong dữ liệu thật. Chỉ seed slot mẫu khi
+  // nhà phát triển chủ động bật SEED_SAMPLE_AVAILABILITY=true.
+  if (process.env.SEED_SAMPLE_AVAILABILITY === 'true') {
+    const cakes = await prisma.cake.findMany();
+    const businessToday = getBusinessDateOnly();
 
-  const today = new Date();
-  for (const cake of cakes) {
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+    for (const cake of cakes) {
+      for (let i = 0; i < 7; i++) {
+        const date = addDaysToDateOnly(businessToday, i);
 
-      await prisma.availability.upsert({
-        where: {
-          cakeId_date: { cakeId: cake.id, date },
-        },
-        update: {},
-        create: {
-          cakeId: cake.id,
-          date,
-          maxCapacity: 50,
-          bufferLimit: 52, // ~3% buffer
-          currentBooked: 0,
-        },
-      });
+        await prisma.availability.upsert({
+          where: {
+            cakeId_date: { cakeId: cake.id, date },
+          },
+          update: {},
+          create: {
+            cakeId: cake.id,
+            date,
+            maxCapacity: 50,
+            bufferLimit: 52, // ~3% buffer
+            currentBooked: 0,
+          },
+        });
+      }
     }
   }
 
