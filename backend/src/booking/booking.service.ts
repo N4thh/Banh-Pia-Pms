@@ -152,8 +152,8 @@ export class BookingService {
         paymentLink: true,
       }
     })
-    if(order?.status === 'CANCELLED' || order?.status === 'COMPLETED')
-      throw new BadRequestException('Đơn hàng đã hủy hoặc đã hoàn thành, vui lòng kiểm tra lại');
+    if(order?.status === 'COMPLETED')
+      throw new BadRequestException('Đơn hàng đã hoàn thành, vui lòng kiểm tra lại');
     
     if(!order)
       throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
@@ -182,7 +182,6 @@ export class BookingService {
         quantity: item.quantity,
         eggCount: item.eggCount, 
         priceAtPurchase: Number(item.priceAtPurchase),
-        
       })),
       paymentLink: order.paymentLink ? {
         qrCode: order.paymentLink.qrCode,

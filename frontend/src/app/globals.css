@@ -4,3 +4,26 @@
   --font-sans: var(--font-be-vietnam);
   --font-vollkorn: var(--font-vollkorn);
 }
+
+@media print {
+    @page {
+         margin: 0;
+    }
+
+    html,
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .invoice {
+        width: fit-content;
+        margin: 0 auto;
+        box-shadow: none !important;
+    }
+}

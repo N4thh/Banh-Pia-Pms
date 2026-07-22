@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { QRCodeGenerator } from '@makozi/react-qr-code-generator';
 import Header from "@/src/components/Header";
-import PaymentSuccessBank from "./success-bank/page";
 import CancelPage from "./cancel/page";
 import { ChevronLeft } from "lucide-react";
 
@@ -40,10 +39,9 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
         return `${count} trứng muối`;
     }
 
-    if(order.status === "PROCESSING" || order.status === "COMPLETED") { 
-        return<PaymentSuccessBank
-        
-        />
+    if(order.status === "PROCESSING" || order.status === "COMPLETED") {
+        router.push(`/payment/success-bank?orderId=${order.id}`);
+        return null;
     }
     if(order.status === "CANCELLED") { 
         return <CancelPage 
@@ -106,13 +104,13 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                 <div className="flex flex-col sm:flex-row gap-[2vh] sm:gap-[2vw]">
                                     <div className="w-full sm:w-1/2 bg-[#F7EACC] flex flex-col items-center gap-[2vh] pt-[2vh] sm:pt-[4vh] pb-[1vh] rounded-lg">
                                         <QRCodeGenerator
-                                            className="w-full max-w-[180px] sm:max-w-[150px] h-auto"
+                                            className="w-full max-w-45 sm:max-w-37.5 h-auto"
                                             value={paymentLink.qrCode}
                                             size={150}
                                             bgColor="#F7EACC"
                                             fgColor="#000000"
                                         />
-                                        <div className=" w-[60px] sm:w-[80px] h-[30px] sm:h-[40px] bg-no-repeat bg-contain
+                                        <div className=" w-15 sm:w-20 h-7.5 sm:h-10 bg-no-repeat bg-contain
                                         bg-[url('/mb.svg')]"> </div>
                                     </div>
                                     <div className="w-full sm:w-1/2 flex flex-col gap-[1vh] justify-center">
@@ -165,7 +163,8 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                     <div key={`${item.cakeId}-${index}`}
                                     className="flex flex-col gap-[2vh] py-1">
                                         <div className="flex gap-[1vw]">
-                                            <div className="relative w-10 h-10 shrink-0">
+                                            {/* Picture */}
+                                            <div className="relative w-12 h-12 shrink-0">
                                                 <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
                                                 {/* small */}
                                                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-md bg-[#C2973F] text-[#FFFDF7]

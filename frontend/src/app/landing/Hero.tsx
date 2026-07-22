@@ -16,7 +16,7 @@ export default function Hero() {
       <div className="relative h-[40vh] w-full top-0 overflow-hidden">
         <div
           className="absolute bottom-0 right-[min(2vw,40px)]
-          bg-[url('/landing1/Group117.png')] bg-no-repeat bg-contain"
+          bg-[url('/landing1/Group117.svg')] bg-no-repeat bg-contain"
           style={{
             width: "min(9vw, 173px)",
             height: "min(9vw, 173px)",
@@ -54,7 +54,7 @@ export default function Hero() {
         </div>
 
         <div
-          className="absolute top-0 right-[min(7.3vw,140px)] bg-[url('/landing1/Group118.png')] bg-no-repeat bg-contain"
+          className="absolute top-0 right-[min(7.3vw,140px)] bg-[url('/landing1/Group118.svg')] bg-no-repeat bg-contain"
           style={{
             width: "min(13vw, 250px)",
             height: "min(13vw, 250px)",
@@ -63,7 +63,7 @@ export default function Hero() {
         />
 
         <div
-          className="absolute bottom-[min(6.25vw,120px)] right-0 bg-[url('/landing1/Group119.png')] bg-no-repeat bg-contain"
+          className="absolute bottom-[min(6.25vw,120px)] right-0 bg-[url('/landing1/Group119.svg')] bg-no-repeat bg-contain"
           style={{
             width: "min(11vw, 212px)",
             height: "min(11vw, 212px)",
@@ -72,7 +72,7 @@ export default function Hero() {
         />
         {/* left cake */}
         <div
-          className="absolute top-0 left-[min(3vw,60px)] bg-[url('/landing1/Group118.png')] bg-no-repeat bg-contain"
+          className="absolute top-0 left-[min(3vw,60px)] bg-[url('/landing1/Group118.svg')] bg-no-repeat bg-contain"
           style={{
             width: "min(13vw, 250px)",
             height: "min(13vw, 250px)",
@@ -81,7 +81,7 @@ export default function Hero() {
         />
 
         <div
-          className="absolute bottom-[min(6.25vw,120px)] left-0 bg-[url('/landing1/Group115.png')] bg-no-repeat bg-contain"
+          className="absolute bottom-[min(6.25vw,120px)] left-0 bg-[url('/landing1/Group115.svg')] bg-no-repeat bg-contain"
           style={{
             width: "min(10vw, 192px)",
             height: "min(10vw, 192px)",

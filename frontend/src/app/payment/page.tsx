@@ -70,7 +70,6 @@ export default function PaymentPage() {
             );
             setPaymentLink(response.data);
         } catch (err: any) {
-            // Nếu BE trả 409 hoặc 500 (đã có link hoặc conflict), lấy lại từ order
             if (err.response?.status === 409 || err.response?.status === 500) {
                 const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/booking/${orderId}`);
                 if (res.data.paymentLink) {
@@ -86,7 +85,6 @@ export default function PaymentPage() {
         if (!orderId || !order) return;
         if (order.paymentMethod !== "BANK_TRANSFER") return;
 
-        // Ưu tiên dùng paymentLink có sẵn trong order (tránh F5 gọi lại create-link)
         if (order.paymentLink?.status === "PENDING") {
             setPaymentLink({
                 qrCode: order.paymentLink.qrCode,
@@ -95,7 +93,6 @@ export default function PaymentPage() {
             return;
         }
 
-        // Chưa có hoặc link cũ không dùng được → tạo mới
         createLink(orderId);
     }, [orderId, order]);
     useEffect(() => {
@@ -114,10 +111,10 @@ export default function PaymentPage() {
         return () => clearInterval(interval);
     }, [order, router]);
     useEffect(() => {
-        if (secondsLeft <= 0 && order?.paymentMethod === "BANK_TRANSFER") {
-            router.push('/booking');
+        if (secondsLeft <= 0 && order?.paymentMethod === "BANK_TRANSFER" && orderId) {
+            router.push(`/payment/cancel?orderId=${orderId}`);
         }
-    }, [secondsLeft, router, order?.paymentMethod]);
+    }, [secondsLeft, router, order?.paymentMethod, orderId]);
 
     // loading
     if (!order) {

@@ -44,7 +44,7 @@ export class PaymentService {
       amount: amountInVnd,
       description: 'Thanh toán đơn hàng',
       cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
-      returnUrl: `${frontendUrl}/payment/success?orderId=${orderId}`,
+      returnUrl: `${frontendUrl}/payment/success-bank?orderId=${orderId}`,
     };
 
     try {

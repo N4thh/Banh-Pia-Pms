@@ -29,7 +29,8 @@ export default function CartCard() {
                             <div key={item.id} 
                             className="flex flex-col gap-[2vh] py-1">
                                 <div className="flex gap-[1vw]">
-                                    <div className="relative w-10 h-10 shrink-0">
+                                    {/* Picture */}
+                                    <div className="relative w-12 h-12 shrink-0">
                                         <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
                                         {/* small */}
                                         <div className="absolute -top-1 -right-1 w-5 h-5 rounded-md bg-[#C2973F] text-[#FFFDF7]
