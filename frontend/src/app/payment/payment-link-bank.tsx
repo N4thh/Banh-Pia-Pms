@@ -44,8 +44,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
         return null;
     }
     if(order.status === "CANCELLED") { 
-        return <CancelPage 
-        
+        return <CancelPage  
         />
     }
 

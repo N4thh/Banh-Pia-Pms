@@ -2,9 +2,11 @@
 
 import { Star } from "lucide-react";
 import CartMenu from "../app/landing/Cart/CartMenu";
+import MyOrderMenu from "../app/landing/MyOrder/MyOrderMenu";
 import { useEffect, useState } from "react";
 import { CartItem, getCart } from "../utils/cartUtils";
 import { usePathname, useRouter } from "next/navigation";
+
 
 type HeaderProps = {
   cartRefreshTrigger?: number;
@@ -16,6 +18,8 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
    const pathname = usePathname(); 
    const [cart, setCart] = useState<CartItem[]>([]);
    const [openCartMenu, setOpenCartMenu] = useState(false);
+   const [openMyOrderMenu, setOpenMyOrderMenu] = useState(false);
+
    //scroll
    const scrollToSection = (id: string) => {
         if (pathname === "/") {
@@ -28,11 +32,18 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
         }
     };
     //handleOpenCart
-    const handleOpen = (() =>{
+    const handleOpenCartMenu = (() =>{
         if(pathname !== "/") 
             setOpenCartMenu(false);
         else 
             setOpenCartMenu(true);
+    })
+
+    const OpenMyOrderMenu = (() =>{
+        if(pathname !== "/") 
+            setOpenMyOrderMenu(false);
+        else 
+            setOpenMyOrderMenu(true);
     })
 
     //event
@@ -57,11 +68,11 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
 
                 <Star />
 
-                <button onClick={() => scrollToSection("guide")}>
+                <button onClick={() => OpenMyOrderMenu()}>
                     ĐƠN BÁNH CỦA TÔI
                 </button>
 
-                <button onClick={() => handleOpen()}>
+                <button onClick={() => handleOpenCartMenu()}>
                     GIỎ HÀNG ({cart.length})
                 </button>
 
@@ -70,6 +81,10 @@ export default function Header({ cartRefreshTrigger, onCartUpdate}: HeaderProps)
                     onClose={() => setOpenCartMenu(false)}
                     refreshTrigger={cartRefreshTrigger}
                     changeInCart = {() => onCartUpdate?.()}
+                />
+                <MyOrderMenu
+                    open={openMyOrderMenu}
+                    onClose={() => setOpenMyOrderMenu(false)}
                 />
             </div>
         </header>

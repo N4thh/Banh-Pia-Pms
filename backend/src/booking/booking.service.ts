@@ -194,4 +194,41 @@ export class BookingService {
       } : null,
     };
   }
+
+  async getAllOrder(id: number) { 
+    const order = await this.prisma.order.findMany({
+      where: {userId: id},
+      select: { 
+        id: true,
+        totalMoney: true, 
+        orderDate: true,
+        receiveDate: true,
+        status: true,
+
+        address: true,
+        items: {
+          select: {quantity: true},
+        },
+      },
+    })
+    if(order.length === 0)
+      throw new NotFoundException("Không tìm thấy đơn hàng");
+    
+     return order.map((o) => ({
+      orderId: o.id,
+      totalMoney: Number(o.totalMoney),
+      status: o.status,
+      orderDate: o.orderDate,
+      receiveDate: o.receiveDate,
+      address: o.address
+        ? {
+            houseNumber: o.address.houseNumber,
+            street: o.address.street,
+            ward: o.address.ward,
+            district: o.address.district,
+          }
+        : null,
+      items: o.items,
+    }));
+  }
 }

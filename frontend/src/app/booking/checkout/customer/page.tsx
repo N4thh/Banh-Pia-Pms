@@ -2,18 +2,77 @@
 
 import { useFormContext } from "react-hook-form";
 import { useCheckoutStep } from "../layout";
-import { OctagonAlert } from "lucide-react";
+import { LoaderCircle, OctagonAlert } from "lucide-react";
+import { useState } from "react";
+import { CheckoutFormValues } from "../types";
+import axios from "axios";
 
 export default function Customer() {
-    const {step, setStep} = useCheckoutStep(); 
+    const {step, setStep} = useCheckoutStep();
+    const [loading, setLoading] = useState(false);
+    const { setValue, getValues } = useFormContext<CheckoutFormValues>();
+    const [pendingUser, setPendingUser] = useState<{
+    fullName: string;
+    latestAddress: {
+        houseNumber: string;
+        street: string;
+        ward: string;
+        district: string;
+    } | null;
+    } | null>(null) 
+
     const { register, trigger, watch, formState: { errors }  } = useFormContext(); 
     const paymentMethod = watch("paymentMethod");
-    const handleNext = async () => { 
-        const isValid = await trigger(["fullName", "phone"]); 
-        if(isValid) {
-            setStep(2); 
+   
+    const handleNext = async () => {
+    const isValid = await trigger(["fullName", "phone"]);
+        if (!isValid) return;
+
+        setLoading(true);
+        try {
+            const phone = getValues("phone");
+            const res = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/customer/create`,
+            { phone }
+            );
+
+            const { isNewUser, user } = res.data;
+
+            if (!isNewUser && user && user.latestAddress) {
+            setPendingUser(user);
+            return;
+            }
+
+            setStep(2);
+        } catch (err) {
+            console.error(err);
+            setStep(2);
+        } finally {
+            setLoading(false);
         }
-   };
+        };
+
+        const handleConfirmFill = () => {
+            if (!pendingUser) return;
+            if (!watch("fullName")?.trim()) {
+                setValue("fullName", pendingUser.fullName);
+            }
+            if (pendingUser.latestAddress) {
+                setValue("newAddress.houseNumber", pendingUser.latestAddress.houseNumber);
+                setValue("newAddress.street", pendingUser.latestAddress.street);
+                setValue("newAddress.ward", pendingUser.latestAddress.ward);
+                setValue("newAddress.district", pendingUser.latestAddress.district);
+
+                setValue("shippingMethod", "DELIVERY", { shouldValidate: true });
+            }
+            setPendingUser(null);
+            setStep(2);
+        };
+
+        const handleSkipFill = () => {
+            setPendingUser(null);
+            setStep(2);
+         };
 
    if(step === 2) return null;
 
@@ -114,9 +173,57 @@ export default function Customer() {
 
             <div className="flex">
                 <button className="ml-auto inset-0 border py-3 px-6 rounded-lg 
-                text-[#FDF6E8] font-semibold bg-[#C01F1F]"
-                type="button" onClick={handleNext}>Tiếp tục</button>
+                text-[#FDF6E8] font-semibold bg-[#C01F1F] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors "
+                type="button" onClick={handleNext}>
+                        {loading && <LoaderCircle className="h-5 w-5 animate-spin" />}
+                        {loading ? "Đang xử lý..." : "Tiếp tục"}
+                </button>
+                
             </div>
+
+            {pendingUser && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="bg-white rounded-2xl p-6 w-[90vw] max-w-md text-[#3D2008]">
+                <h3 className="font-vollkorn font-semibold mb-2
+                    text-[18px] sm:text-[19px] md:text-[20px] lg:text-[21px] xl:text-[22px] 2xl:text-[23px]">
+                    Xin chào {pendingUser.fullName} <br/> Bạn đã từng đặt bánh trước đây
+                </h3>
+
+                {pendingUser.latestAddress && (
+                    <div className="mb-4 p-3 border border-[#3D2008]/25 rounded-lg
+                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px]">
+                    <p className="font-bold">Địa chỉ gần nhất của bạn:</p>
+                    <p className="py-[1vh]">
+                        {pendingUser.latestAddress.houseNumber},{" "}
+                        Đường {pendingUser.latestAddress.street},<br />
+                        Phường {pendingUser.latestAddress.ward},{" "}
+                        {pendingUser.latestAddress.district}
+                    </p>
+                    </div>
+                )}
+
+                <p className="mb-6
+                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px]">
+                    Bạn có muốn dùng lại địa chỉ này cho đơn hàng này không?
+                </p>
+
+                <div className="flex justify-end gap-3">
+                    <button
+                    onClick={handleSkipFill}
+                    className="px-5 py-2 border border-[#3D2008]/25 rounded-lg font-semibold
+                    hover:bg-[#3D2008] hover:text-white hover:ring-1 ring-[#3D2008] hover:border-[#FDF6E8] active:bg-[#A61B1B] transition-colors">
+                    Không, cảm ơn
+                    </button>
+                    <button
+                    onClick={handleConfirmFill}
+                    className="px-5 py-2 bg-[#C01F1F] text-white rounded-lg font-semibold
+                    hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors">
+                    Dùng lại địa chỉ
+                    </button>
+                </div>
+                </div>
+            </div>
+            )}
     </div>
         
         

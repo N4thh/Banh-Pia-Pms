@@ -27,8 +27,13 @@ export class BookingController {
     return result; 
   }
 
-  @Get(':id')
-  getOne(@Param('id', ParseIntPipe) id: number) { 
-    return this.bookingService.getOrderById(id); 
+ @Get('order/:id')
+  getOne(@Param('id', ParseIntPipe) id: number) {
+    return this.bookingService.getOrderById(id);
+  }
+
+  @Get('user/:userId')
+  getAll(@Param('userId', ParseIntPipe) userId: number) {
+    return this.bookingService.getAllOrder(userId);
   }
 }
