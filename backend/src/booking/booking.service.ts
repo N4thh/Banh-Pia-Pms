@@ -152,8 +152,6 @@ export class BookingService {
         paymentLink: true,
       }
     })
-    if(order?.status === 'COMPLETED')
-      throw new BadRequestException('Đơn hàng đã hoàn thành, vui lòng kiểm tra lại');
     
     if(!order)
       throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
@@ -204,7 +202,8 @@ export class BookingService {
         orderDate: true,
         receiveDate: true,
         status: true,
-
+        paymentMethod: true,
+        shippingMethod: true,
         address: true,
         items: {
           select: {quantity: true},
@@ -220,6 +219,8 @@ export class BookingService {
       status: o.status,
       orderDate: o.orderDate,
       receiveDate: o.receiveDate,
+      paymentMethod: o.paymentMethod,
+      shippingMethod: o.shippingMethod,
       address: o.address
         ? {
             houseNumber: o.address.houseNumber,

@@ -146,7 +146,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                             >Tiền cần thanh toán</p>
                                             <p className="font-medium
                                             text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
-                                            >{Number(order.totalMoney).toLocaleString()} đ</p>
+                                            >{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
                                         </div>
 
                                     </div>                                  
@@ -189,7 +189,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                 text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
                                     <div className="flex justify-between">
                                         <p>Tạm tính</p>
-                                        <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                                        <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
                                     </div>
                                     <div className="flex justify-between">
                                         <p>Giảm giá</p>
@@ -204,7 +204,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                 <div className="border-t border-dotted pt-[2vh] flex justify-between font-medium
                                 text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
                                     <p>Tổng</p>
-                                    <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                                    <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
                                 </div>
                                 
                             </div>

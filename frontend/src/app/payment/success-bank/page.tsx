@@ -223,7 +223,7 @@ export default function SuccessBankPage() {
                     text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
                         <div className="flex justify-between">
                             <p>Tạm tính</p>
-                            <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                            <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
                         </div>
                         <div className="flex justify-between">
                             <p>Tổng sản phẩm</p>
@@ -241,7 +241,7 @@ export default function SuccessBankPage() {
                     <div className="border-t border-dotted pt-[2vh] flex justify-between font-medium
                     text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
                         <p>Tổng</p>
-                        <p>{Number(order.totalMoney).toLocaleString()} đ</p>
+                        <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
                     </div>
                 </div>
             </div>

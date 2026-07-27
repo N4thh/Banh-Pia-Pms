@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
-import { LoaderCircle, OctagonAlert, UserRound } from "lucide-react";
+import { ChevronDown, LoaderCircle, OctagonAlert, UserRound } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import OrderStepper from "./OrderStepper";
+import OrderDetail from "./OrderDetail"
 
 type CartMenuProps = {
   open: boolean;
@@ -17,15 +19,18 @@ interface Address {
 }
 
 interface OrderItem {
-  quantity: number;
+    quantity: number;
 }
+type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
 interface OrderContext {
   orderId: number;
   totalMoney: number;
-  status: string;
+  status: OrderStatus;
   orderDate: string;
   receiveDate: string;
+  paymentMethod: string;
+  shippingMethod: string;
   address: Address | null;
   items: OrderItem[];
 }
@@ -36,14 +41,30 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
   const [error, setError] = useState("");
   const [orders, setOrders] = useState<OrderContext[]>([]);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set()); 
+
   const [pendingUser, setPendingUser] = useState<{
     id: string;
     fullName: string;
     phone: string;
     latestAddress: Address | null;
   } | null>(null);
+  
+  /* Toggle */
+  const toggleOrderStepper = (orderId: number) => { 
+    setExpandedOrders((prev) => { 
+        const next = new Set(prev); 
+        if(next.has(orderId)) { 
+          next.delete(orderId); 
+        }
+        else { 
+          next.add(orderId);
+        }
+        return next;
+    });
+  };
 
-
+  /* Format */
   const formatPhone = (phone: string) => {
     const international = phone.replace(/^0/, "(+84)");
 
@@ -51,6 +72,24 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
     "$1 $2 $3 $4"
     );
   };
+
+  const fortmatShippingMethod = (method: string) => { 
+    if(method === "DELIVERY")
+      return "Giao Hàng";
+    else
+      return "Nhận trực tiếp";
+  }
+  const formatPaymentMethod =(method: string) => { 
+    if(method === "BANK_TRANSFER")
+        return "Chuyển Khoản";
+    return "Thanh toán khi nhận bánh";
+  }
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+
+    return `${date.getDate()}/${date.getMonth() + 1}`;
+  }
 
   const formatStatus = (status: string) => {
         switch (status) {
@@ -84,13 +123,16 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                 className: "bg-gray-100 text-gray-700",
             };
         }
-    };
+  };
+
   const statusPriority: Record<string, number> = {
         PROCESSING: 1,
         NEW: 2,
         COMPLETED: 3,
         CANCELLED: 4,
-    };
+  };
+  
+  /* Handle */
   const HandleClose = () => {
     setValue("");
     setError("");
@@ -180,7 +222,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
       open={open}
       onClose={HandleClose}
       panelClassName={`rounded-2xl w-full max-h-[90vh] h-auto overflow-y-auto
-      border border-[#FFFDF7] rounded-lg bg-[#FFFDF7] ${showOrderModal ? "max-w-[40vw]" : "max-w-[30vw]"}`}
+      border border-[#FFFDF7] rounded-lg bg-[#FFFDF7] ${showOrderModal ? "max-w-[50vw]" : "max-w-[30vw]"}`}
     >
       {!showOrderModal ? (
         <div className="flex flex-col p-4 gap-[2vh] text-[#3D2008]">
@@ -261,33 +303,118 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
 
             const renderOrder = (order: OrderContext) => {
                 const statusInfo = formatStatus(order.status);
+                const isExpanded = expandedOrders.has(order.orderId); 
+                const total = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
                 return (
-                    <div key={order.orderId} className="border border-[#FFFDF7] bg-[#FFFDF7] drop-shadow-2xl rounded-lg p-3">
+                    <div key={order.orderId} className="border border-[#FFFDF7] bg-[#FFFDF7] drop-shadow-2xl rounded-lg p-3 text-[#3D2008]">
                         <div className="flex justify-between items-center">
                             <p className="font-vollkorn font-semibold
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">
                             Đơn hàng #{order.orderId}
                             </p>
 
+                          <div className="flex items-center gap-2">
                             <span
-                            className={`rounded-full px-3 py-1 font-medium
-                            text-[6px] sm:text-[7px] md:text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-[11px]
-                            ${statusInfo.className}`}
+                              className={`rounded-full px-3 py-1 font-medium flex items-center
+                              text-[6px] sm:text-[7px] md:text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-[11px]
+                              ${statusInfo.className}`}
                             >
-                            {statusInfo.text}
+                              {statusInfo.text}
                             </span>
+
+                            {order.status !== "CANCELLED" && (
+                              <button
+                                type="button"
+                                onClick={() => toggleOrderStepper(order.orderId)}
+                                className="p-1 hover:bg-[#E2DCD3] rounded-full transition-colors flex items-center justify-center"
+                              >
+                                <ChevronDown
+                                  size={16}
+                                  className={`transition-transform duration-300 ${
+                                    isExpanded ? "rotate-180" : "rotate-0"
+                                  }`}
+                                />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                       
+                        <div className="flex items-center gap-[0.5vw] font-light text-[#3D2008]/80 mt-[2vh]
+                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
+                        >
+                          <p> Đặt vào {formatDate(order.orderDate)} </p>
+                          <div className="h-1 w-1 border rounded-full bg-[#3D2008]"/>
+                          <p> Nhận vào {formatDate(order.receiveDate)} </p>
+                          <div className="h-1 w-1 border rounded-full bg-[#3D2008]"/>
+
+                           <div>
+                            <p>{total} bánh</p>
+             
+                          </div>
                         </div>
 
-                        <p className="text-sm mt-2">
-                            Tổng tiền: {order.totalMoney.toLocaleString("vi-VN")}đ
-                        </p>
+                          {/* Info Detail */}
+                         {order.status !== "CANCELLED" && (
+                            <>
+                              <div
+                               className={`overflow-hidden transition-all duration-300 flex flex-col ${
+                                  isExpanded ? "max-h-250 opacity-100 mt-3" : "max-h-0 opacity-0"
+                                }`}>
+                                {/* Progess */}
+                                 <div className="border-b pb-[2vh]">
+                                   <OrderStepper status={order.status} />
+                                 </div>
+                                 {/* OrderInfo */}
+                                 <div className="border-b border-[#3D2008]/25 pb-[2vh] flex flex-col pt-[1vh] gap-[1vh]">
+                                    <p className="font-medium
+                                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                    >Giỏ hàng</p>
 
-                        <div className="text-sm mt-1">
-                            {order.items.map((item, idx) => (
-                            <p key={idx}>Số lượng: {item.quantity}</p>
-                            ))}
-                        </div>
+                                    <OrderDetail orderId={order.orderId}/>
+                                 </div>
+
+                                 {/* PaymentInfo */}
+                                  <div className="border-b border-[#3D2008]/25 pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
+                                  text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
+                                      <p className="font-medium">Phương thức thanh toán</p>
+                                      <p className="text-[#3D2008]/75">{formatPaymentMethod(order.paymentMethod)}</p>
+                                  </div>
+
+                                  <div className="flex flex-col gap-[1vh]">
+                                    <div className=" pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
+                                    text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
+                                        <p className="font-medium">Phương thức nhận bánh</p>
+                                        <p className="text-[#3D2008]/75">{fortmatShippingMethod(order.shippingMethod)}</p>
+                                    </div>
+
+                                    <div className="flex flex-col gap-[0.5vh]
+                                    text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                                      {order.address && (
+                                        <div className="flex justify-between w-full">
+                                            <p>Địa điểm nhận bánh</p>
+                                            <p className="[text-decoration-skip-ink:none] underline text-[#3D2008]/75 w-1/2"
+                                            >{order.address?.houseNumber}, đường {order.address?.street}, phường {order.address?.ward}, Tp.{order.address?.district}</p>
+                                        </div>
+                                      )}
+
+                                      <div className="flex justify-between w-full">
+                                          <p>Thời gian nhận bánh</p>
+                                          <p className="text-[#3D2008]/75"
+                                          >Từ 7:00 đến 13:00</p>
+                                      </div>
+
+                                      <div className="flex justify-between w-full">
+                                          <p>Liên hệ để nhận bánh</p>
+                                          <p className="text-[#3D2008]/75 "
+                                          >(+84) 33 871 0915</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+                            </>
+                        )}
+                                                                
                     </div>
                 );
             };

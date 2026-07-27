@@ -27,7 +27,7 @@ export class BookingController {
     return result; 
   }
 
- @Get('order/:id')
+ @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     return this.bookingService.getOrderById(id);
   }
