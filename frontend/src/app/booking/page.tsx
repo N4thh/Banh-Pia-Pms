@@ -1,12 +1,16 @@
 import Header from "@/src/components/Header";
 import BoookingInfo from "./booking-info";
+import MobileHeader from "@/src/components/mb-Header";
 
 export default function Booking() {
     return(
         <div className="relative min-h-screen">
             {/* Header */}
-            <div className="w-[80vw] mx-auto">
+            <div className="hidden lg:block">
                 <Header />
+            </div>
+            <div className="lg:hidden">
+                <MobileHeader />
             </div>
 
             {/* Right background */}

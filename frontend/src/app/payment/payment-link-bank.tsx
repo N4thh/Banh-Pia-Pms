@@ -218,7 +218,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                                     Hoặc click vào đây để mở cổng thanh toán
                                 </a>
 
-                                 <p className="text-red-500 mt-6 font-semibold">
+                                 <p className="text-[#E90000] mt-6 font-semibold">
                                     Mã QR hết hạn sau: {minutes}:{seconds.toString().padStart(2, "0")}
                                 </p>       
                             </div>

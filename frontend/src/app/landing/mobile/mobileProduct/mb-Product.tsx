@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Saurieng from "../../Product/Saurieng";
+import MobileSaurieng from "./mb-Saurieng";
 
 type ProductProps = {
     onCartUpdate?: () => void;  
@@ -84,7 +85,7 @@ export default function MobileProduct({ onCartUpdate }: ProductProps) {
 
             </div>
 
-            <Saurieng open={openSaurieng} onClose={() => setOpenSaurieng(false)} onAddToCart={onCartUpdate ?? (() => {})} />
+            <MobileSaurieng open={openSaurieng} onClose={() => setOpenSaurieng(false)} onAddToCart={onCartUpdate ?? (() => {})} />
         </div>
     );
 }

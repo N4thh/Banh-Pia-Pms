@@ -291,8 +291,9 @@ export default function Order() {
 
              {/* shipping method */}
             <div>
-                <div className="flex justify-between gap-[2vh]">
-                    <div className="w-1/2 flex flex-col">
+                {/* Desktop */}
+                <div className="flex flex-col lg:flex-row justify-between gap-[2vh]">
+                    <div className="w-full lg:w-1/2">
                         <label className={`flex w-full cursor-pointer  justify-between rounded-lg border-2 p-2 transition-colors duration-200 ${
                             shippingMethod === "PICKUP"
                                 ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]"
@@ -308,7 +309,7 @@ export default function Order() {
                         </label>
                 
                     </div>
-                    <div className="w-1/2 flex flex-col">
+                    <div className="w-full lg:w-1/2">
                         <label className={`flex w-full cursor-pointer  justify-between rounded-lg border-2 p-2 transition-colors duration-200 ${
                             shippingMethod === "DELIVERY"
                                 ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]"
@@ -323,8 +324,9 @@ export default function Order() {
                             />
                         </label>      
                     </div>
-                
                 </div>
+                {/* Mobile */}
+
                 <AnimatePresence mode="wait">
                         {shippingMethod === "PICKUP" && (
                             <motion.div
@@ -363,19 +365,19 @@ export default function Order() {
                                     transition={{ duration: 0.2, ease: "easeInOut" }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="space-y-2 mt-3 p-4 flex flex-col gap-2
+                                    <div className="space-y-2 mt-3 p-4 flex flex-col gap-2 
                                        border border-dashed border-[#3D2008] rounded-2xl bg-[#3D2008]/10
-                                       text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                                       text-[14px] sm:text-[13px] md:text-[13px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px]"
                                     >
                                         <h2 className="font-semibold font-vollkorn
                                         text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[18px]"
                                         >Vui lòng nhập địa chỉ nhận bánh</h2>
-                                        <div className="flex gap-[1vw]">
+                                        <div className="flex flex-col lg:flex-row w-full gap-[1vw]">
                                             <input {...register("newAddress.houseNumber", {
                                                 required: true,
                                             })} 
                                             placeholder="Số nhà*" 
-                                            className={`w-1/2 border p-3 rounded-md ${
+                                            className={`w-full lg:w-1/2 border p-3 rounded-md placeholder:text-sm ${
                                                  errors.newAddress?.houseNumber ?  "border-[#E90000] focus:ring-[#E90000]" : "border-[#3D2008]/25"
                                             }
                                             `}/>
@@ -384,17 +386,17 @@ export default function Order() {
                                                 required: true,
                                             })} 
                                             placeholder="Tên đường*" 
-                                            className={`w-1/2 border p-3 rounded-md ${
+                                            className={`w-full lg:w-1/2  border p-3 rounded-md placeholder:text-sm ${
                                                  errors.newAddress?.street ?  "border-[#E90000] focus:ring-[#E90000]" : "border-[#3D2008]/25"
                                             }
                                             `}/>
                                         </div>
-                                        <div className="flex gap-[1vw]">
+                                        <div className="flex flex-col lg:flex-row w-full gap-[1vw]">
                                             <input {...register("newAddress.ward", {
                                                 required: true,
                                             })} 
                                             placeholder="Phường/Xã*" 
-                                            className={`w-1/2 border p-3 rounded-md ${
+                                            className={`w-full lg:w-1/2 border p-3 rounded-md placeholder:text-sm ${
                                                  errors.newAddress?.ward ?  "border-[#E90000] focus:ring-[#E90000]" : "border-[#3D2008]/25"
                                             }
                                             `}/>
@@ -403,7 +405,7 @@ export default function Order() {
                                                 required: true,
                                             })}
                                             placeholder="Quận/Huyện*" 
-                                            className={`w-1/2 border p-3 rounded-md ${
+                                            className={`w-full lg:w-1/2 border p-3 rounded-md placeholder:text-sm ${
                                                  errors.newAddress?.district ?  "border-[#E90000] focus:ring-[#E90000]" : "border-[#3D2008]/25"
                                             }
                                             `}/>
@@ -414,7 +416,7 @@ export default function Order() {
                                         errors.newAddress?.ward ||
                                         errors.newAddress?.district
                                         ) && (
-                                        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                        <p className="text-[#E90000] text-sm mt-1 flex items-center gap-1">
                                             <OctagonAlert size={18}/> Vui lòng nhập đầy đủ địa chỉ nhận bánh.
                                         </p>
                                         )}
@@ -423,7 +425,7 @@ export default function Order() {
                             )}
                 </AnimatePresence>
                 {shippingMethodError && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <p className="text-[#E90000] text-sm mt-1 flex items-center gap-1">
                         <OctagonAlert size={18} />
                         Vui lòng chọn phương thức nhận bánh
                     </p>
@@ -442,14 +444,15 @@ export default function Order() {
                             key={slot.date}
                             type="button"
                             onClick={() => handleSelectSlot(slot.date)}
-                            className={`px-4 py-2 rounded-lg border-2 transition-colors duration-200 w-[7.5vw]
-                                text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]
+                            className={`px-3 py-2 sm:px-4 rounded-lg border-2 transition-colors duration-200
+                                w-[27.5vw] xs:w-[22vw] sm:w-[18vw] md:w-[13vw] lg:w-[7vw]
+                                text-[11px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]
                                 ${pendingDate === slot.date || slotByDay?.date === slot.date
                                     ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]" 
                                     : "bg-white border-[#3D2008]/25 hover:border-[#3D2008]"
                                 }`}
-                        > <div className="flex flex-col font-medium">{formatDate(slot.date)} <span
-                         className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] xl:text-[11px] 2xl:text-[12px]">
+                        > <div className="flex flex-col font-medium items-center sm:items-start">{formatDate(slot.date)} <span
+                        className="text-[8px] sm:text-[8px] md:text-[9px] lg:text-[10px] xl:text-[11px] 2xl:text-[12px]">
                         {slot.totalBooked}/{slot.totalMax} đơn</span></div>
                         </button>
                     ))}

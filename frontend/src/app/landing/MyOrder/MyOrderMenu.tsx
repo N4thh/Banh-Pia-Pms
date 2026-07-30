@@ -246,7 +246,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <p className="text-[#E90000] text-sm mt-1 flex items-center gap-1">
               <OctagonAlert size={18} /> {error}
             </p>
           )}

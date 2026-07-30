@@ -9,7 +9,7 @@ export default function CancelPage() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-[#3D2008]">
-            <XCircle size={80} className="text-red-500 mb-4" />
+            <XCircle size={80} className="text-[#E90000] mb-4" />
             <h1 className="text-2xl font-semibold mb-2">Thanh toán đã bị hủy</h1>
             <p className="text-sm mb-4">Đơn hàng {orderId ? `#${orderId}` : ""} chưa được thanh toán.</p>
             <p className="text-sm text-gray-600 mb-6">
