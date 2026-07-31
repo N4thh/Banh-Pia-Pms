@@ -5,6 +5,14 @@
   --font-vollkorn: var(--font-vollkorn);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 @media print {
     @page {
          margin: 0;

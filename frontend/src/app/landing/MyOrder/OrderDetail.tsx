@@ -79,23 +79,24 @@ export default function OrderDetail({orderId} : OrderStepperProps) {
         <div className="text-[#3D2008]">
             {order.items.map((item, index) => (
                 <div key={`${item.cakeId}-${index}`}
-                className="flex flex-col gap-[2vh] py-1 ">
-                    <div className="flex gap-[1vw]">
+                className="flex flex-col gap-[2vh] py-1">
+                    <div className="flex gap-4 lg:gap-[1vw] ">
                         {/* Picture */}
-                        <div className="relative w-12 h-12 shrink-0">
+                        <div className="relative w-15 h-15 lg:w-12 lg:h-12 shrink-0">
                             <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]"/>
                         </div>
                         <div className="flex justify-between w-full text-[#3D2008]">
                             <div>
                                 <h3 className="font-semibold font-vollkorn
-                                text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
+                                text-[14px] sm:text-[14px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[16px]"
                                 >{formatName(item.cakeName)}</h3>
-                                <h4 className="text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px] text-[#3D2008]/75"
+                                <h4 className="text-[14px] sm:text-[14px] md:text-[14px] lg:text-[13px] xl:text-[13px] 2xl:text-[13px] text-[#3D2008]/75"
                                 >{SaltedEggLabel(item.eggCount)}</h4>
                             </div>
-                            <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px] text-[#3D2008]/75">x{item.quantity}</span>
+                            <span className="text-[#3D2008]/75 font-light
+                            text-[12px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[14px] 2xl:text-[15px] ">x{item.quantity}</span>
 
-                            <h4 className="font-medium text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                            <h4 className="font-medium text-[14px] sm:text-[14px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[16px]">
                             {item.priceAtPurchase.toLocaleString("vi-VN")} đ</h4>
                         </div>
                     </div>
@@ -110,7 +111,7 @@ export default function OrderDetail({orderId} : OrderStepperProps) {
             >
                 <div className="overflow-hidden min-h-0">
                     <div className="flex flex-col gap-[2vh] pb-[2vh] mt-[2vh] border-t border-dotted pt-[2vh]
-                    text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                    text-[14px] sm:text-[14px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[16px]">
                         <div className="flex justify-between">
                             <p>Tạm tính</p>
                             <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
@@ -124,7 +125,7 @@ export default function OrderDetail({orderId} : OrderStepperProps) {
                             <p> - </p>
                         </div>
                         <div className="flex justify-between items-end font-semibold
-                            text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px]">
+                            text-[18px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[20px] 2xl:text-[21px]">
                             <p>Thành tiền</p>
                             <span className="flex-1 border-b border-dashed border-[#3D2008] mx-2 mb-1 items-center"></span>
                             <p>{Number(order.totalMoney).toLocaleString("vi-VN")} đ</p>
@@ -137,7 +138,7 @@ export default function OrderDetail({orderId} : OrderStepperProps) {
                 type="button"
                 onClick={handleOpen}
                 className="flex justify-center items-center w-full font-semibold text-[#C01F1F]
-                text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
+                text-[14px] sm:text-[14px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[16px]"
             >
                 {open ? "Rút gọn" : "Xem thêm"}
             </button>

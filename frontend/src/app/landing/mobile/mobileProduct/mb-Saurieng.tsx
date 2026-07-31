@@ -151,7 +151,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                         {/* top */}
 
                         {/* mid */}
-                        <div className="flex flex-col gap-2 font-medium flex-1 min-h-0 overflow-y-auto pr-1">
+                        <div className="flex flex-col gap-2 font-medium flex-1 min-h-0 overflow-y-auto no-scrollbar pr-1">
                             <p className="shrink-0 text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] xl:text-[18px] 2xl:text-[19px]">
                             Lựa chọn trứng muối</p>
 

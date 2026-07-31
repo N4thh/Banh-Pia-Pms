@@ -109,7 +109,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
             
             {cart.length > 0 && (
                 <>
-                    <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3">
+                    <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-3 space-y-3">
                         {cart.map((item) => (
                             <div
                                 key={item.id}

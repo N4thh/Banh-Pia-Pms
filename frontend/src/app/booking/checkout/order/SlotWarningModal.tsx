@@ -31,7 +31,7 @@ export default function SlotWarningModal({
             open={open}
             onClose={onClose}
             closeOnOverlayClick={false}
-            panelClassName="rounded-2xl w-full max-w-[85vw] sm:max-w-[65vw] md:max-w-[50vw] max-h-[90vh] overflow-y-auto bg-[#FFFDF7] shadow-2xl p-6 sm:p-8"
+            panelClassName="rounded-2xl w-full max-w-[85vw] sm:max-w-[65vw] md:max-w-[50vw] max-h-[90vh] overflow-y-auto no-scrollbar bg-[#FFFDF7] shadow-2xl p-6 sm:p-8"
         >
             <div className="flex flex-col gap-5 text-[#3D2008]">
                 {/* Header */}

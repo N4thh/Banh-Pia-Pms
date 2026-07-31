@@ -48,7 +48,7 @@ export default function Saurieng({ open, onClose, onAddToCart }: SauriengProps) 
                         </p>
                     </div>
                     {/* mid */}
-                    <div className="flex flex-col gap-2 font-medium flex-1 min-h-0 overflow-y-auto pr-1">
+                    <div className="flex flex-col gap-2 font-medium flex-1 min-h-0 overflow-y-auto no-scrollbar pr-1">
                         <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[15px] 2xl:text-[16px] shrink-0">
                         Lựa chọn trứng muối</p>
                         <button className={`w-full flex justify-between items-center px-4 py-2 border rounded-2xl

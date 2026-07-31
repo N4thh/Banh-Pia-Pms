@@ -438,7 +438,7 @@ export default function Order() {
                     text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
                     Ngày nhận bánh
                 </p>
-                <div className="flex flex-wrap gap-2 overflow-y-auto pt-2">
+                <div className="flex flex-wrap gap-2 overflow-y-auto no-scrollbar pt-2">
                     {slots.map((slot) => (
                         <button
                             key={slot.date}
@@ -466,7 +466,7 @@ export default function Order() {
                 </p>
                 <textarea 
                 placeholder="Thêm ghi chú cho đơn bánh..."
-                className="border p-2 rounded-md h-[20vh] resize-none overflow-y-auto "
+                className="border p-2 rounded-md h-[20vh] resize-none overflow-y-auto no-scrollbar "
                 />
 
             </div>

@@ -78,7 +78,7 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
                         }} />
                     </div>
                     {/* Payment link */}
-                    <div className="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto no-scrollbar">
                         <div className="flex flex-col w-full max-w-200 min-w-75 border-2 border-[#3D2008]/25 rounded-2xl
                          bg-white drop-shadow-2xl py-[3vh] sm:py-[4vh] px-[4vw] sm:px-[2vw] gap-[2vh] my-auto mt-[15vh]">
                             <div className="flex flex-col gap-[2vh] pb-[2vh] border-b border-[#3D2008]">

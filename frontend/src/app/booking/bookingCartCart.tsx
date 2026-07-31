@@ -23,7 +23,7 @@ export default function CartCard() {
                     <h2 className="font-vollkorn text-[#3D2008] font-semibold
                     text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px] pb-[2vh]">
                     Giỏ hàng của bạn</h2>
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto no-scrollbar">
                         
                         {cart.map((item) => (
                             <div key={item.id} 

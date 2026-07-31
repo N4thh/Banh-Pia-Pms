@@ -1,11 +1,11 @@
 "use client";
 
-import { ShoppingCart, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import CartMenu from "../app/landing/Cart/CartMenu";
-import MyOrderMenu from "../app/landing/MyOrder/MyOrderMenu";
 import { useEffect, useState } from "react";
 import { CartItem, getCart } from "../utils/cartUtils";
 import { usePathname, useRouter } from "next/navigation";
+import MobileMyOrderMenu from "../app/landing/MyOrder/mobile/mb-MyOrderMenu";
 
 
 type HeaderProps = {
@@ -75,7 +75,7 @@ export default function MobileHeader({ cartRefreshTrigger, onCartUpdate}: Header
                     refreshTrigger={cartRefreshTrigger}
                     changeInCart = {() => onCartUpdate?.()}
                 />
-                <MyOrderMenu
+                <MobileMyOrderMenu
                     open={openMyOrderMenu}
                     onClose={() => setOpenMyOrderMenu(false)}
                 />

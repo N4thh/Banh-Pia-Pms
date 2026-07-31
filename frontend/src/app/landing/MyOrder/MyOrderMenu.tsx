@@ -102,7 +102,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
             case "PROCESSING":
             return {
                 text: "Đang xử lý",
-                className: "bg-[#E5C980]/25 text-[#C2973F]",
+                className: "bg-[#FFCC00]/25 text-[#FFCC00]",
             };
 
             case "COMPLETED":
@@ -311,7 +311,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                         <div className="flex justify-between items-center">
                             <p className="font-vollkorn font-semibold
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">
-                            Đơn hàng #{order.orderId}
+                            Đơn bánh #{order.orderId}
                             </p>
 
                           <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                           <div className="h-1 w-1 border rounded-full bg-[#3D2008]"/>
 
                            <div>
-                            <p>{total} bánh</p>
+                          <p>{total} bánh</p>
              
                           </div>
                         </div>
