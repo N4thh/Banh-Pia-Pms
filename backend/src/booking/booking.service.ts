@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AvailabilityService } from 'src/availability/availability.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -46,6 +46,7 @@ export class BookingService {
         cakeId: number;
         date: string;
         quantity: number;
+        eggCount: number;
         priceAtPurchase: any;
         status: any;
       }[] = [];
@@ -72,6 +73,7 @@ export class BookingService {
           cakeId: item.cakeId,
           date: item.date,
           quantity: item.quantity,
+          eggCount: item.eggCount,
           priceAtPurchase: dbCake?.basePrice,
           status: slotStatus,
         });
@@ -94,6 +96,7 @@ export class BookingService {
             create: itemStatuses.map((item) => ({
               cakeId: item.cakeId,
               quantity: item.quantity,
+              eggCount: item.eggCount,
               priceAtPurchase: item.priceAtPurchase,
             })),
           },
@@ -135,5 +138,98 @@ export class BookingService {
       message: 'Đặt bánh thành công, đang chờ thanh toán!',
       orderId: result.order.id,
     };
+  }
+
+  async getOrderById(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: {id: id},
+      include: { 
+        user: true, 
+        address: true, 
+        items: {
+          include: {cake: true}
+        },
+        paymentLink: true,
+      }
+    })
+    
+    if(!order)
+      throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
+    return {
+      id: order.id,
+      totalMoney: Number(order.totalMoney),
+      status: order.status,
+      shippingMethod: order.shippingMethod,
+      paymentMethod: order.paymentMethod,
+      receiveDate: order.receiveDate,
+      orderDate: order.orderDate,
+      note: order.note,
+      customer: {
+        fullName: order.user.fullName,
+        phone: order.user.phone,
+      },
+      address: order.address ? {
+        houseNumber: order.address.houseNumber,
+        street: order.address.street,
+        ward: order.address.ward,
+        district: order.address.district,
+      } : null,
+      items: order.items.map(item => ({
+        cakeId: item.cakeId,
+        cakeName: item.cake.kind,
+        quantity: item.quantity,
+        eggCount: item.eggCount, 
+        priceAtPurchase: Number(item.priceAtPurchase),
+      })),
+      paymentLink: order.paymentLink ? {
+        qrCode: order.paymentLink.qrCode,
+        checkoutUrl: order.paymentLink.checkoutUrl,
+        status: order.paymentLink.status,
+        amountPaid: Number(order.paymentLink.amountPaid),
+        amountRemaining: Number(order.paymentLink.amountRemaining),
+        createdAt: order.paymentLink.createdAt,
+        canceledAt: order.paymentLink.canceledAt,
+      } : null,
+    };
+  }
+
+  async getAllOrder(id: number) { 
+    const order = await this.prisma.order.findMany({
+      where: {userId: id},
+      select: { 
+        id: true,
+        totalMoney: true, 
+        orderDate: true,
+        receiveDate: true,
+        status: true,
+        paymentMethod: true,
+        shippingMethod: true,
+        address: true,
+        items: {
+          select: {quantity: true},
+        },
+      },
+    })
+    if(order.length === 0)
+      throw new NotFoundException("Không tìm thấy đơn hàng");
+    
+     return order.map((o) => ({
+      orderId: o.id,
+      totalMoney: Number(o.totalMoney),
+      status: o.status,
+      orderDate: o.orderDate,
+      receiveDate: o.receiveDate,
+      paymentMethod: o.paymentMethod,
+      shippingMethod: o.shippingMethod,
+      address: o.address
+        ? {
+            houseNumber: o.address.houseNumber,
+            street: o.address.street,
+            ward: o.address.ward,
+            district: o.address.district,
+          }
+        : null,
+      items: o.items,
+    }));
   }
 }

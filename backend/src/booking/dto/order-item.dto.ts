@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsPositive, IsString } from "class-validator";
+import { IsInt, IsNotEmpty, IsPositive, IsString, Min } from "class-validator";
 
  export class OrderItemDto { 
     @IsInt()
@@ -12,4 +12,8 @@ import { IsInt, IsNotEmpty, IsPositive, IsString } from "class-validator";
     @IsInt()
     @IsPositive()
     quantity!: number; 
+
+    @IsInt()
+    @Min(0)
+    eggCount!: number; 
  }

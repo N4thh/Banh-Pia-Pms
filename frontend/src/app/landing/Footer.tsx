@@ -15,7 +15,7 @@ export default function Footer(){
                     border border-[#C01F1F] rounded-xl px-6 py-3 bg-[#C01F1F]
                     text-[clamp(10.5px,0.8vw,16px)]">
                     <Clock size={18} />
-                    TỪ 8:00 ĐẾN 19:00</p>
+                    TỪ 7:00 ĐẾN 13:00</p>
 
                     <p className="flex gap-2 items-center
                     border border-[#C01F1F] rounded-xl px-6 py-3 bg-[#C01F1F]

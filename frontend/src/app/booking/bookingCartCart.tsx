@@ -10,10 +10,8 @@ function SaltedEggLabel(count: number) {
 
 export default function CartCard() {
     const [cart,setCart] = useState<CartItem[]>([]); 
-    const basePrice = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    const feeShip = 20000;
-    const discount = 20000;
-    const total = basePrice + feeShip - discount;
+    const total = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  
     useEffect(() => {
         setCart(getCart());
     }, []);
@@ -25,13 +23,14 @@ export default function CartCard() {
                     <h2 className="font-vollkorn text-[#3D2008] font-semibold
                     text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px] pb-[2vh]">
                     Giỏ hàng của bạn</h2>
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto no-scrollbar">
                         
                         {cart.map((item) => (
                             <div key={item.id} 
                             className="flex flex-col gap-[2vh] py-1">
                                 <div className="flex gap-[1vw]">
-                                    <div className="relative w-10 h-10 shrink-0">
+                                    {/* Picture */}
+                                    <div className="relative w-12 h-12 shrink-0">
                                         <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
                                         {/* small */}
                                         <div className="absolute -top-1 -right-1 w-5 h-5 rounded-md bg-[#C2973F] text-[#FFFDF7]
@@ -59,15 +58,15 @@ export default function CartCard() {
                     text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
                         <div className="flex justify-between">
                             <p>Tạm tính</p>
-                            <p>{basePrice.toLocaleString("vi-VN")} đ</p>
+                            <p>{total.toLocaleString("vi-VN")} đ</p>
                         </div>
                         <div className="flex justify-between">
                             <p>Giảm giá</p>
-                            <p>{discount.toLocaleString("vi-VN")} đ</p>
+                            <p> - </p>
                         </div>
                         <div className="flex justify-between">
-                            <p>Phí giao hàng</p>
-                            <p>{feeShip.toLocaleString("vi-VN")} đ</p>
+                            <p> Phí giao hàng</p>
+                            <p> - </p>
                         </div>    
                     </div>
 

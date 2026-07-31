@@ -18,9 +18,26 @@ export class CustomerService {
         user: null,
       };
     }
+
+    const latestAddress = user.addresses.length > 0
+    ? user.addresses[user.addresses.length - 1]
+    : null;
+
     return {
       isNewUser: false,
-      user,
+      user: { 
+        fullName: user.fullName,
+        id: user.id,
+        phone: user.phone,
+        latestAddress: latestAddress
+         ? { 
+            houseNumber: latestAddress.houseNumber,
+            street: latestAddress.street,
+            ward: latestAddress.ward,
+            district: latestAddress.district,
+         }
+         : null,
+      }
     };
   }
 

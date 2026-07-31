@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CakesModule } from './cakes/cakes.module';
@@ -14,8 +15,14 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { OrderOrderExpiryModule } from './modules/order-expiry/order-expiry.module';
 import { PaymentModule } from './payment/payment.module';
 
+const nodeEnv = process.env.NODE_ENV ?? 'development';
+
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${nodeEnv}`,
+    }),
     CakesModule,
     PrismaModule,
     AvailabilityModule,
