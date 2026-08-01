@@ -221,7 +221,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
     <Modal
       open={open}
       onClose={HandleClose}
-      panelClassName={`rounded-2xl w-full max-h-[90vh] h-auto overflow-y-auto
+      panelClassName={`rounded-2xl w-full max-h-[90vh] h-auto overflow-y-auto no-scrollbar
       border border-[#FFFDF7] rounded-lg bg-[#FFFDF7] ${showOrderModal ? "max-w-[50vw]" : "max-w-[30vw]"}`}
     >
       {!showOrderModal ? (
