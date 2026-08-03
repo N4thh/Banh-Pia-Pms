@@ -30,12 +30,22 @@ enum PaymentLinkStatus {
   CANCELLED
 }
 
+enum CancelReason {
+  CUSTOMER_REQUEST
+  OUT_OF_STOCK
+  PAYMENT_EXPIRED
+  DUPLICATE_ORDER
+  OTHER
+}
+
 model Admin {
   id           Int      @id @default(autoincrement())
   username     String   @unique
   passwordHash String
   fullName     String
   updatedAt    DateTime @updatedAt
+
+  cancelledOrders Order[]
 }
 
 model User {
@@ -98,10 +108,15 @@ model Order {
   paymentMethod  PaymentMethod
   status         OrderStatus    @default(NEW)
 
-  items OrderItem[]
+  cancelReason     CancelReason?
+  cancelReasonNote String?
+  cancelledAt      DateTime?
+  cancelledBy      Int?
+  canceller        Admin?        @relation(fields: [cancelledBy], references: [id])
 
+  items OrderItem[]
   paymentLink PaymentLink?
-}
+} 
 
 model OrderItem {
   id      Int   @id @default(autoincrement())

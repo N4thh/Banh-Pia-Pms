@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { OrderStatus, PaymentLinkStatus } from '@prisma/client';
+import { OrderStatus, PaymentLinkStatus, CancelReason} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 
@@ -31,7 +31,9 @@ export class PaymentCronService {
                 this.prisma.order.update({
                     where: {id: order.id}, 
                     data: {
-                        status: OrderStatus.CANCELLED, 
+                        status: OrderStatus.CANCELLED,
+                        cancelReason: CancelReason.PAYMENT_EXPIRED,
+                        cancelledAt: new Date(),
                         paymentLink: order.paymentLink 
                         ? {
                             update: { 

@@ -3,13 +3,14 @@ import { AvailabilityService } from 'src/availability/availability.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto, ShippingMethod } from './dto/create-order.dto';
-import { OrderStatus } from '@prisma/client';
+import { CancelReason, OrderStatus } from '@prisma/client';
 import { RedisService } from 'src/redis/redis.service';
 import {
   BOOKING_EVENTS,
   OrderCreatedEventPayload,
 } from './constants/booking-event.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CancelOrderDto } from './dto/cancel-order.dto';
 
 @Injectable()
 export class BookingService {
@@ -231,5 +232,33 @@ export class BookingService {
         : null,
       items: o.items,
     }));
+  }
+
+  async cancelOrderById(orderId: number, adminId: number, dto: CancelOrderDto) { 
+    const order = await this.prisma.order.findUnique({
+      where: {id: orderId},
+    });
+    
+    if(!order)
+      throw new NotFoundException('Đơn hàng không tồn tại!'); 
+
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new BadRequestException('Đơn hàng đã bị hủy trước đó');
+    }
+    if(order.status === OrderStatus.COMPLETED) { 
+      throw new BadRequestException('Không thể hủy đơn đã hoàn thành'); 
+    }
+
+    return this.prisma.order.update({
+      where: {id: orderId}, 
+      data: {
+        status: OrderStatus.CANCELLED, 
+        cancelReason: dto.cancelReason, 
+        cancelReasonNote: 
+          dto.cancelReason === CancelReason.OTHER ? dto.cancelReasonNote : null, 
+        cancelledAt: new Date(),
+        cancelledBy: adminId,
+      },
+    });
   }
 }
