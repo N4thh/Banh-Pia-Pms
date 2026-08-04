@@ -61,9 +61,9 @@ export default function MobileGuide() {
                     }}
                 />
 
-                <div className="flex flex-wrap justify-center w-full max-w-full gap-4 pt-[1vh] px-2 mt-1 ">
+                <div className="flex flex-wrap justify-center w-[105vw] w-max-[105vw] gap-3 lg:gap-4 pt-[1vh] px-2 mt-1  ">
                     <div className="border border-amber-50 rounded-3xl inline-flex items-center justify-center 
-                        py-1 sm:py-1.5 px-2 sm:px-2 md:px-1
+                        py-1 sm:py-1.5 px-2 sm:px-2 md:px-1 
                         font-semibold text-xs text-[#C01F1F] bg-[#FDF6E8] whitespace-nowrap"
                     > NGÀY NHẬN BÁNH </div>
 
@@ -81,7 +81,7 @@ export default function MobileGuide() {
             </div>
             {/* Guide */}
             <div
-            className="flex flex-col w-full border rounded-2xl bg-[#FDF6E8] p-3 sm:p-2 md:p-4 mt-12
+            className="flex flex-col w-full border rounded-2xl bg-[#FDF6E8] p-3 sm:p-2 md:p-4 mt-8 lg:mt-12
                 gap-4 md:gap-3 lg:gap-6 mb-4 sm:mb-6 md:mb-10"
             >
                 {/* Picture */}

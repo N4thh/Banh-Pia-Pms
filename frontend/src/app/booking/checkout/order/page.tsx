@@ -464,7 +464,8 @@ export default function Order() {
                     text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
                     Ghi chú cho đơn bánh
                 </p>
-                <textarea 
+                <textarea
+                {...register("note")}
                 placeholder="Thêm ghi chú cho đơn bánh..."
                 className="border p-2 rounded-md h-[20vh] resize-none overflow-y-auto no-scrollbar "
                 />

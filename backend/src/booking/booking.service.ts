@@ -85,7 +85,6 @@ export class BookingService {
       const order = await tx.order.create({
         data: {
           userId: user.id,
-          user: user.name,
           addressId: finalAddressId,
           totalMoney: totalMoney,
           receiveDate: new Date(dto.receiveDate),
@@ -156,6 +155,11 @@ export class BookingService {
     
     if(!order)
       throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
+
+    const finalCancelReason = order.cancelReasonNote !== null
+      ? order.cancelReasonNote
+      : order.cancelReason;
+
     return {
       id: order.id,
       totalMoney: Number(order.totalMoney),
@@ -165,6 +169,8 @@ export class BookingService {
       receiveDate: order.receiveDate,
       orderDate: order.orderDate,
       note: order.note,
+      cancelReason: finalCancelReason,
+      cancelledAt: order.cancelledAt,
       customer: {
         fullName: order.user.fullName,
         phone: order.user.phone,
@@ -194,27 +200,29 @@ export class BookingService {
     };
   }
 
-  async getAllOrder(id: number) { 
+  async getAllOrder(id: number) {
     const order = await this.prisma.order.findMany({
-      where: {userId: id},
-      select: { 
+      where: { userId: id },
+      select: {
         id: true,
-        totalMoney: true, 
+        totalMoney: true,
         orderDate: true,
         receiveDate: true,
         status: true,
         paymentMethod: true,
         shippingMethod: true,
         address: true,
+        cancelReason: true,
+        cancelledAt: true,
         items: {
-          select: {quantity: true},
+          select: { quantity: true },
         },
       },
-    })
-    if(order.length === 0)
+    });
+    if (order.length === 0)
       throw new NotFoundException("Không tìm thấy đơn hàng");
-    
-     return order.map((o) => ({
+
+    return order.map((o) => ({
       orderId: o.id,
       totalMoney: Number(o.totalMoney),
       status: o.status,
@@ -222,6 +230,8 @@ export class BookingService {
       receiveDate: o.receiveDate,
       paymentMethod: o.paymentMethod,
       shippingMethod: o.shippingMethod,
+      cancelReason: o.cancelReason,
+      cancelledAt: o.cancelledAt,
       address: o.address
         ? {
             houseNumber: o.address.houseNumber,

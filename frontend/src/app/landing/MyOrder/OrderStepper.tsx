@@ -3,32 +3,65 @@ import { Check, ReceiptText } from "lucide-react";
 const steps = ["Đơn bánh đã được gửi", "Xác nhận đơn bánh", "Nhận bánh thành công"];
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
-type OrderStepperProps = {
-  status: OrderStatus;
+const REASON_LABEL: Record<string, string> = {
+  CUSTOMER_REQUEST: "Khách yêu cầu",
+  OUT_OF_STOCK: "Hết hàng",
+  PAYMENT_EXPIRED: "Hết hạn thanh toán",
+  DUPLICATE_ORDER: "Đơn trùng",
+  OTHER: "Khác",
 };
 
-function getStepFromStatus(status: OrderStatus): number { 
-    switch(status) { 
-        case "NEW": 
-            return 0; 
+function formatCancelledAt(iso: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
+type OrderStepperProps = {
+  status: OrderStatus;
+  cancelledAt: string;
+  cancelReason: string;
+};
+
+function getStepFromStatus(status: OrderStatus): number {
+    switch(status) {
+        case "NEW":
+            return 0;
         case "PROCESSING":
-            return 1; 
-        case "COMPLETED": 
-            return 2; 
-        default: 
+            return 1;
+        case "COMPLETED":
+            return 2;
+        default:
             return 0;
     }
 }
 
-export default function OrderStepper({ status }: OrderStepperProps) {
+export default function OrderStepper({ status, cancelReason, cancelledAt }: OrderStepperProps) {
     const currentStep = getStepFromStatus(status);
+
+    if (status === "CANCELLED") {
+        return (
+            <div className="w-full mt-3 flex flex-col gap-1 items-center py-2 border-t border-[#A7A7A7]
+            text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                <div className="font-medium flex justify-between w-full">
+                    <p>Hủy đơn vào</p>
+                    <p className="[text-decoration-skip-ink:none] underline">{formatCancelledAt(cancelledAt)}</p>
+                </div>
+                <div className="font-medium flex justify-between w-full">
+                    <p>Lý do hủy</p>
+                    <p>{REASON_LABEL[cancelReason] || cancelReason}</p>
+                </div>
+            </div>
+        );
+    }
 
   return (
     <div className="w-full mt-3">
       <div className="flex items-center">
             {steps.map((label, index) => {
-                const isActive = index <= currentStep; 
-                const isLastStep = index === steps.length - 1; 
+                const isActive = index <= currentStep;
+                const isLastStep = index === steps.length - 1;
 
                 return (
                     <div key={index} className="relative flex-1 flex flex-col items-center">
@@ -41,9 +74,9 @@ export default function OrderStepper({ status }: OrderStepperProps) {
                         ${isActive ? "bg-[#34C759]" : "bg-[#A7A7A7]"}`}>
                             {
                                 !isLastStep ? (
-                                    <ReceiptText 
-                                    className="w-5 h-5" 
-                                    color={isActive ? "white" : "black"} 
+                                    <ReceiptText
+                                    className="w-5 h-5"
+                                    color={isActive ? "white" : "black"}
                                     />
                                 ) : (
                                     <Check className="w-5 h-5" color={isActive ? "white" : "black"}/>
