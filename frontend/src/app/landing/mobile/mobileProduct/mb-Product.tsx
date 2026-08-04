@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Saurieng from "../../Product/Saurieng";
 import MobileSaurieng from "./mb-Saurieng";
 
 type ProductProps = {
@@ -77,7 +76,7 @@ export default function MobileProduct({ onCartUpdate }: ProductProps) {
                         </h2>
 
                         <div className="flex items-end mt-auto pt-2">
-                            <h1 className="text-[#3D2008] text-xl font-medium leading-none">70.000đ</h1>
+                            <h1 className="text-[#3D2008] text-xl font-medium leading-none">80.000đ</h1>
                             <h2 className="text-[#3D2008] text-sm ml-1 leading-none">/bánh</h2>
                         </div>
                     </div>

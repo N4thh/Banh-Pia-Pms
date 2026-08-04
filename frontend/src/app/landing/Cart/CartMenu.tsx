@@ -151,7 +151,6 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                                         onClick={() => updateQuantity(item.id, +1)}
                                         > <Plus size={20} />
                                         </button>
-
                                     </div>
 
                                 </div>
