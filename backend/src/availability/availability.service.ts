@@ -70,26 +70,34 @@ export class AvailabilityService {
   }
   async createSlot(dto: CreateSlotDto) {
     const bufferLimit = Math.ceil(dto.maxCapacity * 1.03);
-    const date = toPrismaDate(this.getDateOnly(dto.date));
+    const dates = dto.dates.map((date) =>
+      toPrismaDate(this.getDateOnly(date))
+    );
 
-    return this.prisma.availability.upsert({
-      where: {
-        cakeId_date: {
-          cakeId: dto.cakeId,
-          date,
-        },
-      },
-      update: {
-        maxCapacity: dto.maxCapacity,
-        bufferLimit: bufferLimit,
-      },
-      create: {
-        cakeId: dto.cakeId,
-        date,
-        maxCapacity: dto.maxCapacity,
-        bufferLimit: bufferLimit,
-      },
-    });
+    const availabilities = await this.prisma.$transaction(
+      dates.map((date) =>
+        this.prisma.availability.upsert({
+          where: {
+            cakeId_date: {
+              cakeId: dto.cakeId,
+              date,
+            },
+          },
+          update: {
+            maxCapacity: dto.maxCapacity,
+            bufferLimit,
+          },
+          create: {
+            cakeId: dto.cakeId,
+            date,
+            maxCapacity: dto.maxCapacity,
+            bufferLimit,
+          },
+        })
+      )
+  );
+
+    return availabilities;
   }
 
   async holdSlot(dto: HoldSlotDto) {
