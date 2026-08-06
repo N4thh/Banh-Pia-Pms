@@ -121,7 +121,7 @@ export default function Product({ onCartUpdate }: ProductProps) {
                                     <button
                                         type="button"
                                         onClick={() => setQuantity((prev) => Math.max(0, prev - 1))}
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"> 
                                         <Minus size={20} />
                                     </button>
@@ -131,7 +131,7 @@ export default function Product({ onCartUpdate }: ProductProps) {
                                     <button
                                         type="button"
                                         onClick={() => setQuantity((prev) => prev + 1)}
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white 
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8] 
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"
                                     >
                                         <Plus size={20} />

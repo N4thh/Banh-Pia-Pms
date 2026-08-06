@@ -159,7 +159,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 0 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 0 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(0)}>
                             Không thêm trứng muối</button>
@@ -168,7 +168,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 1 ?  "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 1 ?  "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(1)}>
                             Thêm 1 trứng muối <span>+5.000đ /bánh</span></button>
@@ -177,7 +177,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 2 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 2 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(2)}>
                             Thêm 2 trứng muối <span>+10.000đ /bánh</span></button>
@@ -186,7 +186,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 3 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 3 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(3)}>
                             Thêm 3 trứng muối <span>+15.000đ /bánh</span></button>
@@ -207,7 +207,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                                     <button
                                     type="button"
                                     onClick={() => setQuantity((prev) => Math.max(0,prev - 1))}
-                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white
+                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
                                     h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"> <Minus size={22} />
                                     </button>
 
@@ -215,7 +215,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
 
                                     <button
                                     type="button"
-                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white 
+                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8] 
                                     h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"
                                     onClick={() => setQuantity((prev) => prev + 1)}
                                     > <Plus size={20} />

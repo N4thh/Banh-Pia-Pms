@@ -16,6 +16,6 @@ export function getAdminAccessToken(): string | null {
 
 export function clearAdminAuth(): void {
     if (typeof window === "undefined") return;
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem(AT_KEY);
+    localStorage.removeItem(RT_KEY);
 }

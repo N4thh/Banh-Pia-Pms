@@ -31,6 +31,13 @@ export class AvailabilityController {
         return this.avaibilityService.holdSlot(holdSlotDto);
     }
     
+    @Get('admin/calendar')
+    @UseGuards(JwtBlacklistGruard, AdminGuard)
+    @IsAdmin()
+    async getAdminCalendar() {
+        return this.avaibilityService.getAdminCalendar();
+    }
+
     @Get('slots')
     @Public()
     async getSlots(@Query() dto: GetSlotsDto) { 

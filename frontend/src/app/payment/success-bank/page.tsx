@@ -300,7 +300,7 @@ export default function SuccessBankPage() {
 
             <button
                 onClick={() => router.push("/")}
-                className="px-6 py-3 bg-[#C01F1F] text-white rounded-lg font-semibold -mt-10"
+                className="px-6 py-3 bg-[#C01F1F] text-[#FDF6E8] rounded-lg font-semibold -mt-10"
             >
                 Về trang chủ
             </button>  

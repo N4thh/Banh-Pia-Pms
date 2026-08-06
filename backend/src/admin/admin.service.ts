@@ -1,0 +1,116 @@
+import { Injectable } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class AdminService {
+    constructor(private readonly prisma: PrismaService) {} 
+
+     async getStats(range: "ALL" | "TODAY" | "WEEK" | "MONTH" = "ALL") { 
+        //time
+        const now = new Date();
+        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000 ); 
+        let dateFrom: Date | null = null;
+
+        if(range === "TODAY") {
+            const startOfTodayVN = new Date(vnNow);
+            startOfTodayVN.setHours(0, 0, 0, 0);
+            dateFrom = new Date(startOfTodayVN.getTime() -  7 * 60 * 60 * 1000);
+            
+        } else if (range === "WEEK") {
+            const day = vnNow.getDay(); 
+            const diff = day === 0 ? -6 : day -1; 
+            const startOfWeekVN = new Date(vnNow);
+
+            startOfWeekVN.setDate(startOfWeekVN.getDate() + diff);
+            startOfWeekVN.setHours(0, 0, 0, 0);
+            dateFrom = new Date(startOfWeekVN.getTime() - 7 * 60 * 60 * 1000);
+        }else if( range === "MONTH") {
+            const startOfMonthVN = new Date(vnNow);
+
+            startOfMonthVN.setDate(1);
+            startOfMonthVN.setHours(0,0,0,0);
+            dateFrom = new Date(startOfMonthVN.getTime() - 7 * 60 * 60 * 1000);
+        }
+        //querry select time
+        const where = dateFrom ? { orderDate: {gte: dateFrom}} : {}; 
+
+        //revenueData, total, completedToday, pending
+        let todayFrom = new Date(vnNow.setHours(0,0,0,0));
+        todayFrom = new Date(todayFrom.getTime() -  7 * 60 * 60 * 1000);
+        let todayTo = new Date(vnNow.setHours(23, 59, 59, 999));
+        todayTo = new Date(todayTo.getTime() - 7 * 60 * 60 * 1000);
+
+        const [revenueData, total, completedToday, pending, totalQuantityCakesSold, totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 
+            //revenueData
+            this.prisma.order.aggregate({ 
+                _sum: { totalMoney: true}, 
+                where: {...where, status: OrderStatus.COMPLETED},
+            }),
+            //total
+            this.prisma.order.count({ where}),
+            //completedToday
+            this.prisma.order.count({
+                where: { 
+                    receiveDate: {gte: todayFrom}, 
+                    status: OrderStatus.COMPLETED,
+                }
+             }),
+            //pending
+             this.prisma.order.count({
+                where: {
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                    ...where,
+                },
+             }),
+             //totalQuantityCakesSold
+            this.prisma.orderItem.aggregate({
+                where: { order: {status: OrderStatus.COMPLETED},},
+                _sum: { quantity: true}, 
+            }),
+            //totalToday
+            this.prisma.order.count({
+                    where: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                },
+            }),
+            //totalCakeToday
+             this.prisma.orderItem.aggregate({
+                where: { order: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                },},
+                _sum: { quantity: true}, 
+            }),
+            //PendingToday
+            this.prisma.order.count({
+                where: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                },
+             }),
+             //pendingCakeToday
+            this.prisma.orderItem.aggregate({
+                where: { 
+                 order: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                 },
+                },
+                _sum: { quantity: true}, 
+            }),
+        ]);
+
+        return {
+            totalRevenue: revenueData._sum.totalMoney ?? 0,
+            totalOrders: total,
+            completedToday,
+            pendingOrders: pending,
+            range,
+            totalQuantityCakesSold: totalQuantityCakesSold._sum.quantity ?? 0,
+            totalToday: totalToday,
+            totalCakeToday: totalCakeToday._sum.quantity ?? 0,
+            pendingToday: pendingToday ?? 0,
+            pendingCakeToday: pendingCakeToday._sum.quantity ?? 0,
+        };
+     }
+}

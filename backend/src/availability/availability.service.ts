@@ -230,6 +230,31 @@ export class AvailabilityService {
     }));
   }
 
+  async getAdminCalendar() {
+    const businessToday = getBusinessDateOnly();
+    const today = toPrismaDate(businessToday);
+    const tomorrow = addDaysToDateOnly(businessToday, 1);
+
+    const slots = await this.prisma.availability.findMany({
+      where: { date: { gte: today } },
+      orderBy: { date: 'asc' },
+      include: {
+        cake: { select: { id: true, kind: true } },
+      },
+    });
+
+    return slots.map((slot) => ({
+      date: normalizeDateOnly(slot.date),
+      cake: {
+        cakeId: slot.cake.id,
+        cakeName: slot.cake.kind,
+        maxCapacity: slot.maxCapacity,
+        currentBooked: slot.currentBooked,
+        bufferLimit: slot.bufferLimit,
+      },
+    }));
+  }
+
   private getDateOnly(value: string | Date): string {
     try {
       return normalizeDateOnly(value);

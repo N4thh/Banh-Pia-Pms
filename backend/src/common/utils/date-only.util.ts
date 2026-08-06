@@ -2,12 +2,6 @@ const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})(?=$|T)/;
 
 export const BUSINESS_TIME_ZONE = 'Asia/Ho_Chi_Minh';
 
-/**
- * Normalize an ISO date/date-time or Date into a calendar date (YYYY-MM-DD).
- *
- * Availability is stored in PostgreSQL as DATE, so it must not be converted
- * through the server's local timezone.
- */
 export function normalizeDateOnly(value: string | Date): string {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) {

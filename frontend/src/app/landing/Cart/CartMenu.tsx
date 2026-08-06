@@ -138,7 +138,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                                         <button
                                         type="button"
                                         onClick={() =>updateQuantity(item.id, -1)}
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"> <Minus size={20} />
                                         </button>
 
@@ -146,7 +146,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
 
                                         <button
                                         type="button"
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white 
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8] 
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"
                                         onClick={() => updateQuantity(item.id, +1)}
                                         > <Plus size={20} />
@@ -167,7 +167,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                             </span>
                         </div>
                             <button
-                                className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-white font-semibold text-sm
+                                className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-[#FDF6E8] font-semibold text-sm
                                     hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
                                     onClick={() => {
                                         refreshTimeCart(); 

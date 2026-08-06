@@ -9,17 +9,22 @@ export const axiosClient = axios.create({
   withCredentials: true,
 });
 
-axiosClient.interceptors.request.use((config) => { 
-    const token = getAdminAccessToken(); 
-    if(token) { 
-      config.headers = config.headers ?? {}; 
-      config.headers.Authorization =`Bearer ${token}`;
+axiosClient.interceptors.request.use((config) => {
+    const url = config.url ?? "";
+    // Chỉ gắn admin token cho các endpoint /admin/*
+    if (url.includes("/admin")) {
+      const token = getAdminAccessToken();
+      if (token) {
+        config.headers = config.headers ?? {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-    return config; 
+    return config;
 })
 
 axiosClient.interceptors.response.use(
   (response) => {
+     response.data as any 
     return response.data;
   },
   (error) => {
