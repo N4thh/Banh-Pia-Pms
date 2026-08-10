@@ -217,9 +217,9 @@ export default function AdminDashboard() {
         <div className="min-h-screen flex justify-center p-5 bg-[#FFFDF7]">
             <div className="max-w-340 w-full  h-full text-[#3D2008]">
                 {/* Header */}
-                <div className="w-full flex justify-between gap-5">
+                <div className="w-full h-[20vh] flex justify-between gap-5">
                     {/* left */}
-                    <div className="border rounded-xl flex justify-between items-center bg-[#FFFDF7] drop-shadow-2xl w-1/2 pl-5">
+                    <div className="border border-[#FFFDF7] rounded-xl flex justify-between items-center bg-[#FFFDF7] drop-shadow-2xl w-1/2 pl-5">
                         <div className="w-1/2 flex flex-col">
                             <p className="text-[#3D2008]/75
                             text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     {/* right */}
-                    <div className="border rounded-xl flex justify-between items-center bg-[#FFFDF7] drop-shadow-2xl w-1/2 pl-5">
+                    <div className="border border-[#FFFDF7] rounded-xl flex justify-between items-center bg-[#FFFDF7] drop-shadow-2xl w-1/2 pl-5">
                         <div className="w-1/2 flex flex-col">
                             <p className="text-[#3D2008]/75
                             text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"

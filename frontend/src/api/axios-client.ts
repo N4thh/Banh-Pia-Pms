@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearAdminAuth, getAdminAccessToken } from "../utils/adminAuth";
+import { clearAdminAuth, getAdminAccessToken, refreshAccessToken } from "../utils/adminAuth";
 
 export const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://www.piacoloan.info',
@@ -22,19 +22,49 @@ axiosClient.interceptors.request.use((config) => {
     return config;
 })
 
+
+let isRefreshing = false;
+let failedQueue: Array<{
+    resolve: (token: string) => void;
+    reject: (error: any) => void;
+}> = [];
+
 axiosClient.interceptors.response.use(
   (response) => {
-     response.data as any 
     return response.data;
   },
-  (error) => {
+  async (error) => {
     const status = error.response?.status; 
-    const message = error.response?.data?.message || "lỗi không xác định"; 
+    const message = error.response?.data?.message || "lỗi không xác định";
+    const orginalRequest = error.config;
 
-    if(status === 401) { 
-      clearAdminAuth();
+    if(status !== 401) { 
+      return Promise.reject(new Error(message));
     }
 
-    return Promise.reject(new Error(message));
+    if(!isRefreshing) { 
+      isRefreshing = true; 
+      const token = await refreshAccessToken();
+      isRefreshing = false; 
+
+      if(token) { 
+        failedQueue.forEach(({ resolve }) => resolve(token)); 
+        failedQueue = []; 
+        orginalRequest.headers.Authorization = `Bearer ${token}`;
+        return axiosClient(orginalRequest);
+      } else { 
+        failedQueue.forEach(({ reject }) => reject(error)); 
+        failedQueue = []; 
+        clearAdminAuth(); 
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      failedQueue.push({resolve, reject});
+    }).then((token) => { 
+      orginalRequest.headers.Authorization = `Bearer ${token}`; 
+      return axiosClient(orginalRequest);
+    })
+    
   },
 );
