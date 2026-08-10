@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleMinus, CirclePlus, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { addToCart } from "@/src/utils/cartUtils";
 
 type ProductProps = {

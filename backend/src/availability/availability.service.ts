@@ -11,6 +11,7 @@ import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { GetSlotsDto } from './dto/get-slot.dto';
+import { EditSlotDto } from './dto/edit-slot.dto';
 import {
   addDaysToDateOnly,
   getBusinessDateOnly,
@@ -68,6 +69,7 @@ export class AvailabilityService {
 
     return { status, currentBooked: newBooked };
   }
+
   async createSlot(dto: CreateSlotDto) {
     const bufferLimit = Math.ceil(dto.maxCapacity * 1.03);
     const dates = dto.dates.map((date) =>
@@ -143,6 +145,7 @@ export class AvailabilityService {
       throw err;
     }
   }
+
   async releaseHoldSlot(cakeId: number, date: string, quantity: number) {
     const dateOnly = this.getDateOnly(date);
 
@@ -198,7 +201,9 @@ export class AvailabilityService {
         totalBooked, 
         cakes: slots.map(s => ({
           id: s.cake.id,
-          kind: s.cake.kind, 
+          kind: s.cake.kind,
+          maxCapacity: s.maxCapacity,
+          currentBooked: s.currentBooked,
           remaining: Math.max(0, s.maxCapacity - s.currentBooked),
         })),
       };
@@ -233,7 +238,6 @@ export class AvailabilityService {
   async getAdminCalendar() {
     const businessToday = getBusinessDateOnly();
     const today = toPrismaDate(businessToday);
-    const tomorrow = addDaysToDateOnly(businessToday, 1);
 
     const slots = await this.prisma.availability.findMany({
       where: { date: { gte: today } },
@@ -261,5 +265,43 @@ export class AvailabilityService {
     } catch {
       throw new BadRequestException('Ngày không hợp lệ, vui lòng dùng định dạng YYYY-MM-DD');
     }
+  }
+
+  async editSlot(dto: EditSlotDto) {
+    const date = toPrismaDate(this.getDateOnly(dto.date));
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
+
+        const rows = await tx.$queryRaw<Array<{ id: number; currentBooked: number }>>`
+          SELECT id, "currentBooked"
+          FROM "Availability"
+          WHERE "cakeId" = ${dto.cakeId}
+          AND "date" = ${date}::date
+          FOR UPDATE
+        `;
+
+        if (rows.length === 0) {
+          throw new NotFoundException('Không tìm thấy slot!');
+        }
+
+        const slot = rows[0];
+        if (dto.newMaxCapacity < slot.currentBooked) {
+          throw new BadRequestException(
+            'Số lượng mới thấp hơn số bánh đã đặt hiện tại! Vui lòng điền số lượng lớn hơn',
+          );
+        }
+
+        return tx.availability.update({
+          where: { id: slot.id },
+          data: {
+            maxCapacity: dto.newMaxCapacity,
+            bufferLimit: Math.ceil(dto.newMaxCapacity * 1.03),
+          },
+        });
+      },
+      { timeout: 5000 },
+    );
   }
 }

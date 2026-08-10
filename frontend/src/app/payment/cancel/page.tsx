@@ -19,7 +19,7 @@ export default function CancelPage() {
             <div className="flex gap-3">
                 <button
                     onClick={() => router.push("/")}
-                    className="px-6 py-3 bg-[#C01F1F] text-[#FDF6E8] rounded-lg font-semibold"
+                    className="px-6 py-3 rounded-lg font-semibold bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
                 >
                     Về trang chủ
                 </button>           

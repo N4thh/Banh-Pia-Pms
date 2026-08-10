@@ -295,7 +295,7 @@ export default function SuccessCashPage() {
 
             <button
                 onClick={() => router.push("/")}
-                className="px-6 py-3 bg-[#C01F1F] text-[#FDF6E8] rounded-lg font-semibold -mt-10"
+                className="px-6 py-3 rounded-lg font-semibold -mt-10 bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
             >
                 Về trang chủ
             </button>  

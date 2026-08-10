@@ -167,8 +167,8 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                             </span>
                         </div>
                             <button
-                                className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-[#FDF6E8] font-semibold text-sm
-                                    hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
+                                className="w-full rounded-xl py-2.5 font-semibold text-sm
+                                    bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
                                     onClick={() => {
                                         refreshTimeCart(); 
                                         router.push("/booking")

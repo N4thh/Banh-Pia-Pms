@@ -1,6 +1,6 @@
 import { Check, ReceiptText } from "lucide-react";
 
-const steps = ["Đơn bánh đã được gửi", "Xác nhận đơn bánh", "Nhận bánh thành công"];
+const steps = ["Đơn bánh đã tiếp nhận", "Đơn đang được xử lý", "Nhận bánh thành công"];
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
 const REASON_LABEL: Record<string, string> = {

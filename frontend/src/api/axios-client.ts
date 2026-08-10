@@ -11,8 +11,12 @@ export const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
     const url = config.url ?? "";
-    // Chỉ gắn admin token cho các endpoint /admin/*
-    if (url.includes("/admin")) {
+    const isPublicEndpoint =
+    url.includes("/availability/slots") ||
+    url.includes("/availability/book")  ||
+    url.includes("/availability/hold");
+
+    if (!isPublicEndpoint) {
       const token = getAdminAccessToken();
       if (token) {
         config.headers = config.headers ?? {};
@@ -30,41 +34,40 @@ let failedQueue: Array<{
 }> = [];
 
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
+  (response) => response.data,
   async (error) => {
-    const status = error.response?.status; 
+    const status = error.response?.status;
     const message = error.response?.data?.message || "lỗi không xác định";
-    const orginalRequest = error.config;
+    const originalRequest = error.config;
 
-    if(status !== 401) { 
+    if (status !== 401) {
       return Promise.reject(new Error(message));
     }
 
-    if(!isRefreshing) { 
-      isRefreshing = true; 
-      const token = await refreshAccessToken();
-      isRefreshing = false; 
+    if (!isRefreshing) {
+      isRefreshing = true;
+      const newToken = await refreshAccessToken();
 
-      if(token) { 
-        failedQueue.forEach(({ resolve }) => resolve(token)); 
-        failedQueue = []; 
-        orginalRequest.headers.Authorization = `Bearer ${token}`;
-        return axiosClient(orginalRequest);
-      } else { 
-        failedQueue.forEach(({ reject }) => reject(error)); 
-        failedQueue = []; 
-        clearAdminAuth(); 
+      if (newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        failedQueue.forEach((p) => p.resolve(newToken));
+        failedQueue = [];
+        isRefreshing = false;
+        return axiosClient(originalRequest);
+      } else {
+        failedQueue.forEach((p) => p.reject(error));
+        failedQueue = [];
+        isRefreshing = false;
+        clearAdminAuth();
+        return Promise.reject(error);
       }
     }
 
     return new Promise((resolve, reject) => {
-      failedQueue.push({resolve, reject});
-    }).then((token) => { 
-      orginalRequest.headers.Authorization = `Bearer ${token}`; 
-      return axiosClient(orginalRequest);
-    })
-    
+      failedQueue.push({ resolve, reject });
+    }).then((newToken) => {
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      return axiosClient(originalRequest);
+    });
   },
 );

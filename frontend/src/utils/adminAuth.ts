@@ -56,8 +56,8 @@ export async function refreshAccessToken(): Promise<string | null> {
             return null; 
         const data = await res.json();
         localStorage.setItem("admin_at", data.accessToken);
-        localStorage.setItem("admin_at", data.refreshToken);
-        return data.accessToken
+        localStorage.setItem("admin_rt", data.refreshToken);
+        return data.accessToken;
     }catch(err) { 
         return null; 
     }

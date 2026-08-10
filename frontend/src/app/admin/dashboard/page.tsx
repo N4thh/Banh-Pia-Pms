@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import { useRouter } from "next/navigation";
 import { getAdminAccessToken } from "@/src/utils/adminAuth";
-import DetailOrder from "./detailOrder";
+import DetailOrder from "./OrderForm";
 import { ChevronDown } from "lucide-react";
 
 type AdminStats = {
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
 
                     {/* Page 1 */}
                     {currentPage === 1 ? (
-                        <div className="w-full mt-5 flex pt-5">
+                        <div className="w-full mt-5 flex">
                             {/* left canlendar */}
                             <div className="w-[30%] max-h-150 border rounded-2xl border-[#3D2008]/25 p-4 overflow-y-auto no-scrollbar">
                                 <p className="border-b-2 border-[#3D2008] font-semibold
