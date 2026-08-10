@@ -31,7 +31,7 @@ type SlotCake = {
 type SlotDate = {
   date: string;
   cake: SlotCake;
-  currentOrder: number;
+  orderCount: number;
 };
 
 type WeekGroup = {
@@ -87,7 +87,7 @@ const groupSlotsByWeek = (slots: SlotDate[], today: string): WeekGroup[] => {
             slots: weekSlots.map((s) => ({
             date: s.date,
             cake: s.cake,
-            currentOrder: s.cake.currentBooked,
+            orderCount: s.orderCount,
         })).sort((a, b) => a.date.localeCompare(b.date)),
     }));
 };
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                                                                         </span>
 
                                                                         <span>
-                                                                             {slot.currentOrder} đơn
+                                                                            {slot.orderCount} đơn
                                                                         </span>
                                                                     </div>
 

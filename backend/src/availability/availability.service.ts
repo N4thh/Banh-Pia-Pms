@@ -247,16 +247,36 @@ export class AvailabilityService {
       },
     });
 
-    return slots.map((slot) => ({
-      date: normalizeDateOnly(slot.date),
-      cake: {
-        cakeId: slot.cake.id,
-        cakeName: slot.cake.kind,
-        maxCapacity: slot.maxCapacity,
-        currentBooked: slot.currentBooked,
-        bufferLimit: slot.bufferLimit,
-      },
-    }));
+    const dateSet = new Set<string>(slots.map((s) => normalizeDateOnly(s.date)));
+    const dates = Array.from(dateSet);
+    const datePrisma = dates.map((d) => toPrismaDate(d));
+
+    //Count Orderby ReceiveDay
+    const orderCounts = await this.prisma.order.groupBy({
+        by: ['receiveDate'],
+        where: { receiveDate: { in: datePrisma } },
+        _count: { _all: true },
+    });
+
+    const countMap = new Map<string, number>();
+    for (const c of orderCounts) {
+        countMap.set(normalizeDateOnly(c.receiveDate), c._count._all);
+    }
+
+    return slots.map((slot) => {
+        const date = normalizeDateOnly(slot.date);
+        return {
+            date,
+            cake: {
+                cakeId: slot.cake.id,
+                cakeName: slot.cake.kind,
+                maxCapacity: slot.maxCapacity,
+                currentBooked: slot.currentBooked,
+                bufferLimit: slot.bufferLimit,
+            },
+            orderCount: countMap.get(date) ?? 0,  // ← THÊM
+        };
+    });
   }
 
   private getDateOnly(value: string | Date): string {

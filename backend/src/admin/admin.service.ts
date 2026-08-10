@@ -40,24 +40,27 @@ export class AdminService {
     //revenueData, total, completedToday, pending
     let todayFrom = new Date(vnNow.setHours(0,0,0,0));
     todayFrom = new Date(todayFrom.getTime() -  7 * 60 * 60 * 1000);
+    const tomorrowFrom = new Date(todayFrom);
+    tomorrowFrom.setDate(tomorrowFrom.getDate() + 1);
     let todayTo = new Date(vnNow.setHours(23, 59, 59, 999));
     todayTo = new Date(todayTo.getTime() - 7 * 60 * 60 * 1000);
 
-    const [revenueData, total, completedToday, pending, totalQuantityCakesSold, totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 
+    const [revenueData, totalOrder, completedToday, pending, totalQuantityCakesSold, 
+        totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 
         //revenueData
         this.prisma.order.aggregate({ 
             _sum: { totalMoney: true}, 
             where: {...where, status: OrderStatus.COMPLETED},
         }),
         //total
-        this.prisma.order.count({ where}),
+        this.prisma.order.count({ where }),
         //completedToday
         this.prisma.order.count({
             where: { 
-                receiveDate: {gte: todayFrom}, 
+                receiveDate: { gte: todayFrom, lte: todayTo }, 
                 status: OrderStatus.COMPLETED,
             }
-            }),
+        }),
         //pending
             this.prisma.order.count({
             where: {
@@ -104,7 +107,7 @@ export class AdminService {
 
     return {
         totalRevenue: revenueData._sum.totalMoney ?? 0,
-        totalOrders: total,
+        totalOrders: totalOrder,
         completedToday,
         pendingOrders: pending,
         range,
