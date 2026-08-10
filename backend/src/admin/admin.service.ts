@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 import { toPrismaDate } from 'src/common/utils/date-only.util';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GetOrdersBySlotDto } from './dto/admin-orders.dto';
 
 @Injectable()
 export class AdminService {
@@ -115,4 +116,73 @@ export class AdminService {
     };
     }
 
+    async getOrdersBySlot(dto: GetOrdersBySlotDto) {
+        const page = dto.page ?? 1;
+        const PAGE_SIZE = 15;
+        const skip = (page - 1) * PAGE_SIZE;
+
+        const [orders, total] = await Promise.all([
+            this.prisma.order.findMany({
+                where: {
+                    receiveDate: toPrismaDate(dto.date), 
+                    items: { some: {cakeId: dto.cakeId}}
+                },
+                include: { 
+                    user: { select: {fullName: true, phone: true}}, 
+                    items: { 
+                        select: {
+                            quantity: true, 
+                            eggCount: true, 
+                            priceAtPurchase: true,
+                            cake: { select: { kind: true } },
+                        },
+                    },
+                },
+                skip,
+                take: PAGE_SIZE,
+            }),
+
+            this.prisma.order.count({
+                where: {
+                    receiveDate: toPrismaDate(dto.date), 
+                    items: { some: {cakeId: dto.cakeId}}
+                },
+            })
+        ]);
+
+        const priority: Record<string, number> = {
+            PROCESSING: 1,
+            NEW: 2,
+            COMPLETED: 3,
+            CANCELLED: 4,
+        }
+        const sorted = orders.sort((a, b) => {
+            const pa = priority[a.status] ?? 99;
+            const pb = priority[b.status] ?? 99;
+            if (pa !== pb) return pa - pb;
+            return a.id - b.id;  // id ASC
+        });
+        
+        return {
+            orders: sorted.map((o) => ({
+                orderId: o.id,
+                customerName: o.user.fullName,
+                phone: o.user.phone,
+                items: o.items.map((item) => ({
+                    quantity: item.quantity,
+                    eggCount: item.eggCount,
+                    priceAtPurchase: item.priceAtPurchase,
+                })),
+                status: o.status,
+                orderDate: o.orderDate,
+                receiveDate: o.receiveDate,
+                shippingMethod: o.shippingMethod,
+                paymentMethod: o.paymentMethod,
+            })),
+            total,
+            page: dto.page,
+            totalPages: Math.ceil(total / PAGE_SIZE),
+            pageSize: PAGE_SIZE
+        }
+    }
 }

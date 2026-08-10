@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                     {currentPage === 1 ? (
                         <div className="w-full mt-5 flex">
                             {/* left canlendar */}
-                            <div className="w-[30%] max-h-150 border rounded-2xl border-[#3D2008]/25 p-4 overflow-y-auto no-scrollbar">
+                            <div className="w-[25%] max-h-150 border rounded-2xl border-[#3D2008]/25 p-4 overflow-y-auto no-scrollbar">
                                 <p className="border-b-2 border-[#3D2008] font-semibold
                                 text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">Lịch</p>
 
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
                                     onBack={() => setSelectedSlot(null)}
                                 />
                             ) : (
-                                <div className="w-[68%] ml-5 border rounded-2xl border-[#3D2008]/25 p-4 max-h-150 flex items-center justify-center">
+                                <div className="w-[74%] ml-5 rounded-2xl  p-4 max-h-150 flex items-center justify-center">
                                     <p className="text-[#3D2008]/60 text-center
                                     text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
                                         Chọn 1 ngày trong lịch để xem chi tiết

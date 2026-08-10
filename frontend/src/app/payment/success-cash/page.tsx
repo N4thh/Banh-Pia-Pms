@@ -208,15 +208,15 @@ export default function SuccessCashPage() {
                             Tải hóa đơn
                         </button>
                     </div>
-                    <div className="flex lg:flex-row flex-col w-full justify-between border-b pb-[1vh] mb-[2vh] gap-2 lg:gap-0 
+                    <div className="flex lg:flex-row flex-col w-full border-b pb-[1vh] mb-[2vh] gap-2 lg:gap-0 
                         text-[11px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                        <div className="flex flex-col gap-[0.5vh]">
+                        <div className="flex flex-col flex-1 gap-[0.5vh]">
                             <p className={valueThirdRow}>Địa điểm nhận bánh</p>
                             <p className="[text-decoration-skip-ink:none] underline w-[80%]
                             text-[13px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[15px] 2xl:text-[16px]"
-                            >57/38/4, Đường Dương Văn Cam,<br className="hidden lg:block" /> Phường Linh Xuân, Tp.Thủ Đức</p>
+                            >57/38/4, Đường Dương Văn Cam, Phường Linh Xuân, Tp.Thủ Đức</p>
                         </div>
-                        <div className="flex flex-col gap-[0.5vh] hidden lg:block">
+                        <div className="flex flex-1 flex-col gap-[0.5vh] hidden lg:block">
                             <p className= {valueThirdRow}>Thời gian nhận bánh</p>
                             <p className="text-[13px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[15px] 2xl:text-[16px]"
                             >Từ 7:00 đến 13:00</p>
@@ -226,6 +226,7 @@ export default function SuccessCashPage() {
                             <p className="text-[13px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[15px] 2xl:text-[16px]"
                             >033-871-0915</p>
                         </div>
+                        
                         {/* mobile */}
                         <div className="flex justify-between lg:hidden">
                             <div className="flex flex-col gap-[0.5vh] ">

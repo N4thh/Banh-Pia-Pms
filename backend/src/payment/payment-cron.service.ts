@@ -49,4 +49,31 @@ export class PaymentCronService {
         )
         this.logger.log(`Đã hủy ${expiredOrders.length} đơn hết hạn`);
     }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async handleCashProcessingOrders() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const ordersToProcess = await this.prisma.order.findMany({
+            where: {
+                status: OrderStatus.NEW,
+                paymentMethod: 'CASH',
+                receiveDate: { lte: today },
+            },
+        });
+
+        if (ordersToProcess.length === 0)
+            return;
+
+        await this.prisma.$transaction(
+            ordersToProcess.map((order) =>
+                this.prisma.order.update({
+                    where: { id: order.id },
+                    data: { status: OrderStatus.PROCESSING },
+                }),
+            ),
+        );
+        this.logger.log(`Đã chuyển ${ordersToProcess.length} đơn CASH sang PROCESSING`);
+    }
 }

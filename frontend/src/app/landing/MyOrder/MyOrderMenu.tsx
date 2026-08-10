@@ -93,7 +93,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
     return `${date.getDate()}/${date.getMonth() + 1}`;
   }
 
-  const formatStatus = (status: string) => {
+  const formatOrderStatus = (status: string) => {
         switch (status) {
             case "NEW":
             return {
@@ -301,7 +301,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
             );
 
             const renderOrder = (order: OrderContext) => {
-                const statusInfo = formatStatus(order.status);
+                const statusInfo = formatOrderStatus(order.status);
                 const isExpanded = expandedOrders.has(order.orderId); 
                 const total = order.items.reduce((sum, item) => sum + item.quantity, 0);
 

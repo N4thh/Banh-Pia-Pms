@@ -31,7 +31,7 @@ const items = [
             <>
                 <p>Bạn có thể chọn một trong hai hình thức thanh toán sau:</p>
                 <ul className="list-disc pl-5">
-                    <li><strong>Chuyển khoảng:</strong> Thanh toán qua tài khoảng ngân hàng. Thông tin chuyển khoản sẽ được cung cấp sau khi đặt hàng</li>
+                    <li><strong>Chuyển khoản:</strong> Thanh toán qua tài khoảng ngân hàng. Thông tin chuyển khoản sẽ được cung cấp sau khi đặt hàng</li>
                     <li><strong>Tiền mặt:</strong> Thanh toán khi nhận bánh tại nhà hoặc khi đơn vị vận chuyển giao hàng</li>
                 </ul>
             </>
