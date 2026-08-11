@@ -247,17 +247,19 @@ export class AvailabilityService {
       },
     });
 
+    //Use Set to remove duplicate -> we have a set slot day 
     const dateSet = new Set<string>(slots.map((s) => normalizeDateOnly(s.date)));
-    const dates = Array.from(dateSet);
-    const datePrisma = dates.map((d) => toPrismaDate(d));
+    const dates = Array.from(dateSet); //convert to array
+    const datePrisma = dates.map((d) => toPrismaDate(d)); //format Date by toPrismaDate
 
-    //Count Orderby ReceiveDay
+    //Count Orderby ReceiveDay // groupby receiveDate 
     const orderCounts = await this.prisma.order.groupBy({
         by: ['receiveDate'],
         where: { receiveDate: { in: datePrisma } },
         _count: { _all: true },
     });
 
+    //Use Map so now we Dictionary <day, totalOrder>
     const countMap = new Map<string, number>();
     for (const c of orderCounts) {
         countMap.set(normalizeDateOnly(c.receiveDate), c._count._all);
@@ -274,7 +276,7 @@ export class AvailabilityService {
                 currentBooked: slot.currentBooked,
                 bufferLimit: slot.bufferLimit,
             },
-            orderCount: countMap.get(date) ?? 0,  // ← THÊM
+            orderCount: countMap.get(date) ?? 0, 
         };
     });
   }

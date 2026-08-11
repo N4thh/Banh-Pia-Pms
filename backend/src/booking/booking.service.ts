@@ -271,4 +271,28 @@ export class BookingService {
       },
     });
   }
+  async completedOrderById(orderId: number) { 
+    const order = await this.prisma.order.findUnique({
+      where: {id: orderId}, 
+    });
+
+    if(!order) 
+      throw new NotFoundException('Đơn hàng không tồn tại!');
+
+    if (order.status === OrderStatus.CANCELLED) 
+      throw new BadRequestException('Không thể hoàn thành đơn đã hủy');
+
+    if (order.status === OrderStatus.COMPLETED) 
+      throw new BadRequestException('Không thể hoàn thành đơn đã hoàn tất');
+
+    if (order.status === OrderStatus.NEW) 
+      throw new BadRequestException('Chỉ đơn "Đang xử lý" mới có thể hoàn tất, vui lòng xem lại!');
+
+    return this.prisma.order.update({
+      where: { id: orderId}, 
+      data: { 
+        status: OrderStatus.COMPLETED, 
+      }
+    });
+  }
 }

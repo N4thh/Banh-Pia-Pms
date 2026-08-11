@@ -54,7 +54,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
         <Modal
             open={open}
             onClose={onClose}
-            containerClassName="items-start justify-end"
+            containerClassName="items-start justify-end p-4"
             panelClassName="flex flex-col w-full max-w-[90vw] sm:max-w-[80vw] md:max-w-[60vw] lg:max-w-[40vw] h-[95vh] bg-white rounded-2xl shadow-xl "
         >
             {/* Header */}

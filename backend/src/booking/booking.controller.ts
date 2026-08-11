@@ -38,6 +38,13 @@ export class BookingController {
     return await this.bookingService.cancelOrderById(id, adminId ,dto); 
   }
 
+  @Patch(':id/completed')
+  @UseGuards(JwtBlacklistGruard, AdminGuard)
+  @IsAdmin()
+  async completedOrderById(@Param('id', ParseIntPipe) id: number){
+    return await this.bookingService.completedOrderById(id); 
+  }
+
 
  @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {

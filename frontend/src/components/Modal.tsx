@@ -37,7 +37,7 @@ export default function Modal({
         <div
             role="dialog"
             aria-modal="true"
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ${containerClassName}`}
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50  ${containerClassName}`}
             onClick={() => {
                 if (closeOnOverlayClick) onClose();
             }}

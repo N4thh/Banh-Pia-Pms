@@ -9,9 +9,9 @@ import OrderDetailModal from "./OrderDetailModal";
 
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 type OrderItemSummary = {
-    quantity: number;
-    eggCount: number;
-    priceAtPurchase: number;
+  quantity: number;
+  eggCount: number;
+  priceAtPurchase: number;
 };
 
 type OrderSummary = {
@@ -54,9 +54,16 @@ type Props = {
   slotDate: string;
   cakeId: number;
   cakeName: string;
+  refreshKey: number;
 };
 
-export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Props) {
+export default function DetailOrder({
+  onBack,
+  slotDate,
+  cakeId,
+  cakeName,
+  refreshKey,
+}: Props) {
   const [detail, setDetail] = useState<SlotDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +92,6 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
     const [, month, day] = dateString.split("-");
     return `Ngày ${Number(day)} Tháng ${Number(month)}`;
   };
-  
 
   const formatDayOfWeek = (date: string | Date) => {
     const d = new Date(date);
@@ -95,42 +101,39 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
     ];
     return weekdays[d.getDay()];
   };
+
   const formatOrderStatus = (status: string) => {
     switch (status) {
-        case "NEW":
+      case "NEW":
         return {
-            text: "Đã tiếp nhận",
-            className: "bg-[#0088FF]/25 text-[#0088FF]",
+          text: "Đã tiếp nhận",
+          className: "bg-[#0088FF]/25 text-[#0088FF]",
         };
-
-        case "PROCESSING":
+      case "PROCESSING":
         return {
-            text: "Đang xử lý",
-            className: "bg-[#FFCC00]/25 text-[#FFCC00]",
+          text: "Đang xử lý",
+          className: "bg-[#FFCC00]/25 text-[#FFCC00]",
         };
-
-        case "COMPLETED":
+      case "COMPLETED":
         return {
-            text: "Đã nhận",
-            className: "bg-[#34C759]/25 text-[#34C759]",
+          text: "Đã nhận",
+          className: "bg-[#34C759]/25 text-[#34C759]",
         };
-
-        case "CANCELLED":
+      case "CANCELLED":
         return {
-            text: "Đã hủy",
-            className: "bg-[#FF5F57]/25 text-[#FF5F57]",
+          text: "Đã hủy",
+          className: "bg-[#FF5F57]/25 text-[#FF5F57]",
         };
-
-        default:
+      default:
         return {
-            text: status,
-            className: "bg-gray-100 text-gray-700",
+          text: status,
+          className: "bg-gray-100 text-gray-700",
         };
     }
   };
 
   const calculateTotalPurchase = (items: OrderItemSummary[]): number => {
-    return items.reduce((total, item) => total + item.priceAtPurchase * item.quantity, 0); 
+    return items.reduce((total, item) => total + item.priceAtPurchase * item.quantity, 0);
   };
 
   const groupedOrders = useMemo(() => {
@@ -142,6 +145,7 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
     }
     return map;
   }, [orders]);
+
   // fetch
   useEffect(() => {
     let cancelled = false;
@@ -169,7 +173,7 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
     fetchDetail();
     fetchOrder(1);
     return () => { cancelled = true; };
-  }, [slotDate, cakeId]);
+  }, [slotDate, cakeId, refreshKey]);
 
   const handleOpenEdit = () => {
     if (!selectedCake) {
@@ -268,84 +272,89 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
             </div>
           </div>
 
+          {/* Order */}
           <div>
             {loadingOrders ? (
               <div>Đang tải đơn...</div>
             ) : orders.length === 0 ? (
               <div>Không có đơn hàng</div>
             ) : (
-                <div className="flex flex-col gap-6 overflow-y-auto no-scrollbar max-h-120">
+              <div className="flex flex-col gap-6 overflow-y-auto no-scrollbar max-h-120">
                 {Array.from(groupedOrders.entries()).map(([status, group]) => {
                   const statusInfo = formatOrderStatus(status);
                   return (
                     <div key={status}>
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center mb-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
-                          {statusInfo.text}
+                          {statusInfo.text} ({group.length})
                         </span>
-                        <span className="text-xs text-[#3D2008]/50">({group.length})</span>
                       </div>
                       <div className="border-b-2 border-dashed border-[#3D2008]/25 mb-3" />
                       <div className="flex flex-wrap gap-3">
-                      {group.map((o) => (
-                        <div key={o.orderId} className="border rounded-xl border-[#3D2008]/25 px-4 py-6 w-[22vw] h-fit">
-                          <div className="flex flex-col gap-2" >
-                      <div className="flex justify-between">
-                        <p className="w-fit py-1 px-2 font-medium bg-[#8A226F]/25 border border-[#8A226F]/25 text-[#8A226F]  
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
-                        >{o.paymentMethod === "CASH" ? "Thanh toán khi nhận bánh" : "Chuyển Khoản" }</p>
-                        <div>
-                          {(() => {
-                              const statusInfo = formatOrderStatus(o.status);
-                              return (
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
-                                      {statusInfo.text}
-                                  </span>
-                              );
-                          })()}
-                        </div>
-                      </div>
-                      
-                      <p className="w-fit py-1 px-2 font-medium bg-[#8A226F]/25 border border-[#8A226F]/25 text-[#8A226F]  
-                      text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
-                      >{o.shippingMethod === "DELIVERY" ? "Giao đến" : "Đến lấy" }</p>
-                      <p className=" text-[#3D2008]/75 mt-1
-                      text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">Đơn bánh #{o.orderId} </p>
-                      
-                      {/* Giỏ hàng */}
-                      <p className="text-[#3D200] font-medium mt-2
-                      text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
-                      >Giỏ hàng:</p>
+                        {group.map((o) => (
+                          <div key={o.orderId} className="border rounded-xl border-[#3D2008]/25 px-4 py-6 w-[49%] h-fit">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex justify-between">
+                                <p className="w-fit py-1 px-2 font-medium bg-[#8A226F]/25 border border-[#8A226F]/25 text-[#8A226F]
+                                  text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
+                                >{o.paymentMethod === "CASH" ? "Thanh toán khi nhận bánh" : "Chuyển Khoản"}</p>
+                                <div>
+                                  {(() => {
+                                    const statusInfo = formatOrderStatus(o.status);
+                                    return (
+                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
+                                        {statusInfo.text}
+                                      </span>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
 
-                      <div className="border-b-2 border-dashed border-[#3D2008]/65">
-                        {o.items.map((item, idx) => (
-                            <p key={idx} className="flex justify-between items-center text-[#3D2008] mb-1
-                            text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]">
-                                <span>Bánh Pía</span>
-                                <span className="flex"> <Dot size={25}/> {item.eggCount > 0 ? `${item.eggCount} trứng muối` : "0 trứng muối"} </span>
-                                <span>x{item.quantity}</span>
-                            </p>
+                              <p className="w-fit py-1 px-2 font-medium bg-[#8A226F]/25 border border-[#8A226F]/25 text-[#8A226F]
+                                text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
+                              >{o.shippingMethod === "DELIVERY" ? "Giao đến" : "Đến lấy"}</p>
+
+                              <p className="text-[#3D2008]/75 mt-1
+                                text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                              >Đơn bánh #{o.orderId}</p>
+
+                              {/* Giỏ hàng */}
+                              <p className="text-[#3D200] font-medium mt-2
+                                text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
+                              >Giỏ hàng:</p>
+
+                              <div className="border-b-2 border-dashed border-[#3D2008]/65">
+                                {o.items.map((item, idx) => (
+                                  <p key={idx} className="flex justify-between items-center text-[#3D2008] mb-1
+                                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                  >
+                                    <span>Bánh Pía</span>
+                                    <span className="flex">
+                                      <Dot size={25} /> {item.eggCount > 0 ? `${item.eggCount} trứng muối` : "0 trứng muối"}
+                                    </span>
+                                    <span>x{item.quantity}</span>
+                                  </p>
+                                ))}
+                              </div>
+
+                              {/* Thanh toan */}
+                              <p className="flex justify-between text-[#3D2008]/75
+                                text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                              >
+                                Thanh toán
+                                <span className="text-[#007AFF] font-medium
+                                  text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px]"
+                                >{calculateTotalPurchase(o.items).toLocaleString('vi-VN')} đ</span>
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOrderId(o.orderId)}
+                              className="w-full py-2 mt-2 border rounded-lg text-[#C01F1F] border-[#C01F1F] font-semibold
+                                text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
+                            > Chi tiết</button>
+                          </div>
                         ))}
-                      </div>
-
-                      {/* Thanh toan */}
-                      <p className="flex justify-between text-[#3D2008]/75
-                      text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
-                        >Thanh toán 
-                        <span className="text-[#007AFF] font-medium
-                        text-[15px] sm:text-[16px] md:text-[17px] lg:text-[18px] xl:text-[19px] 2xl:text-[20px]"
-                        >{calculateTotalPurchase(o.items).toLocaleString('vi-VN')} đ</span>
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedOrderId(o.orderId)}
-                      className="w-full py-2 mt-2 border rounded-lg text-[#C01F1F] border-[#C01F1F] font-semibold
-                      text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
-                    > Chi tiết
-                      </button>
-                        </div>
-                      ))}
                       </div>
                     </div>
                   );
@@ -399,7 +408,7 @@ export default function DetailOrder({ onBack, slotDate, cakeId, cakeName }: Prop
                 onClick={() => setQuantity((prev) => Math.max(minCapacity, prev - 1))}
                 disabled={saving}
                 className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
-                h-6 w-6 flex justify-center items-center disabled:opacity-50"
+                  h-6 w-6 flex justify-center items-center disabled:opacity-50"
               >
                 <Minus size={20} />
               </button>

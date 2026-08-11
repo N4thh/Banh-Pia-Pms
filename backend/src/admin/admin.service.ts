@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
-import { toPrismaDate } from 'src/common/utils/date-only.util';
+import { getBusinessDateOnly, toPrismaDate, addDaysToDateOnly } from 'src/common/utils/date-only.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetOrdersBySlotDto } from './dto/admin-orders.dto';
 
@@ -9,41 +9,34 @@ export class AdminService {
     constructor(private readonly prisma: PrismaService) {} 
 
     async getStats(range: "ALL" | "TODAY" | "WEEK" | "MONTH" = "ALL") { 
-    //time
     const now = new Date();
-    const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000 ); 
     let dateFrom: Date | null = null;
 
     if(range === "TODAY") {
-        const startOfTodayVN = new Date(vnNow);
-        startOfTodayVN.setHours(0, 0, 0, 0);
-        dateFrom = new Date(startOfTodayVN.getTime() -  7 * 60 * 60 * 1000);
-        
+        dateFrom = toPrismaDate(getBusinessDateOnly(now));
     } else if (range === "WEEK") {
+        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
         const day = vnNow.getDay(); 
-        const diff = day === 0 ? -6 : day -1; 
+        const diff = day === 0 ? -6 : day - 1;
         const startOfWeekVN = new Date(vnNow);
-
         startOfWeekVN.setDate(startOfWeekVN.getDate() + diff);
         startOfWeekVN.setHours(0, 0, 0, 0);
         dateFrom = new Date(startOfWeekVN.getTime() - 7 * 60 * 60 * 1000);
-    }else if( range === "MONTH") {
+    } else if(range === "MONTH") {
+        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
         const startOfMonthVN = new Date(vnNow);
-
         startOfMonthVN.setDate(1);
-        startOfMonthVN.setHours(0,0,0,0);
+        startOfMonthVN.setHours(0, 0, 0, 0);
         dateFrom = new Date(startOfMonthVN.getTime() - 7 * 60 * 60 * 1000);
     }
+
     //querry select time
     const where = dateFrom ? { orderDate: {gte: dateFrom}} : {}; 
 
-    //revenueData, total, completedToday, pending
-    let todayFrom = new Date(vnNow.setHours(0,0,0,0));
-    todayFrom = new Date(todayFrom.getTime() -  7 * 60 * 60 * 1000);
-    const tomorrowFrom = new Date(todayFrom);
-    tomorrowFrom.setDate(tomorrowFrom.getDate() + 1);
-    let todayTo = new Date(vnNow.setHours(23, 59, 59, 999));
-    todayTo = new Date(todayTo.getTime() - 7 * 60 * 60 * 1000);
+    const todayStr = getBusinessDateOnly(now);
+    const todayFrom = toPrismaDate(todayStr);          
+    const tomorrowFrom = addDaysToDateOnly(todayStr, 1); 
+    const todayTo = new Date(tomorrowFrom.getTime() - 1);
 
     const [revenueData, totalOrder, completedToday, pending, totalQuantityCakesSold, 
         totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 

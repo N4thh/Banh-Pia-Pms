@@ -1,4 +1,4 @@
-import { Check, ReceiptText } from "lucide-react";
+import { Check, Package, ReceiptText } from "lucide-react";
 
 const steps = ["Đơn bánh đã tiếp nhận", "Đơn đang được xử lý", "Nhận bánh thành công"];
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
@@ -73,13 +73,21 @@ export default function OrderStepper({ status, cancelReason, cancelledAt }: Orde
                         <div className={`relative z-10 w-8 h-8  rounded-full transition-colors duration-300 flex items-center justify-center
                         ${isActive ? "bg-[#34C759]" : "bg-[#A7A7A7]"}`}>
                             {
-                                !isLastStep ? (
-                                    <ReceiptText
-                                    className="w-5 h-5"
-                                    color={isActive ? "white" : "black"}
+                                isLastStep ? (
+                                    <Check
+                                      className="w-5 h-5"
+                                      color={isActive ? "white" : "black"}
+                                    />
+                                ) : index === 1 ? (
+                                    <Package
+                                      className="w-5 h-5"
+                                      color={isActive ? "white" : "black"}
                                     />
                                 ) : (
-                                    <Check className="w-5 h-5" color={isActive ? "white" : "black"}/>
+                                    <ReceiptText
+                                      className="w-5 h-5"
+                                      color={isActive ? "white" : "black"}
+                                    />
                                 )
                             }
                         </div>

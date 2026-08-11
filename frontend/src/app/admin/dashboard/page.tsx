@@ -105,6 +105,7 @@ export default function AdminDashboard() {
     const [slotDetail, setSlotDetail] = useState<{ date: string; totalMax: number; totalBooked: number; cakes: { id: number; kind: string; remaining: number }[] } | null>(null);
     const [slotLoading, setSlotLoading] = useState(false);
     const [slotError, setSlotError] = useState<string | null>(null);
+    const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
     
 
 
@@ -134,9 +135,9 @@ export default function AdminDashboard() {
         return weekdays[d.getDay()];
     }
 
-    const fetchStats = async () => {
+    const fetchStats = async (showLoadingSpinner = true) => {
         try {
-            setLoading(true);
+            if (showLoadingSpinner) setLoading(true);
             setError(null);
 
             const response = await axiosClient.get<AdminStats>(
@@ -149,7 +150,7 @@ export default function AdminDashboard() {
                 err instanceof Error ? err.message : "Không thể tải thống kê";
             setError(message);
         } finally {
-            setLoading(false);
+            if (showLoadingSpinner) setLoading(false);
         }
     };
     const fetchCalendar = async () => {
@@ -171,9 +172,50 @@ export default function AdminDashboard() {
         }
     };
 
+    // ── polling: auto-refresh stats + calendar mỗi 30s ──
     useEffect(() => {
         fetchStats();
         fetchCalendar();
+    }, []);
+
+    useEffect(() => {
+        const POLL_INTERVAL = 30_000;
+        let timer: ReturnType<typeof setInterval> | null = null;
+
+        const startPolling = () => {
+            if (timer) return;
+            timer = setInterval(() => {
+                fetchStats(false);
+                fetchCalendar();
+                setOrdersRefreshKey((key) => key + 1);
+            }, POLL_INTERVAL);
+        };
+
+        const stopPolling = () => {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        };
+
+        startPolling();
+
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") {
+                fetchStats(false);
+                fetchCalendar();
+                setOrdersRefreshKey((key) => key + 1);
+                startPolling();
+            } else {
+                stopPolling();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibility);
+        return () => {
+            stopPolling();
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, []);
 
     if (checkingAuth) return null;
@@ -389,6 +431,7 @@ export default function AdminDashboard() {
                                     cakeId={selectedSlot.cake.cakeId}
                                     cakeName={selectedSlot.cake.cakeName}
                                     onBack={() => setSelectedSlot(null)}
+                                    refreshKey={ordersRefreshKey}
                                 />
                             ) : (
                                 <div className="w-[74%] ml-5 rounded-2xl  p-4 max-h-150 flex items-center justify-center">
