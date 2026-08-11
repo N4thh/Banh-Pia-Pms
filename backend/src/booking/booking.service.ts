@@ -247,6 +247,7 @@ export class BookingService {
   async cancelOrderById(orderId: number, adminId: number, dto: CancelOrderDto) { 
     const order = await this.prisma.order.findUnique({
       where: {id: orderId},
+      include: { items: true },
     });
     
     if(!order)
@@ -257,6 +258,19 @@ export class BookingService {
     }
     if(order.status === OrderStatus.COMPLETED) { 
       throw new BadRequestException('Không thể hủy đơn đã hoàn thành'); 
+    }
+
+    // Trả slot trước khi update order
+    for (const item of order.items) {
+      try {
+        await this.avaibilityService.releaseHoldSlot(
+          item.cakeId,
+          String(order.receiveDate),
+          item.quantity,
+        );
+      } catch (err: any) {
+        console.error(`[Cancel] Lỗi trả slot cake #${item.cakeId}: ${err.message}`);
+      }
     }
 
     return this.prisma.order.update({

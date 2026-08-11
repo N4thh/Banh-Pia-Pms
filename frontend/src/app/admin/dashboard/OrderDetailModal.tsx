@@ -95,6 +95,11 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
   const [openCancel, setOpenCancel] = useState(false);
   const [openCompleted, setOpenCompleted] = useState(false);
 
+  //format
+  function SaltedEggLabel(count: number) {
+      if (count === 0) return "Không thêm trứng muối";
+      return `${count} trứng muối`;
+  }
 
   //fetch
   useEffect(() => {
@@ -255,34 +260,46 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                   />
                 </button>
               </div>
-
             </div>
 
-            <div className="border rounded-xl p-4">
+            <hr className="border-0 h-px bg-[#3D2008]/25" />
+
+            <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
               <p className="border-b border-[#3D2008]/25 pb-2 font-medium mb-3">
-                Bánh trong đơn ({order.items.length})
+                Giỏ hàng ({order.items.length})
               </p>
               <div className="flex flex-col gap-2">
                 {order.items.map((item, idx) => (
                   <div
                     key={`${item.cakeId}-${idx}`}
-                    className="border rounded-lg p-3 flex justify-between items-center"
+                    className="rounded-lg  flex justify-between items-center"
                   >
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-[#3D2008]/75">
-                        {item.quantity} bánh, {item.eggCount} trứng muối
-                      </p>
-                    </div>
-                    <p className="font-medium text-sm">
-                      {formatMoney(item.priceAtPurchase * item.quantity)}
-                    </p>
+                      <div className="flex gap-2 lg:gap-[1vw] w-full">
+                          {/* Picture */}
+                          <div className="relative w-15 h-15 shrink-0">
+                              <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
+                          </div>
+
+                          <div className="flex justify-between items-center w-full text-[#3D2008]">
+                            <div>
+                                <h3 className="font-semibold font-vollkorn
+                                text-[14px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
+                                >Bánh Pía</h3>
+                                <h4 className="text-[10px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                                >{SaltedEggLabel(item.eggCount)}</h4>
+                            </div>
+                            <div className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                            >x{item.quantity}</div>
+                            <h4 className="font-medium text-[11px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                            {formatMoney(item.priceAtPurchase * item.quantity)}</h4>                      
+                          </div> 
+                      </div>                     
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="border rounded-xl p-4 flex justify-between items-center">
+            <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
               <p className="font-medium">Tổng tiền</p>
               <p className="font-semibold text-lg text-[#C01F1F]">
                 {formatMoney(order.totalMoney)}
@@ -314,13 +331,7 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                 </div>
               </div>
             )}
-
-            {order.note && (
-              <div className="border rounded-xl p-4">
-                <p className="border-b border-[#3D2008]/25 pb-2 font-medium mb-3">Ghi chú</p>
-                <p className="text-sm">{order.note}</p>
-              </div>
-            )}
+            
           </div>
         )}
       </div>

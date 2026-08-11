@@ -1,27 +1,27 @@
-import { Check, Package, ReceiptText } from "lucide-react";
+import { Check, Package, ReceiptText, X } from "lucide-react";
 
 const steps = ["Đơn bánh đã tiếp nhận", "Đơn đang được xử lý", "Nhận bánh thành công"];
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
 const REASON_LABEL: Record<string, string> = {
-  CUSTOMER_REQUEST: "Khách yêu cầu",
-  OUT_OF_STOCK: "Hết hàng",
-  PAYMENT_EXPIRED: "Hết hạn thanh toán",
-  DUPLICATE_ORDER: "Đơn trùng",
-  OTHER: "Khác",
+    CUSTOMER_REQUEST: "Khách yêu cầu",
+    OUT_OF_STOCK: "Hết hàng",
+    PAYMENT_EXPIRED: "Hết hạn thanh toán",
+    DUPLICATE_ORDER: "Đơn trùng",
+    OTHER: "Khác",
 };
 
 function formatCancelledAt(iso: string): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+    if (!iso) return "";
+    const date = new Date(iso);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 }
 
 type OrderStepperProps = {
-  status: OrderStatus;
-  cancelledAt: string;
-  cancelReason: string;
+    status: OrderStatus;
+    cancelledAt: string;
+    cancelReason: string;
 };
 
 function getStepFromStatus(status: OrderStatus): number {
@@ -31,6 +31,7 @@ function getStepFromStatus(status: OrderStatus): number {
         case "PROCESSING":
             return 1;
         case "COMPLETED":
+        case "CANCELLED":
             return 2;
         default:
             return 0;
@@ -39,67 +40,83 @@ function getStepFromStatus(status: OrderStatus): number {
 
 export default function OrderStepper({ status, cancelReason, cancelledAt }: OrderStepperProps) {
     const currentStep = getStepFromStatus(status);
+    const isCancelled = status === "CANCELLED";
 
-    if (status === "CANCELLED") {
-        return (
-            <div className="w-full mt-3 flex flex-col gap-1 items-center py-2 border-t border-[#A7A7A7]
+    return (
+        <div className="w-full">
+            <div className="w-full flex items-start mt-3
             text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                <div className="font-medium flex justify-between w-full">
-                    <p>Hủy đơn vào</p>
-                    <p className="[text-decoration-skip-ink:none] underline">{formatCancelledAt(cancelledAt)}</p>
-                </div>
-                <div className="font-medium flex justify-between w-full">
-                    <p>Lý do hủy</p>
-                    <p>{REASON_LABEL[cancelReason] || cancelReason}</p>
-                </div>
-            </div>
-        );
-    }
 
-  return (
-    <div className="w-full mt-3">
-      <div className="flex items-center">
-            {steps.map((label, index) => {
-                const isActive = index <= currentStep;
-                const isLastStep = index === steps.length - 1;
+                {steps.map((label, index) => {
+                    const isActive = index <= currentStep;
+                    const isLastStep = index === steps.length - 1;
 
-                return (
-                    <div key={index} className="relative flex-1 flex flex-col items-center">
-                        {!isLastStep && (
-                            <div className={`absolute top-3.5 left-1/2 w-full h-[0.3vh] -translate-y-1/2 z-0 transition-colors duration-300
-                            ${index < currentStep ? "bg-[#34C759]" : "bg-[#A7A7A7]"}`} />
-                        )}
+                    return (
+                        <div key={index} className="relative flex-1 flex flex-col items-center">
+                            {!isLastStep && (
+                                <div className={`absolute top-3.5 left-1/2 w-full h-[0.3vh] -translate-y-1/2 z-0 transition-colors duration-300
+                                ${index < currentStep
+                                    ? isCancelled ? "bg-[#FF5F57]" : "bg-[#34C759]"
+                                    : "bg-[#A7A7A7]"}`} />
+                            )}
 
-                        <div className={`relative z-10 w-8 h-8  rounded-full transition-colors duration-300 flex items-center justify-center
-                        ${isActive ? "bg-[#34C759]" : "bg-[#A7A7A7]"}`}>
-                            {
-                                isLastStep ? (
-                                    <Check
-                                      className="w-5 h-5"
-                                      color={isActive ? "white" : "black"}
-                                    />
-                                ) : index === 1 ? (
-                                    <Package
-                                      className="w-5 h-5"
-                                      color={isActive ? "white" : "black"}
-                                    />
-                                ) : (
-                                    <ReceiptText
-                                      className="w-5 h-5"
-                                      color={isActive ? "white" : "black"}
-                                    />
-                                )
-                            }
+                            <div className={`relative z-10 w-8 h-8 rounded-full transition-colors duration-300 flex items-center justify-center
+                            ${isActive
+                                ? isCancelled ? "bg-[#FF5F57]" : "bg-[#34C759]"
+                                : "bg-[#A7A7A7]"}`}>
+                                {
+                                    isLastStep && isCancelled ? (
+                                    <X
+                                            className="w-5 h-5"
+                                            color={isActive ? "white" : "black"}
+                                    />) :
+                                    isLastStep ? (
+                                        <Check
+                                            className="w-5 h-5"
+                                            color={isActive ? "white" : "black"}
+                                        />
+                                    ) : index === 1 ? (
+                                        <Package
+                                            className="w-5 h-5"
+                                            color={isActive ? "white" : "black"}
+                                        />
+                                    ) : (
+                                        <ReceiptText
+                                            className="w-5 h-5"
+                                            color={isActive ? "white" : "black"}
+                                        />
+                                    )
+                                }
+                            </div>
+
+                            <span className={`mt-1 transition-colors duration-300 text-center
+                            text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]
+                            ${isActive
+                                ? isCancelled ? "text-[#FF5F57]" : "text-[#34C759]"
+                                : "text-[#848484]"}`}>
+                                {isLastStep && isCancelled ? "Đơn đã hủy" : label}
+                            </span>
                         </div>
+                    );
+                })}
+            </div>
 
-                        <span className={`mt-1 transition-colors duration-300 text-center
-                        text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]
-                        ${isActive ? "text-[#34C759]" : "text-[#848484]"}`}
-                        > {label}</span>
+            {isCancelled && (
+                <div className="w-full mt-3 flex flex-col gap-1 items-center p-2 border-t border-[#A7A7A7]
+                text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                    <div className="font-medium flex justify-between w-full">
+                        <p className="font-semibold">Hủy đơn vào</p>
+                        <p className="[text-decoration-skip-ink:none] underline">
+                            {formatCancelledAt(cancelledAt)}
+                        </p>
                     </div>
-                );
-            })}
-      </div>
-    </div>
-  );
+
+                    <div className="font-medium flex justify-between w-full">
+                        <p className="font-semibold">Lý do hủy</p>
+                        <p className="text-[#3D2008]/75">{REASON_LABEL[cancelReason] || cancelReason}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }

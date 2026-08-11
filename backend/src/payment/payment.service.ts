@@ -34,6 +34,24 @@ export class PaymentService {
       throw new BadRequestException(`Không tìm thấy đơn hàng #${orderId}`);
     }
 
+    // Kiểm tra link hiện tại — tránh lỗi PayOS 231 (đơn đã tồn tại)
+    const existingLink = await this.prisma.paymentLink.findUnique({
+      where: { orderId },
+    });
+
+    if (existingLink) {
+      // Link chưa thanh toán → trả lại link cũ
+      if (existingLink.status === 'PENDING') {
+        this.logger.log(`[PAYOS] Link PENDING đã tồn tại cho đơn #${orderId}, trả lại link cũ`);
+        return {
+          checkoutUrl: existingLink.checkoutUrl,
+          qrCode: existingLink.qrCode,
+        };
+      }
+      // Link đã xử lý (PAID/CANCELLED) → xóa link cũ để tạo mới
+      await this.prisma.paymentLink.delete({ where: { orderId } });
+    }
+
     const amountInVnd = Number(order.totalMoney) * 1000;
     const frontendUrl = this.configService.get<string>("FRONTEND_URL");
     if(!frontendUrl)
@@ -42,7 +60,7 @@ export class PaymentService {
     const paymentData = {
       orderCode: orderId,
       amount: amountInVnd,
-      description: 'Thanh toán đơn hàng',
+      description: `Thanh toan don hang #${orderId}`,
       cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
       returnUrl: `${frontendUrl}/payment/success-bank?orderId=${orderId}`,
     };
