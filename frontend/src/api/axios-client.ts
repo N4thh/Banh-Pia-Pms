@@ -54,10 +54,12 @@ axiosClient.interceptors.response.use(
         failedQueue = [];
         isRefreshing = false;
         return axiosClient(originalRequest);
-      } else {
+      } 
+      else {
         failedQueue.forEach((p) => p.reject(error));
         failedQueue = [];
         isRefreshing = false;
+        console.error('[Auth] All refresh attempts failed, logging out');
         clearAdminAuth();
         return Promise.reject(error);
       }

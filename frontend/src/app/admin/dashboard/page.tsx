@@ -172,14 +172,13 @@ export default function AdminDashboard() {
         }
     };
 
-    // ── polling: auto-refresh stats + calendar mỗi 30s ──
     useEffect(() => {
         fetchStats();
         fetchCalendar();
     }, []);
 
     useEffect(() => {
-        const POLL_INTERVAL = 30_000;
+        const POLL_INTERVAL = 120_000;
         let timer: ReturnType<typeof setInterval> | null = null;
 
         const startPolling = () => {
@@ -187,7 +186,6 @@ export default function AdminDashboard() {
             timer = setInterval(() => {
                 fetchStats(false);
                 fetchCalendar();
-                setOrdersRefreshKey((key) => key + 1);
             }, POLL_INTERVAL);
         };
 

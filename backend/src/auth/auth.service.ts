@@ -52,4 +52,36 @@ export class AuthService {
 
     return { message: 'Đăng xuất thành công' };
   }
+
+  async refreshToken(rt: string) { 
+    const payload = await this.jwtService.verifyAsync(rt, {
+      secret: process.env.JWT_RT_SECRET,
+    }); 
+    
+    //check token is in black list or not
+    if(await this.redisService.isTokenBlacklisted(payload.jti)) {
+      throw new UnauthorizedException("RT đã bị vô hiệu hóa");
+    }
+
+    const remaining = payload.exp - Math.floor(Date.now() / 1000);
+    if(remaining > 0) { 
+      await this.redisService.blacklistToken(payload.jti, remaining);
+    }
+
+    const newAtJti = uuidv4();
+    const newRtJti = uuidv4();
+    const [newAt, newRt] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: payload.sub, jti: newAtJti, role: payload.role },
+        { expiresIn: '15m', secret: process.env.JWT_AT_SECRET}
+      ),
+
+      this.jwtService.signAsync(
+        { sub: payload.sub, jti: newRtJti, role: payload.role},
+        { expiresIn: '7d', secret: process.env.JWT_RT_SECRET}
+      ),
+    ]);
+
+    return { accessToken: newAt, refreshToken: newRt};
+  }
 }
