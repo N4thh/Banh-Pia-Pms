@@ -137,6 +137,7 @@ model PaymentLink {
   orderId Int   @unique
   order   Order @relation(fields: [orderId], references: [id])
 
+  payosOrderCode Int? @unique
   checkoutUrl String
   qrCode      String
 

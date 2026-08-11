@@ -274,33 +274,33 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                     key={`${item.cakeId}-${idx}`}
                     className="rounded-lg  flex justify-between items-center"
                   >
-                      <div className="flex gap-2 lg:gap-[1vw] w-full">
-                          {/* Picture */}
-                          <div className="relative w-15 h-15 shrink-0">
-                              <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
-                          </div>
+                    <div className="flex gap-2 lg:gap-[1vw] w-full">
+                        {/* Picture */}
+                        <div className="relative w-15 h-15 shrink-0">
+                            <div className="w-full h-full rounded-lg bg-[#D9D9D9] border-4 border-[#FDF6E8]" />
+                        </div>
 
-                          <div className="flex justify-between items-center w-full text-[#3D2008]">
-                            <div>
-                                <h3 className="font-semibold font-vollkorn
-                                text-[14px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
-                                >Bánh Pía</h3>
-                                <h4 className="text-[10px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
-                                >{SaltedEggLabel(item.eggCount)}</h4>
-                            </div>
-                            <div className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
-                            >x{item.quantity}</div>
-                            <h4 className="font-medium text-[11px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                            {formatMoney(item.priceAtPurchase * item.quantity)}</h4>                      
-                          </div> 
-                      </div>                     
+                        <div className="flex justify-between items-center w-full text-[#3D2008]">
+                          <div>
+                              <h3 className="font-semibold font-vollkorn
+                              text-[14px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]"
+                              >Bánh Pía</h3>
+                              <h4 className="text-[10px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                              >{SaltedEggLabel(item.eggCount)}</h4>
+                          </div>
+                          <div className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]"
+                          >x{item.quantity}</div>
+                          <h4 className="font-medium text-[11px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                          {formatMoney(item.priceAtPurchase * item.quantity)}</h4>                      
+                        </div>
+                    </div>                     
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
-              <p className="font-medium">Tổng tiền</p>
+              <p className="font-semibold">Thanh toán</p>
               <p className="font-semibold text-lg text-[#C01F1F]">
                 {formatMoney(order.totalMoney)}
               </p>
@@ -331,7 +331,7 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                 </div>
               </div>
             )}
-            
+
           </div>
         )}
       </div>

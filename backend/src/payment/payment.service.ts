@@ -57,8 +57,13 @@ export class PaymentService {
     if(!frontendUrl)
       throw new InternalServerErrorException("FRONTEND_URL is not configured");
 
+    // PayOS lưu orderCode độc lập với database. Không dùng orderId trực tiếp,
+    // vì khi reset database, auto-increment có thể sinh lại orderId cũ.
+    // Dùng số ngẫu nhiên trong phạm vi Prisma Int (32-bit).
+    const payosOrderCode = Math.floor(100_000_000 + Math.random() * 900_000_000);
+
     const paymentData = {
-      orderCode: orderId,
+      orderCode: payosOrderCode,
       amount: amountInVnd,
       description: `Thanh toan don hang #${orderId}`,
       cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
@@ -72,6 +77,7 @@ export class PaymentService {
         data: {
           id: paymentLinkData.paymentLinkId,
           orderId: orderId,
+          payosOrderCode,
           checkoutUrl: paymentLinkData.checkoutUrl,
           qrCode: paymentLinkData.qrCode,
           amountRemaining: amountInVnd,
@@ -123,8 +129,19 @@ export class PaymentService {
           },
         });
         //updatePaymentLink
+        const paymentLink = await tx.paymentLink.findUnique({
+          where: { payosOrderCode: webhookData.orderCode },
+          include: { order: { include: { user: true } } },
+        });
+        if (!paymentLink) {
+          throw new BadRequestException(
+            `Không tìm thấy payment link cho PayOS orderCode ${webhookData.orderCode}`,
+          );
+        }
+
+        const orderId = paymentLink.orderId;
         const updatePaymentLink = await tx.paymentLink.update({
-          where: { orderId: webhookData.orderCode },
+          where: { orderId },
           data: {
             status: 'PAID',
             amountPaid: webhookData.amount,
@@ -133,7 +150,7 @@ export class PaymentService {
         });
         //update Order status
         const orderStatus = await tx.order.update({
-          where: { id: webhookData.orderCode },
+          where: { id: orderId },
           data: {
             status: 'PROCESSING',
           },
@@ -145,7 +162,7 @@ export class PaymentService {
         );
 
         paymentEventPayload = {
-          orderId: webhookData.orderCode,
+          orderId,
           amount: webhookData.amount,
           paidAt: new Date(),
           customerName: orderStatus.user.fullName ?? 'Khách hàng',
