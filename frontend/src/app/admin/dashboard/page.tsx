@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import { useRouter } from "next/navigation";
-import { getAdminAccessToken } from "@/src/utils/adminAuth";
+import { getAdminAccessToken, getAdminRefreshToken, clearAdminAuth } from "@/src/utils/adminAuth";
 import DetailOrder from "./OrderForm";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 
 type AdminStats = {
   totalRevenue: number | string;
@@ -106,9 +106,6 @@ export default function AdminDashboard() {
     const [slotLoading, setSlotLoading] = useState(false);
     const [slotError, setSlotError] = useState<string | null>(null);
     const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
-    
-
-
     
     useEffect(() => {
         const at_key = getAdminAccessToken();
@@ -215,6 +212,28 @@ export default function AdminDashboard() {
             document.removeEventListener("visibilitychange", handleVisibility);
         };
     }, []);
+
+    const handleLogout = async () => {
+        try {
+            const at = getAdminAccessToken();
+            const rt = getAdminRefreshToken();
+            if (at) {
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${at}`,
+                    },
+                    body: JSON.stringify({ refreshToken: rt }),
+                });
+            }
+        } catch {
+            // Vẫn đăng xuất ngay cả khi API gọi lỗi
+        } finally {
+            clearAdminAuth();
+            router.replace("/admin/login");
+        }
+    };
 
     if (checkingAuth) return null;
 
@@ -327,19 +346,29 @@ export default function AdminDashboard() {
                 {/* content */}
                 <div className="w-full flex flex-col mt-10 bg-[#FFFDF7]">
                     {/* header */}
-                    <div className="h-fit w-full border-b-2 border-[#3D2008]">
-                        <button onClick={handleClickPage1}
-                        className={`px-4 py-2 border border-b-0 rounded-md font-semibold transition-colors duration-200 
-                        text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]
-                        ${currentPage === 1 ? "bg-[#3D2008] text-[#FDF6E8]" : "" }`}
-                        >Đơn Bánh
-                        </button>
+                    <div className="h-fit w-full border-b-2 border-[#3D2008] flex items-center justify-between">
+                        <div className="flex">
+                            <button onClick={handleClickPage1}
+                            className={`px-4 py-2 border border-b-0 rounded-md font-semibold transition-colors duration-200 
+                            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]
+                            ${currentPage === 1 ? "bg-[#3D2008] text-[#FDF6E8]" : "" }`}
+                            >Đơn Bánh
+                            </button>
 
-                        <button onClick={handleClickPage2}
-                        className={`px-4 py-2 border border-b-0 rounded-md font-semibold transition-colors duration-200
-                        text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]
-                        ${currentPage === 2 ? "bg-[#3D2008] text-[#FDF6E8]" : "" }`}
-                        >Thống kê
+                            <button onClick={handleClickPage2}
+                            className={`px-4 py-2 border border-b-0 rounded-md font-semibold transition-colors duration-200
+                            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]
+                            ${currentPage === 2 ? "bg-[#3D2008] text-[#FDF6E8]" : "" }`}
+                            >Thống kê
+                            </button>
+                        </div>
+
+                        <button onClick={handleLogout}
+                        className="flex items-center gap-1.5 px-2 py-0.5 border border-red-400 text-red-500 rounded-md font-semibold transition-colors duration-200 hover:bg-red-50
+                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]"
+                        >
+                            <LogOut size={12} />
+                            <span className="hidden sm:inline">Đăng xuất</span>
                         </button>
                     </div>
 

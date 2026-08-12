@@ -9,107 +9,107 @@ export class AdminService {
     constructor(private readonly prisma: PrismaService) {} 
 
     async getStats(range: "ALL" | "TODAY" | "WEEK" | "MONTH" = "ALL") { 
-    const now = new Date();
-    let dateFrom: Date | null = null;
+        const now = new Date();
+        let dateFrom: Date | null = null;
 
-    if(range === "TODAY") {
-        dateFrom = toPrismaDate(getBusinessDateOnly(now));
-    } else if (range === "WEEK") {
-        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-        const day = vnNow.getDay(); 
-        const diff = day === 0 ? -6 : day - 1;
-        const startOfWeekVN = new Date(vnNow);
-        startOfWeekVN.setDate(startOfWeekVN.getDate() + diff);
-        startOfWeekVN.setHours(0, 0, 0, 0);
-        dateFrom = new Date(startOfWeekVN.getTime() - 7 * 60 * 60 * 1000);
-    } else if(range === "MONTH") {
-        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-        const startOfMonthVN = new Date(vnNow);
-        startOfMonthVN.setDate(1);
-        startOfMonthVN.setHours(0, 0, 0, 0);
-        dateFrom = new Date(startOfMonthVN.getTime() - 7 * 60 * 60 * 1000);
-    }
+        if(range === "TODAY") {
+            dateFrom = toPrismaDate(getBusinessDateOnly(now));
+        } else if (range === "WEEK") {
+            const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+            const day = vnNow.getDay(); 
+            const diff = day === 0 ? -6 : day - 1;
+            const startOfWeekVN = new Date(vnNow);
+            startOfWeekVN.setDate(startOfWeekVN.getDate() + diff);
+            startOfWeekVN.setHours(0, 0, 0, 0);
+            dateFrom = new Date(startOfWeekVN.getTime() - 7 * 60 * 60 * 1000);
+        } else if(range === "MONTH") {
+            const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+            const startOfMonthVN = new Date(vnNow);
+            startOfMonthVN.setDate(1);
+            startOfMonthVN.setHours(0, 0, 0, 0);
+            dateFrom = new Date(startOfMonthVN.getTime() - 7 * 60 * 60 * 1000);
+        }
 
-    //querry select time
-    const where = dateFrom ? { orderDate: {gte: dateFrom}} : {}; 
+        //querry select time
+        const where = dateFrom ? { orderDate: {gte: dateFrom}} : {}; 
 
-    const todayStr = getBusinessDateOnly(now);
-    const todayFrom = toPrismaDate(todayStr);          
-    const tomorrowFrom = addDaysToDateOnly(todayStr, 1); 
-    const todayTo = new Date(tomorrowFrom.getTime() - 1);
+        const todayStr = getBusinessDateOnly(now);
+        const todayFrom = toPrismaDate(todayStr);          
+        const tomorrowFrom = addDaysToDateOnly(todayStr, 1); 
+        const todayTo = new Date(tomorrowFrom.getTime() - 1);
 
-    const [revenueData, totalOrder, completedToday, pending, totalQuantityCakesSold, 
-        totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 
-        //revenueData
-        this.prisma.order.aggregate({ 
-            _sum: { totalMoney: true}, 
-            where: {...where, status: OrderStatus.COMPLETED},
-        }),
-        //total
-        this.prisma.order.count({ where }),
-        //completedToday
-        this.prisma.order.count({
-            where: { 
-                receiveDate: { gte: todayFrom, lte: todayTo }, 
-                status: OrderStatus.COMPLETED,
-            }
-        }),
-        //pending
+        const [revenueData, totalOrder, completedToday, pending, totalQuantityCakesSold, 
+            totalToday, totalCakeToday, pendingToday, pendingCakeToday] = await Promise.all([ 
+            //revenueData
+            this.prisma.order.aggregate({ 
+                _sum: { totalMoney: true}, 
+                where: {...where, status: OrderStatus.COMPLETED},
+            }),
+            //total
+            this.prisma.order.count({ where }),
+            //completedToday
             this.prisma.order.count({
-            where: {
-                status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
-                ...where,
-            },
+                where: { 
+                    receiveDate: { gte: todayFrom, lte: todayTo }, 
+                    status: OrderStatus.COMPLETED,
+                }
             }),
-            //totalQuantityCakesSold
-        this.prisma.orderItem.aggregate({
-            where: { order: {status: OrderStatus.COMPLETED},},
-            _sum: { quantity: true}, 
-        }),
-        //totalToday
-        this.prisma.order.count({
+            //pending
+                this.prisma.order.count({
                 where: {
-                receiveDate: { gte: todayFrom, lte: todayTo },
-            },
-        }),
-        //totalCakeToday
-            this.prisma.orderItem.aggregate({
-            where: { order: {
-                receiveDate: { gte: todayFrom, lte: todayTo },
-            },},
-            _sum: { quantity: true}, 
-        }),
-        //PendingToday
-        this.prisma.order.count({
-            where: {
-                receiveDate: { gte: todayFrom, lte: todayTo },
-                status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
-            },
-            }),
-            //pendingCakeToday
-        this.prisma.orderItem.aggregate({
-            where: { 
-                order: {
-                receiveDate: { gte: todayFrom, lte: todayTo },
-                status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                    ...where,
                 },
-            },
-            _sum: { quantity: true}, 
-        }),
-    ]);
+                }),
+                //totalQuantityCakesSold
+            this.prisma.orderItem.aggregate({
+                where: { order: {status: OrderStatus.COMPLETED},},
+                _sum: { quantity: true}, 
+            }),
+            //totalToday
+            this.prisma.order.count({
+                    where: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                },
+            }),
+            //totalCakeToday
+                this.prisma.orderItem.aggregate({
+                where: { order: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                },},
+                _sum: { quantity: true}, 
+            }),
+            //PendingToday
+            this.prisma.order.count({
+                where: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                },
+                }),
+                //pendingCakeToday
+            this.prisma.orderItem.aggregate({
+                where: { 
+                    order: {
+                    receiveDate: { gte: todayFrom, lte: todayTo },
+                    status: { in: [OrderStatus.NEW, OrderStatus.PROCESSING]},
+                    },
+                },
+                _sum: { quantity: true}, 
+            }),
+        ]);
 
-    return {
-        totalRevenue: revenueData._sum.totalMoney ?? 0,
-        totalOrders: totalOrder,
-        completedToday,
-        pendingOrders: pending,
-        range,
-        totalQuantityCakesSold: totalQuantityCakesSold._sum.quantity ?? 0,
-        totalToday: totalToday,
-        totalCakeToday: totalCakeToday._sum.quantity ?? 0,
-        pendingToday: pendingToday ?? 0,
-        pendingCakeToday: pendingCakeToday._sum.quantity ?? 0,
-    };
+        return {
+            totalRevenue: revenueData._sum.totalMoney ?? 0,
+            totalOrders: totalOrder,
+            completedToday,
+            pendingOrders: pending,
+            range,
+            totalQuantityCakesSold: totalQuantityCakesSold._sum.quantity ?? 0,
+            totalToday: totalToday,
+            totalCakeToday: totalCakeToday._sum.quantity ?? 0,
+            pendingToday: pendingToday ?? 0,
+            pendingCakeToday: pendingCakeToday._sum.quantity ?? 0,
+        };
     }
 
     async getOrdersBySlot(dto: GetOrdersBySlotDto) {

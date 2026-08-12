@@ -41,13 +41,32 @@ export class AuthService {
     return {accessToken: at, refreshToken: rt}; 
   }
 
-  async logout(user: any) {
+  async logout(user: any, refreshToken?: string) {
+    // Blacklist access token
     const { jti, exp } = user;
-
     const now = Math.floor(Date.now() / 1000);
-    const remainingTime = exp - now;
-    if (remainingTime > 0) {
-      await this.redisService.blacklistToken(jti, remainingTime);
+    if (jti && exp) {
+      const remainingTime = exp - now;
+      if (remainingTime > 0) {
+        await this.redisService.blacklistToken(jti, remainingTime);
+      }
+    }
+
+    // Blacklist refresh token nếu có
+    if (refreshToken) {
+      try {
+        const payload = await this.jwtService.verifyAsync(refreshToken, {
+          secret: process.env.JWT_RT_SECRET,
+        });
+        if (payload.jti && payload.exp) {
+          const remaining = payload.exp - now;
+          if (remaining > 0) {
+            await this.redisService.blacklistToken(payload.jti, remaining);
+          }
+        }
+      } catch {
+        // RT hết hạn hoặc invalid  -> không cần blacklist
+      }
     }
 
     return { message: 'Đăng xuất thành công' };

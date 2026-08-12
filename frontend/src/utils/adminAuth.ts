@@ -14,6 +14,11 @@ export function getAdminAccessToken(): string | null {
     return localStorage.getItem(AT_KEY);
 }
 
+export function getAdminRefreshToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(RT_KEY);
+}
+
 export function clearAdminAuth(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(AT_KEY);

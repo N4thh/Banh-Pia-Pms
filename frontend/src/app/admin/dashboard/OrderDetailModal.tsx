@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import Modal from "@/src/components/Modal";
-import {ChevronLeft, Dot, LoaderCircle, Package, ReceiptText, UserRound, X } from "lucide-react";
+import {Check, ChevronLeft, Clock3, Dot, LoaderCircle, Package, ReceiptText, UserRound, X } from "lucide-react";
 import OrderStepper from "../../landing/MyOrder/OrderStepper";
 import toast from "react-hot-toast";
 import OrderCancel from "./OrderCancel";
@@ -63,7 +63,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   PROCESSING: "Đang xử lý",
-  NEW: "Chờ xử lý",
+  NEW: "Đã tiếp nhận",
   COMPLETED: "Hoàn thành",
   CANCELLED: "Đã hủy",
 };
@@ -99,6 +99,36 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
   function SaltedEggLabel(count: number) {
       if (count === 0) return "Không thêm trứng muối";
       return `${count} trứng muối`;
+  }
+
+  function formatPaymentStatus(status: string) {
+      if (status === "PENDING") {
+          return "Chờ thanh toán";
+      } else if (status === "PAID") {
+          return "Đã thanh toán";
+      } else {
+          return "Thanh toán thất bại";
+      }
+  }
+
+  function formatPaymentStatusClassName(status: string) {
+      if (status === "PENDING") {
+          return "text-[#FFCC00]";
+      } else if (status === "PAID") {
+          return "text-[#34C759]";
+      } else {
+          return "text-[#FF5F57]";
+      }
+  }
+
+  function formatPaymentStatusIcon(status: string) {
+      if (status === "PENDING") {
+          return <Clock3 className="w-3.5 h-3.5 text-[#FFCC00]" />;
+      } else if (status === "PAID") {
+          return <Check className="w-3.5 h-3.5 text-[#34C759]" />;
+      } else {
+          return <X className="w-3.5 h-3.5 text-[#FF5F57]" />;
+      }
   }
 
   //fetch
@@ -170,7 +200,7 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
       open={isOpen}
       onClose={onClose}
       containerClassName="items-start justify-end"
-      panelClassName="w-[70%] flex flex-row h-[100vh] bg-white shadow-xl overflow-hidden"
+      panelClassName="w-[72%] flex flex-row h-[100vh] bg-white shadow-xl overflow-hidden"
     >
       {/* ===== LEFT PANEL ===== */}
       <div className={`w-7/10 h-full flex flex-col overflow-y-auto no-scrollbar transition-transform duration-400 ease-out ${showPanel ? "translate-x-0" : "translate-x-full"}`}>
@@ -237,19 +267,22 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
               </div>
               <div className="flex justify-between items-center p-4 font-semibold
               text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                <button onClick={() => setOpenCancel(true)}
-                  className="flex gap-1 items-center
-                  text-[#C01F1F] [text-decoration-skip-ink:none] underline">
-                  <X size={20} />
-                  Hủy đơn
-                  <OrderCancel
-                    orderId={openCancel ? order?.id : null}
-                    onClose={() => setOpenCancel(false)}
-                    onSuccess={handleOrderStatusUpdated}
-                  />
-                </button>
+                {(order.status === "PROCESSING" || order.status === "NEW") && (
+                  <button onClick={() => setOpenCancel(true)}
+                    className="flex gap-1 items-center
+                    text-[#C01F1F] [text-decoration-skip-ink:none] underline">
+                    <X size={20} />
+                    Hủy đơn
+                    <OrderCancel
+                      orderId={openCancel ? order?.id : null}
+                      onClose={() => setOpenCancel(false)}
+                      onSuccess={handleOrderStatusUpdated}
+                    />
+                  </button>
+                )} 
 
-                <button onClick={() => setOpenCompleted(true)}      
+                {order.status === "PROCESSING" && (
+                  <button onClick={() => setOpenCompleted(true)}      
                   className="px-6 py-4 lg:px-6 lg:py-3
                   border rounded-xl border-[#C01F1F] text-[#FDF6E8] bg-[#C01F1F] hover:bg-[#A61B1B] active:bg-[#8B1515] transition-colors">
                   Hoàn tất đơn
@@ -259,12 +292,13 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                     onSuccess={handleOrderStatusUpdated}
                   />
                 </button>
+                )}
               </div>
             </div>
 
             <hr className="border-0 h-px bg-[#3D2008]/25" />
 
-            <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
+            <div className="bg-[#FFFDF7] text-[#3D2008] rounded-xl drop-shadow-2xl p-4">
               <p className="border-b border-[#3D2008]/25 pb-2 font-medium mb-3">
                 Giỏ hàng ({order.items.length})
               </p>
@@ -299,39 +333,51 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
               </div>
             </div>
 
-            <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
-              <p className="font-semibold">Thanh toán</p>
-              <p className="font-semibold text-lg text-[#C01F1F]">
-                {formatMoney(order.totalMoney)}
-              </p>
-            </div>
-
             {order.paymentLink && (
-              <div className="border rounded-xl p-4">
-                <p className="border-b border-[#3D2008]/25 pb-2 font-medium mb-3">
-                  Thanh toán
-                </p>
-                <div className="flex flex-col gap-1.5 text-sm">
-                  <p>
-                    <span className="text-[#3D2008]/75">Đã thanh toán: </span>
-                    <span className="font-medium">
-                      {formatMoney(order.paymentLink.amountPaid)}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="text-[#3D2008]/75">Còn lại: </span>
-                    <span className="font-medium">
-                      {formatMoney(order.paymentLink.amountRemaining)}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="text-[#3D2008]/75">Trạng thái: </span>
-                    <span className="font-medium">{order.paymentLink.status}</span>
-                  </p>
+              <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
+                <div className="flex justify-between border-b border-[#3D2008]/25 pb-1">
+                  <p className="font-semibold">Thanh toán</p>
+                  {/* Payment Status */}
+                  {order.paymentMethod === "BANK_TRANSFER" && (
+                    <div className="flex items-center gap-1">
+                        {formatPaymentStatusIcon(order.paymentLink.status)}
+                        <span
+                            className={`font-medium text-[6px] sm:text-[7px] md:text-[8px] lg:text-[12px] xl:text-[12px] 2xl:text-[13px] ${formatPaymentStatusClassName(
+                                order.paymentLink.status
+                            )}`}
+                        >
+                            {formatPaymentStatus(order.paymentLink.status)}
+                        </span>                     
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5 text-sm pt-2">
+                  <div className="flex flex-col gap-[2vh] pb-[2vh]
+                    text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                      <div className="flex justify-between">
+                          <p>Tạm tính</p>
+                          <p>{order.totalMoney.toLocaleString("vi-VN")} đ</p>
+                      </div>
+                      <div className="flex justify-between">
+                          <p>Giảm giá</p>
+                          <p> - </p>
+                      </div>
+                      <div className="flex justify-between">
+                          <p> Phí giao hàng</p>
+                          <p> - </p>
+                      </div>    
+                  </div>                    
+                  <div className="flex justify-between font-semibold
+                    text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                    <p>Thành tiền</p>
+                    <p>
+                      {formatMoney(order.totalMoney)}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
-
           </div>
         )}
       </div>
