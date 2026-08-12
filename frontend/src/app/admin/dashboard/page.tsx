@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import { useRouter } from "next/navigation";
 import { getAdminAccessToken, getAdminRefreshToken, clearAdminAuth } from "@/src/utils/adminAuth";
-import DetailOrder from "./OrderForm";
+import DetailOrder from "./Orders/OrderForm"
 import { ChevronDown, LogOut } from "lucide-react";
 
 type AdminStats = {

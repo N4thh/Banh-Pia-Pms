@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import Modal from "@/src/components/Modal";
 import {Check, ChevronLeft, Clock3, Dot, LoaderCircle, Package, ReceiptText, UserRound, X } from "lucide-react";
-import OrderStepper from "../../landing/MyOrder/OrderStepper";
+import OrderStepper from "../../../landing/MyOrder/OrderStepper";
 import toast from "react-hot-toast";
 import OrderCancel from "./OrderCancel";
 import OrderCompleted from "./OrderCompleted";
