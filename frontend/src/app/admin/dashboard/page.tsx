@@ -5,6 +5,7 @@ import { axiosClient } from "@/src/api/axios-client";
 import { useRouter } from "next/navigation";
 import { getAdminAccessToken, getAdminRefreshToken, clearAdminAuth } from "@/src/utils/adminAuth";
 import DetailOrder from "./Orders/OrderForm"
+import StatForm from "./Stats/StatForm";
 import { ChevronDown, LogOut } from "lucide-react";
 
 type AdminStats = {
@@ -473,9 +474,7 @@ export default function AdminDashboard() {
                     {/* Page 2 */}
                     {currentPage === 2 && (
                         <div className="w-full mt-5 pt-5">
-                            <p className="text-[#3D2008]/60 text-center">
-                                Trang Thống kê (đang phát triển)
-                            </p>
+                            <StatForm />
                         </div>
                     )}
                 </div>

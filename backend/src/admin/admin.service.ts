@@ -326,6 +326,7 @@ export class AdminService {
                 totalOrders: 0,
                 byEggCount: { '0': 0, '1': 0, '2': 0, '3': 0 },
                 byKind: {},
+                byCakeIdEggCount: {},
             };
 
             breakdown.totalCakes += cakes;
@@ -337,6 +338,15 @@ export class AdminService {
                     (breakdown.byEggCount[eggCount] ?? 0) + item.quantity;
                 breakdown.byKind[item.cake.kind] =
                     (breakdown.byKind[item.cake.kind] ?? 0) + item.quantity;
+
+                const cakeEggCount = breakdown.byCakeIdEggCount[String(item.cakeId)] ??= {
+                    '0': 0,
+                    '1': 0,
+                    '2': 0,
+                    '3': 0,
+                };
+                cakeEggCount[eggCount] =
+                    (cakeEggCount[eggCount] ?? 0) + item.quantity;
             }
         }
 
@@ -559,11 +569,12 @@ type WeekdayEntry = {
     returningVisitors: number;
 };
 
-type CakeBreakDown = { 
-    totalCakes: number; 
-    totalOrders: number; 
-    byEggCount: Record<string, number>; 
-    byKind: Record<string, number>; 
+type CakeBreakDown = {
+    totalCakes: number;
+    totalOrders: number;
+    byEggCount: Record<string, number>;
+    byKind: Record<string, number>;
+    byCakeIdEggCount: Record<string, Record<string, number>>;
 }
 
 type OrderWithItems = { 

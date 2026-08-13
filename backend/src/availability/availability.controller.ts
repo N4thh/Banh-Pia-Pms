@@ -39,6 +39,13 @@ export class AvailabilityController {
         return this.avaibilityService.getAdminCalendar();
     }
 
+    @Get('admin/stats-calendar')
+    @UseGuards(JwtBlacklistGruard, AdminGuard)
+    @IsAdmin()
+    async getStatsCalendar() {
+        return this.avaibilityService.getStatsCalendar();
+    }
+
     @Patch('edit')
     @UseGuards(JwtBlacklistGruard, AdminGuard)
     @IsAdmin()

@@ -239,8 +239,16 @@ export class AvailabilityService {
     const businessToday = getBusinessDateOnly();
     const today = toPrismaDate(businessToday);
 
+    return this.getCalendarSlots({ date: { gte: today } });
+  }
+
+  async getStatsCalendar() {
+    return this.getCalendarSlots({});
+  }
+
+  private async getCalendarSlots(where: { date?: { gte?: Date } }) {
     const slots = await this.prisma.availability.findMany({
-      where: { date: { gte: today } },
+      where,
       orderBy: { date: 'asc' },
       include: {
         cake: { select: { id: true, kind: true } },
@@ -266,18 +274,18 @@ export class AvailabilityService {
     }
 
     return slots.map((slot) => {
-        const date = normalizeDateOnly(slot.date);
-        return {
-            date,
-            cake: {
-                cakeId: slot.cake.id,
-                cakeName: slot.cake.kind,
-                maxCapacity: slot.maxCapacity,
-                currentBooked: slot.currentBooked,
-                bufferLimit: slot.bufferLimit,
-            },
-            orderCount: countMap.get(date) ?? 0, 
-        };
+      const date = normalizeDateOnly(slot.date);
+      return {
+        date,
+        cake: {
+          cakeId: slot.cake.id,
+          cakeName: slot.cake.kind,
+          maxCapacity: slot.maxCapacity,
+          currentBooked: slot.currentBooked,
+          bufferLimit: slot.bufferLimit,
+        },
+        orderCount: countMap.get(date) ?? 0,
+      };
     });
   }
 
