@@ -5,6 +5,7 @@ import { IsAdmin } from 'src/common/decorators/is-admin.decorators';
 import { AdminService } from './admin.service';
 import { AdminStatsDto } from './dto/admin-stats.dto';
 import { GetOrdersBySlotDto } from './dto/admin-orders.dto';
+import { AdminStatsOverviewDto } from './dto/admin-stats-overview.dto';
 
 @Controller('admin')
 @UseGuards(JwtBlacklistGruard, AdminGuard)
@@ -17,6 +18,13 @@ export class AdminController {
     async getStats(@Query() dto: AdminStatsDto) { 
         return this.adminService.getStats(dto.range);
     }
+
+    @Get('stats/overview')
+    async getStatsOverview(@Query() dto: AdminStatsOverviewDto) {
+        return this.adminService.getStatOverview(dto);
+    }
+
+
     @Get('orders-by-slot')
     @UseGuards(JwtBlacklistGruard, AdminGuard)
     @IsAdmin()
