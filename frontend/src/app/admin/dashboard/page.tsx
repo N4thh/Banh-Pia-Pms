@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { vi } from "date-fns/locale";
+import "react-datepicker/dist/react-datepicker.css";
 import { axiosClient } from "@/src/api/axios-client";
 import { useRouter } from "next/navigation";
 import { getAdminAccessToken, getAdminRefreshToken, clearAdminAuth } from "@/src/utils/adminAuth";
 import DetailOrder from "./Orders/OrderForm"
 import StatForm from "./Stats/StatForm";
-import { ChevronDown, LogOut } from "lucide-react";
+import { CalendarDays, ChevronDown, LogOut, Minus, Plus, X } from "lucide-react";
+
+registerLocale("vi", vi);
 
 type AdminStats = {
   totalRevenue: number | string;
@@ -107,6 +112,12 @@ export default function AdminDashboard() {
     const [slotLoading, setSlotLoading] = useState(false);
     const [slotError, setSlotError] = useState<string | null>(null);
     const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
+    const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
+    const [slotModalDate, setSlotModalDate] = useState("");
+    const [slotModalCapacity, setSlotModalCapacity] = useState(0);
+    const [slotModalSaving, setSlotModalSaving] = useState(false);
+
+    const MIN_SLOT_CAPACITY = 1;
     
     useEffect(() => {
         const at_key = getAdminAccessToken();
@@ -240,6 +251,34 @@ export default function AdminDashboard() {
 
     const toggleWeek = (weekNumber: number) => {
         setOpenWeekNumber((prev) => (prev === weekNumber ? null : weekNumber));
+    };
+
+    const openSlotModal = () => {
+        setSlotModalDate(getTodayVN());
+        setSlotModalCapacity(10);
+        setIsSlotModalOpen(true);
+    };
+
+    const handleSlotModalSave = async () => {
+        if (!slotModalDate || !Number.isInteger(slotModalCapacity) || slotModalCapacity < MIN_SLOT_CAPACITY) {
+            return;
+        }
+
+        try {
+            setSlotModalSaving(true);
+            await axiosClient.post("/availability/setup", {
+                cakeId: 2,
+                dates: [slotModalDate],
+                maxCapacity: slotModalCapacity,
+            });
+            setIsSlotModalOpen(false);
+            await fetchCalendar();
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Không thể thêm slot";
+            setSlotError(message);
+        } finally {
+            setSlotModalSaving(false);
+        }
     };
 
     const handleSlotClick = async (slot: SlotDate) => {
@@ -378,8 +417,9 @@ export default function AdminDashboard() {
                         <div className="w-full mt-5 flex">
                             {/* left canlendar */}
                             <div className="w-[25%] max-h-150 border rounded-2xl border-[#3D2008]/25 p-4 overflow-y-auto no-scrollbar">
-                                <p className="border-b-2 border-[#3D2008] font-semibold
-                                text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">Lịch</p>
+                                <div className="flex items-center justify-between border-b-2 border-[#3D2008] pb-2">
+                                    <p className="font-semibold text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">Lịch</p>
+                                </div>
 
                                 {weeks.length === 0 && (
                                     <p className="text-[#3D2008]/60 mt-4 text-center
@@ -450,6 +490,18 @@ export default function AdminDashboard() {
                                         );
                                     })}
                                 </div>
+                                {/* Add slot button */}
+                                <div className="flex w-full items-center gap-1">
+                                    <button
+                                        type="button"
+                                        title="Chọn ngày để thêm slot"
+                                        onClick={openSlotModal}
+                                        className="w-full flex items-center justify-center gap-1 rounded-lg px-6 py-3 mt-5 font-semibold
+                                        bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors text-[14px] disabled:opacity-50"
+                                    >
+                                        <Plus size={18} /> Thêm ngày
+                                    </button>
+                                </div>                
                             </div>
 
                             {/* right detail order */}
@@ -471,6 +523,110 @@ export default function AdminDashboard() {
                             )}
                         </div>
                     ): ""}
+
+                    {/* Add slot */}
+                    {isSlotModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                            <div className="w-full max-w-sm rounded-2xl bg-[#FFFDF7] p-6 text-[#3D2008] shadow-2xl">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="font-semibold
+                                    text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]">Thêm ngày trong tuần</h2>
+                                    <button type="button" onClick={() => setIsSlotModalOpen(false)} className="rounded-md p-1 hover:bg-[#3D2008]/10">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="mt-2 space-y-4">
+                                    <label className="flex flex-col gap-1 text-sm">
+                                        <div className="flex items-center gap-2 rounded-lg border border-[#3D2008]/20 bg-white px-3 py-2">
+                                            <CalendarDays size={17} />
+                                            <DatePicker
+                                                selected={slotModalDate ? new Date(`${slotModalDate}T00:00:00`) : null}
+                                                onChange={(date: Date | null) => {
+                                                    if (!date) {
+                                                        setSlotModalDate("");
+                                                        return;
+                                                    }
+
+                                                    const year = date.getFullYear();
+                                                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                                                    const day = String(date.getDate()).padStart(2, "0");
+                                                    setSlotModalDate(`${year}-${month}-${day}`);
+                                                }}
+                                                locale="vi"
+                                                dateFormat="dd/MM/yyyy"
+                                                placeholderText="Chọn ngày"
+                                                className="w-full bg-transparent outline-none"
+                                                wrapperClassName="w-full"
+                                                calendarClassName="vietnamese-calendar"
+                                                showPopperArrow={false}
+                                            />
+                                        </div>
+                                    </label>
+
+                                    <label className="flex flex-col gap-1 text-sm">
+                                        <span className="font-medium 
+                                        text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">Thêm số lượng bánh sẽ bán trong ngày</span>
+                                        <div className="flex justify-between mt-3">
+                                            <p className="text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">Số lượng bánh</p>
+                                            <div className="flex w-fit items-center justify-center rounded-2xl border border-[#3D2008] px-1 py-1">
+                                                <button
+                                                    type="button"
+                                                    aria-label="Giảm số lượng bánh"
+                                                    onClick={() => setSlotModalCapacity((prev) => Math.max(MIN_SLOT_CAPACITY, prev - 1))}
+                                                    disabled={slotModalSaving || slotModalCapacity <= MIN_SLOT_CAPACITY}
+                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3D2008] text-[#FDF6E8] transition-all duration-150 hover:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    <Minus size={20} />
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min={MIN_SLOT_CAPACITY}
+                                                    step={1}
+                                                    value={slotModalCapacity}
+                                                    onChange={(event) => {
+                                                        const parsed = Number(event.target.value);
+                                                        if (Number.isFinite(parsed)) setSlotModalCapacity(Math.max(MIN_SLOT_CAPACITY, Math.trunc(parsed)));
+                                                    }}
+                                                    onBlur={() => setSlotModalCapacity((prev) => Math.max(MIN_SLOT_CAPACITY, Math.trunc(prev)))}
+                                                    onKeyDown={(event) => {
+                                                        if (["e", "E", "+", "-", ".", ","].includes(event.key)) event.preventDefault();
+                                                    }}
+                                                    disabled={slotModalSaving}
+                                                    aria-label="Số lượng bánh"
+                                                    className="w-8 bg-transparent text-center font-medium text-[#3D2008] outline-none [appearance:textfield] text-[clamp(13px,1.1vw,16px)] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    aria-label="Tăng số lượng bánh"
+                                                    onClick={() => setSlotModalCapacity((prev) => prev + 1)}
+                                                    disabled={slotModalSaving}
+                                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3D2008] text-[#FDF6E8] transition-all duration-150 hover:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    <Plus size={20} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="pt-4">
+                                    <button
+                                        type="button"
+                                        disabled={slotModalSaving || !slotModalDate || !Number.isInteger(slotModalCapacity) || slotModalCapacity < MIN_SLOT_CAPACITY}
+                                        onClick={handleSlotModalSave}
+                                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm disabled:cursor-not-allowed 
+                                        bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors disabled:opacity-50
+                                        font-semibold text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]"
+                                    >
+                                        {slotModalSaving ? "Đang lưu..." : "Lưu thay đổi"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Page 2 */}
                     {currentPage === 2 && (
                         <div className="w-full mt-5 pt-5">
