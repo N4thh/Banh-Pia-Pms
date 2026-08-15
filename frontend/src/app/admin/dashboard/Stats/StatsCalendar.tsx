@@ -9,7 +9,7 @@ export type StatsWeekSelection = {
   weeks: number;
 };
 
-type StatsCalendarWeek = StatsWeekSelection & { weekNumber: number };
+export type StatsCalendarWeek = StatsWeekSelection & { weekNumber: number };
 
 type SlotCalendarItem = {
   date: string;
@@ -73,9 +73,15 @@ function buildCompletedWeeks(items: SlotCalendarItem[], today: string): StatsCal
 export default function StatsCalendar({
   selectedWeeks,
   onSelect,
+  singleSelect = false,
+  onWeekSelected,
+  className = "",
 }: {
   selectedWeeks?: StatsWeekSelection;
   onSelect: (selection: StatsWeekSelection | null) => void;
+  singleSelect?: boolean;
+  onWeekSelected?: (week: StatsCalendarWeek | null) => void;
+  className?: string;
 }) {
   const [weeks, setWeeks] = useState<StatsCalendarWeek[]>([]);
   const [selectedWeekNumbers, setSelectedWeekNumbers] = useState<number[]>([]);
@@ -115,6 +121,13 @@ export default function StatsCalendar({
   }, [selectedWeeks, weeks]);
 
   const toggleWeek = (week: StatsCalendarWeek) => {
+    if (singleSelect) {
+      setSelectedWeekNumbers([week.weekNumber]);
+      onSelect(week);
+      onWeekSelected?.(week);
+      return;
+    }
+
     const next = selectedWeekNumbers.includes(week.weekNumber)
       ? selectedWeekNumbers.filter((number) => number !== week.weekNumber)
       : [...selectedWeekNumbers, week.weekNumber];
@@ -122,6 +135,7 @@ export default function StatsCalendar({
     if (next.length === 0) {
       setSelectedWeekNumbers([]);
       onSelect(null);
+      onWeekSelected?.(null);
       return;
     }
 
@@ -136,15 +150,17 @@ export default function StatsCalendar({
       .filter((item): item is StatsCalendarWeek => Boolean(item));
 
     setSelectedWeekNumbers(sorted);
-    onSelect({
+    const selection = {
       startDate: selected[0].startDate,
       endDate: selected[selected.length - 1].endDate,
       weeks: selected.length,
-    });
+    };
+    onSelect(selection);
+    onWeekSelected?.(selected.length === 1 ? selected[0] : null);
   };
 
   return (
-    <aside className="w-full shrink-0 rounded-xl border border-[#3D2008]/15 bg-white p-4 shadow-xl lg:w-72">
+    <aside className={`w-full shrink-0 rounded-xl border border-[#3D2008]/15 bg-white p-4 shadow-xl lg:w-72 ${className}`}>
       <p className="mb-3 border-b-2 border-[#3D2008] pb-2 font-semibold">
         Lịch thống kê
       </p>

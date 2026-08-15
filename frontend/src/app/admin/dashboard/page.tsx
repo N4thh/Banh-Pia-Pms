@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { getAdminAccessToken, getAdminRefreshToken, clearAdminAuth } from "@/src/utils/adminAuth";
 import DetailOrder from "./Orders/OrderForm"
 import StatForm from "./Stats/StatForm";
+import MobileAdminDashboard from "./mobile/mb-Dasboard";
 import { CalendarDays, ChevronDown, LogOut, Minus, Plus, X } from "lucide-react";
 
 registerLocale("vi", vi);
@@ -259,26 +260,33 @@ export default function AdminDashboard() {
         setIsSlotModalOpen(true);
     };
 
-    const handleSlotModalSave = async () => {
-        if (!slotModalDate || !Number.isInteger(slotModalCapacity) || slotModalCapacity < MIN_SLOT_CAPACITY) {
-            return;
+    const createSlot = async (date: string, capacity: number) => {
+        if (!date || !Number.isInteger(capacity) || capacity < MIN_SLOT_CAPACITY) {
+            return false;
         }
 
         try {
             setSlotModalSaving(true);
+            setSlotError(null);
             await axiosClient.post("/availability/setup", {
                 cakeId: 2,
-                dates: [slotModalDate],
-                maxCapacity: slotModalCapacity,
+                dates: [date],
+                maxCapacity: capacity,
             });
-            setIsSlotModalOpen(false);
             await fetchCalendar();
+            return true;
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Không thể thêm slot";
             setSlotError(message);
+            return false;
         } finally {
             setSlotModalSaving(false);
         }
+    };
+
+    const handleSlotModalSave = async () => {
+        const saved = await createSlot(slotModalDate, slotModalCapacity);
+        if (saved) setIsSlotModalOpen(false);
     };
 
     const handleSlotClick = async (slot: SlotDate) => {
@@ -308,13 +316,51 @@ export default function AdminDashboard() {
         setCurrentPage(2);
     };
 
-    if (loading) return <div>Đang tải thống kê...</div>;
-    if (error) return <div>{error}</div>;
-    if (!stats) return <div>Chưa có dữ liệu</div>;
-
     return (
-        <div className="min-h-screen flex justify-center p-5 bg-[#FFFDF7]">
-            <div className="max-w-340 w-full  h-full text-[#3D2008]">
+        <>
+            {/* Mobile */}
+            <div className="md:hidden">
+                {loading && (
+                    <div className="min-h-screen flex items-center justify-center bg-[#FFFDF7] text-[#3D2008]/60 text-sm">
+                        Đang tải thống kê...
+                    </div>
+                )}
+                {!loading && error && (
+                    <div className="min-h-screen flex items-center justify-center bg-[#FFFDF7] text-[#FF5F57] text-sm">
+                        {error}
+                    </div>
+                )}
+                {!loading && !error && (
+                    <MobileAdminDashboard
+                        onLogout={handleLogout}
+                        stats={stats}
+                        weeks={weeks}
+                        selectedSlot={selectedSlot}
+                        openWeekNumber={openWeekNumber}
+                        onToggleWeek={toggleWeek}
+                        onSelectSlot={handleSlotClick}
+                        onCreateSlot={createSlot}
+                        slotError={slotError}
+                        ordersRefreshKey={ordersRefreshKey}
+                    />
+                )}
+            </div>
+
+            {/* Desktop */}
+            <div className="hidden md:block min-h-screen bg-[#FFFDF7]">
+                {loading && (
+                    <div className="min-h-screen flex items-center justify-center text-[#3D2008]/60 text-sm">
+                        Đang tải thống kê...
+                    </div>
+                )}
+                {!loading && error && (
+                    <div className="min-h-screen flex items-center justify-center text-[#FF5F57] text-sm">
+                        {error}
+                    </div>
+                )}
+                {!loading && !error && stats && (
+                    <div className="flex justify-center p-5">
+                        <div className="max-w-340 w-full h-full text-[#3D2008]">
                 {/* Header */}
                 <div className="w-full h-[20vh] flex justify-between gap-5">
                     {/* left */}
@@ -635,7 +681,10 @@ export default function AdminDashboard() {
                     )}
                 </div>
 
+                        </div>
+                    </div>
+                )}
             </div>
-        </div>
+        </>
     );
 }

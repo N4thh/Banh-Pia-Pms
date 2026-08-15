@@ -93,7 +93,12 @@ type StatsOverviewResponse = {
 const formatMoney = (value: number) =>
   `${value.toLocaleString("vi-VN")} đ`;
 
-export default function StatForm({ selectedWeeks }: { selectedWeeks?: StatsWeekSelection }) {
+type StatFormProps = {
+  selectedWeeks?: StatsWeekSelection;
+  mobile?: boolean;
+};
+
+export default function StatForm({ selectedWeeks, mobile = false }: StatFormProps) {
   const [startDate, setStartDate] = useState<string | null>(selectedWeeks?.startDate ?? null);
   const [weeks, setWeeks] = useState(selectedWeeks?.weeks ?? 0);
   const [stats, setStats] = useState<StatsOverviewResponse | null>(null);
@@ -155,15 +160,16 @@ export default function StatForm({ selectedWeeks }: { selectedWeeks?: StatsWeekS
   };
 
   return (
-    <section className="flex w-full min-w-0 max-w-full gap-4 overflow-hidden text-[#3D2008]">
-      {/* Calendar */}
-      <StatsCalendar
-        selectedWeeks={selectedWeeks}
-        onSelect={(selection) => {
-          setStartDate(selection?.startDate ?? null);
-          setWeeks(selection?.weeks ?? 0);
-        }}
-      />
+    <section className={`flex w-full min-w-0 max-w-full gap-4 text-[#3D2008] ${mobile ? "flex-col overflow-visible" : "overflow-hidden"}`}>
+      {!mobile && (
+        <StatsCalendar
+          selectedWeeks={selectedWeeks}
+          onSelect={(selection) => {
+            setStartDate(selection?.startDate ?? null);
+            setWeeks(selection?.weeks ?? 0);
+          }}
+        />
+      )}
 
       {loading && <p>Đang tải thống kê...</p>}
       {error && <p className="text-red-600">{error}</p>}
@@ -172,7 +178,9 @@ export default function StatForm({ selectedWeeks }: { selectedWeeks?: StatsWeekS
       <div className="min-w-0 flex-1">
         {stats && !loading && (
           <div className="flex min-w-0 flex-col">
-            <div className="grid min-w-0 grid-cols-1 gap-3 overflow-hidden rounded-2xl bg-[#FFFDF7] shadow-2xl sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            <div className={mobile
+              ? "flex min-w-0 gap-3 overflow-x-auto rounded-2xl bg-[#FFFDF7] shadow-2xl no-scrollbar"
+              : "grid min-w-0 grid-cols-1 gap-3 overflow-hidden rounded-2xl bg-[#FFFDF7] shadow-2xl sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5"}>
               <KpiCard
                 label="Tổng đơn"
                 value={`${stats.summary.orders} đơn`}
@@ -205,14 +213,14 @@ export default function StatForm({ selectedWeeks }: { selectedWeeks?: StatsWeekS
               />
             </div>
             {/* Doanh số đơn trong tuần   +    PieChart: overall số bánh bán ra */}
-            <div className="flex min-w-0 flex-wrap gap-4">
-              <div className="mt-5 min-w-0 w-[65%]">
+            <div className={`flex min-w-0 gap-4 ${mobile ? "flex-col" : "flex-wrap"}`}>
+              <div className={`mt-5 min-w-0 ${mobile ? "w-full" : "w-[65%]"}`}>
                 <OrdersByWeekdayChart
                   data={stats.byWeekday}
                 />
               </div>
 
-              <div className="mt-5 min-w-0 w-[33%]">
+              <div className={`mt-5 min-w-0 ${mobile ? "w-full" : "w-[33%]"}`}>
                 <CakeOverviewPieChart
                   cakeBreakdownByDate={stats.cakeBreakdownByDate}
                   daily={stats.daily}
@@ -226,11 +234,11 @@ export default function StatForm({ selectedWeeks }: { selectedWeeks?: StatsWeekS
             </div>
 
             {/* Double Bar chart: New + returning visitors + Piechart: devices */}
-            <div className="flex min-w-0 flex-wrap gap-4 w-full">
-              <div className="mt-5 min-w-0 w-[72%]">
+            <div className={`flex min-w-0 gap-4 w-full ${mobile ? "flex-col" : "flex-wrap"}`}>
+              <div className={`mt-5 min-w-0 ${mobile ? "w-full" : "w-[72%]"}`}>
                 <VisitorsDoubleBarChart data={stats.daily} />
               </div>
-              <div className="mt-5 min-w-0 w-[26%]">
+              <div className={`mt-5 min-w-0 ${mobile ? "w-full" : "w-[26%]"}`}>
                 <DevicesPieChart devices={stats.devices} />
               </div>
             </div>
@@ -251,7 +259,7 @@ function KpiCard({ label, value, change, direction }: { label: string; value: st
       : undefined;
 
   return (
-    <article className="relative p-4 after:absolute after:left-0 after:top-[15%] after:h-[70%] after:w-px after:bg-[#3D2008]/20 first:after:hidden">
+    <article className="relative min-w-40 shrink-0 p-4 after:absolute after:left-0 after:top-[15%] after:h-[70%] after:w-px after:bg-[#3D2008]/20 first:after:hidden">
       <p className="text-sm text-[#3D2008]/65"> {label}</p>
       <p className="mt-2 text-xl font-semibold"> {value} </p>
       <p className="mt-1 text-xs" style={{ color: changeColor }} >

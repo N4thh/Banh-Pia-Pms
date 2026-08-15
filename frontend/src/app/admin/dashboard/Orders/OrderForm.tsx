@@ -138,7 +138,7 @@ export default function DetailOrder({
 
   const groupedOrders = useMemo(() => {
     const map = new Map<OrderStatus, OrderSummary[]>();
-    const order: OrderStatus[] = ["PROCESSING", "NEW", "COMPLETED", "CANCELLED"];
+    const order: OrderStatus[] = ["NEW", "PROCESSING", "COMPLETED", "CANCELLED"];
     for (const status of order) {
       const group = orders.filter((o) => o.status === status);
       if (group.length > 0) map.set(status, group);
