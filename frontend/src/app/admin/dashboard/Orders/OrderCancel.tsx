@@ -65,7 +65,7 @@ export default function OrderCancel({ orderId, onClose, onSuccess }: Props) {
     <Modal
       open={isOpen}
       onClose={onClose}
-      closeOnOverlayClick={false}
+      closeOnOverlayClick
       panelClassName="rounded-2xl w-full max-w-[65vw] sm:max-w-[35vw] md:max-w-[30vw] max-h-[90vh] overflow-y-auto no-scrollbar bg-[#FFFDF7] shadow-2xl p-6 sm:p-8"
     >
       <div className="relative flex flex-col gap-5 text-[#3D2008]">

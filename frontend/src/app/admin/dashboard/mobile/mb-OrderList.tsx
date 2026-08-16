@@ -35,7 +35,7 @@ export default function OrderList({
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<OrderStatus>(
-    initialStatus && STATUS_ORDER.includes(initialStatus) ? initialStatus : "NEW",
+    initialStatus && STATUS_ORDER.includes(initialStatus) ? initialStatus : "PROCESSING",
   );
   const [expanded, setExpanded] = useState<number | null>(null);
   const [slotDetail, setSlotDetail] = useState<SlotDetail | null>(null);
@@ -120,7 +120,7 @@ export default function OrderList({
           <PencilLine size={15} />
         </button>
       </div>
-
+      {/* Order status */}
       <div className="mt-4 flex w-full rounded-4xl bg-[#3D2008]/8 px-2 py-1">
         {STATUS_ORDER.map((item) => (
           <button

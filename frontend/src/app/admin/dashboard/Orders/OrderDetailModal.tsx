@@ -273,11 +273,6 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                     text-[#C01F1F] [text-decoration-skip-ink:none] underline">
                     <X size={20} />
                     Hủy đơn
-                    <OrderCancel
-                      orderId={openCancel ? order?.id : null}
-                      onClose={() => setOpenCancel(false)}
-                      onSuccess={handleOrderStatusUpdated}
-                    />
                   </button>
                 )} 
 
@@ -286,17 +281,23 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                   className="px-6 py-4 lg:px-6 lg:py-3
                   border rounded-xl border-[#C01F1F] text-[#FDF6E8] bg-[#C01F1F] hover:bg-[#A61B1B] active:bg-[#8B1515] transition-colors">
                   Hoàn tất đơn
-                  <OrderCompleted
-                    orderId={openCompleted ? order?.id : null}
-                    onClose={() => setOpenCompleted(false)}
-                    onSuccess={handleOrderStatusUpdated}
-                  />
                 </button>
                 )}
-              </div>
-            </div>
+               </div>
+             </div>
 
-            <hr className="border-0 h-px bg-[#3D2008]/25" />
+            <OrderCancel
+              orderId={openCancel ? order.id : null}
+              onClose={() => setOpenCancel(false)}
+              onSuccess={handleOrderStatusUpdated}
+            />
+            <OrderCompleted
+              orderId={openCompleted ? order.id : null}
+              onClose={() => setOpenCompleted(false)}
+              onSuccess={handleOrderStatusUpdated}
+            />
+ 
+             <hr className="border-0 h-px bg-[#3D2008]/25" />
 
             <div className="bg-[#FFFDF7] text-[#3D2008] rounded-xl drop-shadow-2xl p-4">
               <p className="border-b border-[#3D2008]/25 pb-2 font-medium mb-3">
@@ -332,52 +333,50 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
                 ))}
               </div>
             </div>
-
-            {order.paymentLink && (
-              <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
-                <div className="flex justify-between border-b border-[#3D2008]/25 pb-1">
-                  <p className="font-semibold">Thanh toán</p>
-                  {/* Payment Status */}
-                  {order.paymentMethod === "BANK_TRANSFER" && (
-                    <div className="flex items-center gap-1">
-                        {formatPaymentStatusIcon(order.paymentLink.status)}
-                        <span
-                            className={`font-medium text-[6px] sm:text-[7px] md:text-[8px] lg:text-[12px] xl:text-[12px] 2xl:text-[13px] ${formatPaymentStatusClassName(
-                                order.paymentLink.status
-                            )}`}
-                        >
-                            {formatPaymentStatus(order.paymentLink.status)}
-                        </span>                     
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1.5 text-sm pt-2">
-                  <div className="flex flex-col gap-[2vh] pb-[2vh]
-                    text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                      <div className="flex justify-between">
-                          <p>Tạm tính</p>
-                          <p>{order.totalMoney.toLocaleString("vi-VN")} đ</p>
-                      </div>
-                      <div className="flex justify-between">
-                          <p>Giảm giá</p>
-                          <p> - </p>
-                      </div>
-                      <div className="flex justify-between">
-                          <p> Phí giao hàng</p>
-                          <p> - </p>
-                      </div>    
-                  </div>                    
-                  <div className="flex justify-between font-semibold
-                    text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                    <p>Thành tiền</p>
-                    <p>
-                      {formatMoney(order.totalMoney)}
-                    </p>
+  
+            <div className="bg-[#FFFDF7] rounded-xl drop-shadow-2xl p-4">
+              <div className="flex justify-between border-b border-[#3D2008]/25 pb-1">
+                <p className="font-semibold">Thanh toán</p>
+                {/* Payment Status */}
+                {order.paymentLink &&  order.paymentMethod === "BANK_TRANSFER" && (
+                  <div className="flex items-center gap-1">
+                      {formatPaymentStatusIcon(order.paymentLink.status)}
+                      <span
+                          className={`font-medium text-[6px] sm:text-[7px] md:text-[8px] lg:text-[12px] xl:text-[12px] 2xl:text-[13px] ${formatPaymentStatusClassName(
+                              order.paymentLink.status
+                          )}`}
+                      >
+                          {formatPaymentStatus(order.paymentLink.status)}
+                      </span>                     
                   </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5 text-sm pt-2">
+                <div className="flex flex-col gap-[2vh] pb-[2vh] border-b border-[#3D2008]/20
+                  text-[12px] sm:text-[12px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                    <div className="flex justify-between">
+                        <p>Tạm tính</p>
+                        <p>{order.totalMoney.toLocaleString("vi-VN")} đ</p>
+                    </div>
+                    <div className="flex justify-between">
+                        <p>Giảm giá</p>
+                        <p> - </p>
+                    </div>
+                    <div className="flex justify-between">
+                        <p> Phí giao hàng</p>
+                        <p> - </p>
+                    </div>    
+                </div>                    
+                <div className="flex justify-between font-semibold 
+                  text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                  <p>Thành tiền</p>
+                  <p>
+                    {formatMoney(order.totalMoney)}
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
@@ -438,9 +437,7 @@ export default function OrderDetailModal({ orderId, onClose }: Props) {
             <span className={`text-[10px] sm:text-[11px] md:text-[12px] lg:text-[11px] xl:text-[14px] 2xl:text-[15px]
             ${!order?.note ? "text-[#3D2008]/75" : ""}`}
             >{order?.note ? `${order?.note}` : "Không ghi chú"}</span>
-
-          </div>
-              
+          </div>        
         </div>
         
       </div>  

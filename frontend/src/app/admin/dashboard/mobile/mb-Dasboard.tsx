@@ -248,7 +248,8 @@ export default function MobileAdminDashboard(props: Props) {
         </div>
       </nav>
 
-      <MobileSheet open={calendarOpen} onClose={() => setCalendarOpen(false)}>
+      <MobileSheet open={calendarOpen} onClose={() => setCalendarOpen(false)}
+        panelClassName="h-[70vh]">
         <div className="flex items-center justify-between border-b-2 border-[#3D2008] pb-3">
           <h2 className="font-semibold text-[22px]">Lịch</h2>
           <button
