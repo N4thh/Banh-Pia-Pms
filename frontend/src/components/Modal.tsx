@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from "react";
+import { CSSProperties, ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 type ModalProps = {
@@ -8,6 +8,7 @@ type ModalProps = {
     onClose: () => void;
     children: ReactNode;
     panelClassName?: string;
+    panelStyle?: CSSProperties;
     closeOnOverlayClick?: boolean;
     containerClassName?: string;
 };
@@ -17,6 +18,7 @@ export default function Modal({
     onClose,
     children,
     panelClassName = "",
+    panelStyle,
     closeOnOverlayClick = true,
     containerClassName,
 }: ModalProps) {
@@ -44,6 +46,7 @@ export default function Modal({
         >
             <div
                 className={panelClassName}
+                style={panelStyle}
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}

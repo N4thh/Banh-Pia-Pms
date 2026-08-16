@@ -584,8 +584,7 @@ export default function AdminDashboard() {
 
                                 <div className="mt-2 space-y-4">
                                     <label className="flex flex-col gap-1 text-sm">
-                                        <div className="flex items-center gap-2 rounded-lg border border-[#3D2008]/20 bg-white px-3 py-2">
-                                            <CalendarDays size={17} />
+                                        <div className="flex items-center gap-2 rounded-lg border border-[#3D2008]/20 bg-white px-3 py-2">                                        
                                             <DatePicker
                                                 selected={slotModalDate ? new Date(`${slotModalDate}T00:00:00`) : null}
                                                 onChange={(date: Date | null) => {
@@ -607,6 +606,7 @@ export default function AdminDashboard() {
                                                 calendarClassName="vietnamese-calendar"
                                                 showPopperArrow={false}
                                             />
+                                            <CalendarDays size={17} />
                                         </div>
                                     </label>
 

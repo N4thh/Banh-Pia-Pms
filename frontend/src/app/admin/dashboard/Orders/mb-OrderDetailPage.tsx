@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Dot, Package, ReceiptText, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import { axiosClient } from "@/src/api/axios-client";
 import OrderStepper from "@/src/app/landing/MyOrder/OrderStepper";
 import OrderCancel from "./OrderCancel";
 import OrderCompleted from "./OrderCompleted";
+import { formatShortDate, paymentLabel, shippingLabel} from "../mobile/mb-types";
 
 type OrderStatus = "NEW" | "PROCESSING" | "COMPLETED" | "CANCELLED";
 
@@ -24,6 +25,8 @@ type OrderDetail = {
   status: OrderStatus;
   shippingMethod: string;
   paymentMethod: string;
+  receiveDate: string;
+  orderDate: string;
   note: string | null;
   cancelReason: string;
   cancelledAt: string;
@@ -61,6 +64,17 @@ export default function MobileOrderDetailPage({ orderId }: Props) {
   const [completeOpen, setCompleteOpen] = useState(false);
   const context = searchParams.toString();
 
+  //format
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+
+    const d = new Date(dateString);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+
+    return `${day}/${month}`;
+  }
   const load = async () => {
     try {
       setLoading(true);
@@ -112,27 +126,65 @@ export default function MobileOrderDetailPage({ orderId }: Props) {
         </button>
 
         <div className="mt-5 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Đơn hàng #{order.id}</h1>
+          <div className="flex flex-col item">
+            <h1 className="text-lg font-semibold pl-1">Đơn hàng #{order.id}</h1>
+
+            <div className="flex gap-1 font-medium text-[11px]">
+              <span className="rounded bg-[#8A226F]/10 px-2 py-1 text-[#8A226F] ">
+                {paymentLabel(order.paymentMethod)}
+              </span>
+              <span className="rounded bg-[#8A226F]/10 px-2 py-1 text-[#8A226F]">
+                {shippingLabel(order.shippingMethod)}
+              </span>
+            </div>
+
+            <div className="flex font-light items-center pl-1 text-[13px]">
+              <p>Đặt vào <span className="font-medium">{order ? `${formatDate(order.orderDate)}` : ""}</span></p>
+              <Dot />
+              <p>Nhận vào <span className="font-medium">{order ? `${formatDate(order.receiveDate)}` : ""}</span></p>
+            </div>
+          </div>
+
           <span className={`rounded-full px-2 py-1 text-xs ${statusClass[order.status]}`}>
             {statusLabel[order.status]}
           </span>
         </div>
 
-        <section className="mt-4 border border-[#3D2008]/20 bg-white p-4">
-          <p className="font-medium">Thông tin khách hàng</p>
-          <p className="mt-2 text-sm">{order.customer.fullName}</p>
-          <p className="text-sm text-[#3D2008]/65">{order.customer.phone}</p>
-
-          <div className="mt-3 border-t border-[#3D2008]/15 pt-3 text-sm">
-            <p>{order.shippingMethod === "DELIVERY" ? "Giao đến" : "Đến lấy"}</p>
-            <p className="mt-1">
-              {order.paymentMethod === "CASH" ? "Thanh toán khi nhận bánh" : "Chuyển khoản"}
-            </p>
-            {order.note && <p className="mt-2 text-[#3D2008]/65">Ghi chú: {order.note}</p>}
+        <section className="mt-4 rounded-2xl drop-shadow-xl bg-white p-4">
+          <div className="flex gap-2">
+            <UserRound />
+            <span>
+              <p className="font-medium text-[15px]">  Thông tin khách hàng</p>
+              <p className="mt-2 text-sm">{order.customer.fullName}</p>
+              <p className="text-sm text-[#3D2008]">{order.customer.phone}</p>
+            </span>
           </div>
+
+          <div className="flex gap-2 mt-3 border-t border-[#3D2008]/15 pt-3 text-sm">
+            <Package />
+            <span>
+              <p className="font-medium text-[15px]">Phương thức nhận bánh</p>
+              <p className="mt-1 text-sm">{order.shippingMethod === "DELIVERY" ? "Giao đến" : "Đến lấy"}</p>
+            </span>
+          </div>
+          
+          <div className="flex gap-2 mt-3 border-t border-[#3D2008]/15 pt-3 text-sm">
+            <ReceiptText />
+            <span>
+              <p className="font-medium text-[15px]">Phương thức thanh toán</p>
+              <p className="mt-1 text-sm"> {order.paymentMethod === "CASH" ? "Thanh toán khi nhận bánh" : "Chuyển khoản"} </p>
+            </span>
+          </div>  
         </section>
 
-        <section className="mt-4 border border-[#3D2008]/20 bg-white p-4">
+        <section className="mt-4 rounded-2xl drop-shadow-xl bg-white p-4">
+          <p className="font-medium text-[15px]">Ghi chú cho đơn bánh</p>
+          {order.note ? (
+            <p className="mt-2 text-[#3D2008]/65">{order.note}</p>
+          ) : (<p className="mt-2 text-[#3D2008]/65">không có ghi chú</p>)}
+        </section>
+
+        <section className="mt-4 rounded-2xl drop-shadow-xl bg-white p-4">
           <OrderStepper
             status={order.status}
             cancelReason={order.cancelReason}
@@ -161,11 +213,11 @@ export default function MobileOrderDetailPage({ orderId }: Props) {
           )}
         </section>
 
-        <section className="mt-4 border border-[#3D2008]/20 bg-white p-4">
+        <section className="mt-4 rounded-2xl drop-shadow-xl bg-white p-4">
           <h2 className="font-semibold">Giỏ hàng ({order.items.length})</h2>
-          {order.items.map((item) => (
+          {order.items.map((item, index) => (
             <div
-              key={item.cakeId}
+              key={`${item.cakeId}-${item.eggCount}-${index}`}
               className="mt-3 flex justify-between border-t border-[#3D2008]/10 pt-3 text-sm"
             >
               <span>
