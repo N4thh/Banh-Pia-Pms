@@ -11,7 +11,6 @@ import { CreateSlotDto } from './dto/create-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { GetSlotsDto } from './dto/get-slot.dto';
-import { EditSlotDto } from './dto/edit-slot.dto';
 import {
   addDaysToDateOnly,
   getBusinessDateOnly,
@@ -69,37 +68,28 @@ export class AvailabilityService {
 
     return { status, currentBooked: newBooked };
   }
-
   async createSlot(dto: CreateSlotDto) {
     const bufferLimit = Math.ceil(dto.maxCapacity * 1.03);
-    const dates = dto.dates.map((date) =>
-      toPrismaDate(this.getDateOnly(date))
-    );
+    const date = toPrismaDate(this.getDateOnly(dto.date));
 
-    const availabilities = await this.prisma.$transaction(
-      dates.map((date) =>
-        this.prisma.availability.upsert({
-          where: {
-            cakeId_date: {
-              cakeId: dto.cakeId,
-              date,
-            },
-          },
-          update: {
-            maxCapacity: dto.maxCapacity,
-            bufferLimit,
-          },
-          create: {
-            cakeId: dto.cakeId,
-            date,
-            maxCapacity: dto.maxCapacity,
-            bufferLimit,
-          },
-        })
-      )
-  );
-
-    return availabilities;
+    return this.prisma.availability.upsert({
+      where: {
+        cakeId_date: {
+          cakeId: dto.cakeId,
+          date,
+        },
+      },
+      update: {
+        maxCapacity: dto.maxCapacity,
+        bufferLimit: bufferLimit,
+      },
+      create: {
+        cakeId: dto.cakeId,
+        date,
+        maxCapacity: dto.maxCapacity,
+        bufferLimit: bufferLimit,
+      },
+    });
   }
 
   async holdSlot(dto: HoldSlotDto) {
@@ -145,7 +135,6 @@ export class AvailabilityService {
       throw err;
     }
   }
-
   async releaseHoldSlot(cakeId: number, date: string, quantity: number) {
     const dateOnly = this.getDateOnly(date);
 
@@ -201,9 +190,7 @@ export class AvailabilityService {
         totalBooked, 
         cakes: slots.map(s => ({
           id: s.cake.id,
-          kind: s.cake.kind,
-          maxCapacity: s.maxCapacity,
-          currentBooked: s.currentBooked,
+          kind: s.cake.kind, 
           remaining: Math.max(0, s.maxCapacity - s.currentBooked),
         })),
       };
@@ -235,100 +222,11 @@ export class AvailabilityService {
     }));
   }
 
-  async getAdminCalendar() {
-    return this.getCalendarSlots({});
-  }
-
-  async getStatsCalendar() {
-    return this.getCalendarSlots({});
-  }
-
-  private async getCalendarSlots(where: { date?: { gte?: Date } }) {
-    const slots = await this.prisma.availability.findMany({
-      where,
-      orderBy: { date: 'asc' },
-      include: {
-        cake: { select: { id: true, kind: true } },
-      },
-    });
-
-    //Use Set to remove duplicate -> we have a set slot day 
-    const dateSet = new Set<string>(slots.map((s) => normalizeDateOnly(s.date)));
-    const dates = Array.from(dateSet); //convert to array
-    const datePrisma = dates.map((d) => toPrismaDate(d)); //format Date by toPrismaDate
-
-    //Count Orderby ReceiveDay // groupby receiveDate 
-    const orderCounts = await this.prisma.order.groupBy({
-        by: ['receiveDate'],
-        where: { receiveDate: { in: datePrisma } },
-        _count: { _all: true },
-    });
-
-    //Use Map so now we Dictionary <day, totalOrder>
-    const countMap = new Map<string, number>();
-    for (const c of orderCounts) {
-        countMap.set(normalizeDateOnly(c.receiveDate), c._count._all);
-    }
-
-    return slots.map((slot) => {
-      const date = normalizeDateOnly(slot.date);
-      return {
-        date,
-        cake: {
-          cakeId: slot.cake.id,
-          cakeName: slot.cake.kind,
-          maxCapacity: slot.maxCapacity,
-          currentBooked: slot.currentBooked,
-          bufferLimit: slot.bufferLimit,
-        },
-        orderCount: countMap.get(date) ?? 0,
-      };
-    });
-  }
-
   private getDateOnly(value: string | Date): string {
     try {
       return normalizeDateOnly(value);
     } catch {
       throw new BadRequestException('Ngày không hợp lệ, vui lòng dùng định dạng YYYY-MM-DD');
     }
-  }
-
-  async editSlot(dto: EditSlotDto) {
-    const date = toPrismaDate(this.getDateOnly(dto.date));
-
-    return this.prisma.$transaction(
-      async (tx) => {
-        await tx.$executeRaw`SET LOCAL lock_timeout = '3s'`;
-
-        const rows = await tx.$queryRaw<Array<{ id: number; currentBooked: number }>>`
-          SELECT id, "currentBooked"
-          FROM "Availability"
-          WHERE "cakeId" = ${dto.cakeId}
-          AND "date" = ${date}::date
-          FOR UPDATE
-        `;
-
-        if (rows.length === 0) {
-          throw new NotFoundException('Không tìm thấy slot!');
-        }
-
-        const slot = rows[0];
-        if (dto.newMaxCapacity < slot.currentBooked) {
-          throw new BadRequestException(
-            'Số lượng mới thấp hơn số bánh đã đặt hiện tại! Vui lòng điền số lượng lớn hơn',
-          );
-        }
-
-        return tx.availability.update({
-          where: { id: slot.id },
-          data: {
-            maxCapacity: dto.newMaxCapacity,
-            bufferLimit: Math.ceil(dto.newMaxCapacity * 1.03),
-          },
-        });
-      },
-      { timeout: 5000 },
-    );
   }
 }

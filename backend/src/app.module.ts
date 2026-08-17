@@ -14,7 +14,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { NotificationModule } from './modules/notification/notification.module';
 import { OrderOrderExpiryModule } from './modules/order-expiry/order-expiry.module';
 import { PaymentModule } from './payment/payment.module';
-import { AdminModule } from './admin/admin.module';
 
 const nodeEnv = process.env.NODE_ENV ?? 'development';
 
@@ -34,8 +33,6 @@ const nodeEnv = process.env.NODE_ENV ?? 'development';
     EventEmitterModule.forRoot(),
     NotificationModule,
     OrderOrderExpiryModule,
-    AdminModule,
-    PaymentModule,
     BullModule.forRoot({
       connection: process.env.REDIS_URL
         ? { url: process.env.REDIS_URL }
@@ -45,6 +42,7 @@ const nodeEnv = process.env.NODE_ENV ?? 'development';
             password: process.env.REDIS_PASSWORD || process.env.REDISPASSWORD || undefined,
           },
     }),
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

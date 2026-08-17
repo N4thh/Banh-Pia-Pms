@@ -5,11 +5,11 @@ import { HttpModule } from '@nestjs/axios';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentCronService } from './payment-cron.service';
-import { AvailabilityModule } from 'src/availability/availability.module';
 
 @Module({
+  
   controllers: [PaymentController],
-  imports: [HttpModule, ScheduleModule.forRoot(), PrismaModule, AvailabilityModule],
+  imports: [HttpModule, ScheduleModule.forRoot() , PrismaModule],
   providers: [PaymentService, PaymentCronService],
   exports: [PaymentService, PaymentCronService], 
 })

@@ -3,8 +3,6 @@ import { AuthService } from './auth.service';
 import { AdminDto } from './dto/admin.dto';
 import { JwtBlacklistGruard } from './guards/jwt-blacklist.guard';
 import type { Request } from 'express';
-import { RefreshDto } from './dto/refresh.dto';
-import { LogoutDto } from './dto/logout.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,18 +17,12 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtBlacklistGruard)
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request, @Body() dto: LogoutDto) { 
-    const user = req.user as any;
-
-    await this.authService.logout(user, dto.refreshToken);
+  async logout(@Req() req: Request) { 
+    const user = req.user as any 
+    
+    await this.authService.logout(user);
 
     return {message: 'Đăng xuất thành công'}
-  }
-
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refresh(@Body() dto: RefreshDto) {
-    return this.authService.refreshToken(dto.refreshToken);
   }
   
 }

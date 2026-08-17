@@ -3,9 +3,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { AvailabilityService } from 'src/availability/availability.service';
-import { BOOKING_EVENTS, OrderCancelledAutoEventPayload } from 'src/booking/constants/booking-event.constants';
+import {
+  BOOKING_EVENTS,
+  OrderCancelledAutoEventPayload,
+} from 'src/booking/constants/booking-event.constants';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CancelReason, OrderStatus, PaymentLinkStatus } from '@prisma/client';
 
 @Processor('order-expiry-queue')
 export class OrderExpiryProcessor extends WorkerHost {
@@ -29,7 +31,6 @@ export class OrderExpiryProcessor extends WorkerHost {
     try {
       const order = await this.prisma.order.findUnique({
         where: { id: orderId },
-        include: { paymentLink: true },
       });
 
       if (!order) {
@@ -51,20 +52,7 @@ export class OrderExpiryProcessor extends WorkerHost {
         await this.prisma.$transaction(async (tx) => {
           await tx.order.update({
             where: { id: orderId },
-            data: {
-              status: OrderStatus.CANCELLED,
-              cancelledAt: new Date(),
-              cancelReason: CancelReason.PAYMENT_EXPIRED,
-              paymentLink: order.paymentLink
-                ? {
-                    update: {
-                      status: PaymentLinkStatus.CANCELLED,
-                      canceledAt: new Date(),
-                      cancellationReason: 'EXPIRED',
-                    },
-                  }
-                : undefined,
-            },
+            data: { status: 'CANCELLED' },
           });
         });
 

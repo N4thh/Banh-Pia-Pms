@@ -54,7 +54,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
         <Modal
             open={open}
             onClose={onClose}
-            containerClassName="items-start justify-end p-4"
+            containerClassName="items-start justify-end"
             panelClassName="flex flex-col w-full max-w-[90vw] sm:max-w-[80vw] md:max-w-[60vw] lg:max-w-[40vw] h-[95vh] bg-white rounded-2xl shadow-xl "
         >
             {/* Header */}
@@ -138,7 +138,7 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                                         <button
                                         type="button"
                                         onClick={() =>updateQuantity(item.id, -1)}
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"> <Minus size={20} />
                                         </button>
 
@@ -146,11 +146,12 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
 
                                         <button
                                         type="button"
-                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8] 
+                                        className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white 
                                         h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"
                                         onClick={() => updateQuantity(item.id, +1)}
                                         > <Plus size={20} />
                                         </button>
+
                                     </div>
 
                                 </div>
@@ -167,8 +168,8 @@ export default function CartMenu({ open, onClose, refreshTrigger, changeInCart }
                             </span>
                         </div>
                             <button
-                                className="w-full rounded-xl py-2.5 font-semibold text-sm
-                                    bg-[#C01F1F] text-[#FDF6E8] hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
+                                className="w-full rounded-xl py-2.5 bg-[#C01F1F] text-white font-semibold text-sm
+                                    hover:bg-[#D62424] active:bg-[#A61B1B] transition-colors"
                                     onClick={() => {
                                         refreshTimeCart(); 
                                         router.push("/booking")

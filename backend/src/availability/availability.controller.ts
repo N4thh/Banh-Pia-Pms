@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { BookSlotDto } from './dto/book-slot.dto';
 import { CreateSlotDto } from './dto/create-slot.dto';
-import { EditSlotDto } from './dto/edit-slot.dto';
 import { HoldSlotDto } from './dto/hold-slot.dto';
 import { JwtBlacklistGruard } from 'src/auth/guards/jwt-blacklist.guard';
 import { AdminGuard } from 'src/auth/guards/admin.guard';
@@ -32,27 +31,6 @@ export class AvailabilityController {
         return this.avaibilityService.holdSlot(holdSlotDto);
     }
     
-    @Get('admin/calendar')
-    @UseGuards(JwtBlacklistGruard, AdminGuard)
-    @IsAdmin()
-    async getAdminCalendar() {
-        return this.avaibilityService.getAdminCalendar();
-    }
-
-    @Get('admin/stats-calendar')
-    @UseGuards(JwtBlacklistGruard, AdminGuard)
-    @IsAdmin()
-    async getStatsCalendar() {
-        return this.avaibilityService.getStatsCalendar();
-    }
-
-    @Patch('edit')
-    @UseGuards(JwtBlacklistGruard, AdminGuard)
-    @IsAdmin()
-    async editSlot(@Body() dto: EditSlotDto) {
-        return this.avaibilityService.editSlot(dto);
-    }
-
     @Get('slots')
     @Public()
     async getSlots(@Query() dto: GetSlotsDto) { 

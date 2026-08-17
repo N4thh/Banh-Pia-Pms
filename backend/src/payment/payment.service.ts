@@ -34,38 +34,15 @@ export class PaymentService {
       throw new BadRequestException(`Không tìm thấy đơn hàng #${orderId}`);
     }
 
-    // Kiểm tra link hiện tại — tránh lỗi PayOS 231 (đơn đã tồn tại)
-    const existingLink = await this.prisma.paymentLink.findUnique({
-      where: { orderId },
-    });
-
-    if (existingLink) {
-      // Link chưa thanh toán → trả lại link cũ
-      if (existingLink.status === 'PENDING') {
-        this.logger.log(`[PAYOS] Link PENDING đã tồn tại cho đơn #${orderId}, trả lại link cũ`);
-        return {
-          checkoutUrl: existingLink.checkoutUrl,
-          qrCode: existingLink.qrCode,
-        };
-      }
-      // Link đã xử lý (PAID/CANCELLED) → xóa link cũ để tạo mới
-      await this.prisma.paymentLink.delete({ where: { orderId } });
-    }
-
     const amountInVnd = Number(order.totalMoney) * 1000;
     const frontendUrl = this.configService.get<string>("FRONTEND_URL");
     if(!frontendUrl)
       throw new InternalServerErrorException("FRONTEND_URL is not configured");
 
-    // PayOS lưu orderCode độc lập với database. Không dùng orderId trực tiếp,
-    // vì khi reset database, auto-increment có thể sinh lại orderId cũ.
-    // Dùng số ngẫu nhiên trong phạm vi Prisma Int (32-bit).
-    const payosOrderCode = Math.floor(100_000_000 + Math.random() * 900_000_000);
-
     const paymentData = {
-      orderCode: payosOrderCode,
+      orderCode: orderId,
       amount: amountInVnd,
-      description: `Thanh toan don hang #${orderId}`,
+      description: 'Thanh toán đơn hàng',
       cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
       returnUrl: `${frontendUrl}/payment/success-bank?orderId=${orderId}`,
     };
@@ -77,7 +54,6 @@ export class PaymentService {
         data: {
           id: paymentLinkData.paymentLinkId,
           orderId: orderId,
-          payosOrderCode,
           checkoutUrl: paymentLinkData.checkoutUrl,
           qrCode: paymentLinkData.qrCode,
           amountRemaining: amountInVnd,
@@ -129,19 +105,8 @@ export class PaymentService {
           },
         });
         //updatePaymentLink
-        const paymentLink = await tx.paymentLink.findUnique({
-          where: { payosOrderCode: webhookData.orderCode },
-          include: { order: { include: { user: true } } },
-        });
-        if (!paymentLink) {
-          throw new BadRequestException(
-            `Không tìm thấy payment link cho PayOS orderCode ${webhookData.orderCode}`,
-          );
-        }
-
-        const orderId = paymentLink.orderId;
         const updatePaymentLink = await tx.paymentLink.update({
-          where: { orderId },
+          where: { orderId: webhookData.orderCode },
           data: {
             status: 'PAID',
             amountPaid: webhookData.amount,
@@ -150,7 +115,7 @@ export class PaymentService {
         });
         //update Order status
         const orderStatus = await tx.order.update({
-          where: { id: orderId },
+          where: { id: webhookData.orderCode },
           data: {
             status: 'PROCESSING',
           },
@@ -162,7 +127,7 @@ export class PaymentService {
         );
 
         paymentEventPayload = {
-          orderId,
+          orderId: webhookData.orderCode,
           amount: webhookData.amount,
           paidAt: new Date(),
           customerName: orderStatus.user.fullName ?? 'Khách hàng',
