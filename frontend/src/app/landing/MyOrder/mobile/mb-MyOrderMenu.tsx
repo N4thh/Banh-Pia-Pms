@@ -31,6 +31,8 @@ interface OrderContext {
   receiveDate: string;
   paymentMethod: string;
   shippingMethod: string;
+  cancelReason: string;
+  cancelledAt: string;
   address: Address | null;
   items: OrderItem[];
 }
@@ -61,10 +63,8 @@ export default function MobileMyOrderMenu({ open, onClose }: CartMenuProps) {
     latestAddress: Address | null;
   } | null>(null);
 
-  // render: có truyền open=true xuống Modal hay không (trì hoãn lúc đóng
-  // để kịp chạy animation slide-down trên mobile trước khi Modal unmount)
   const [render, setRender] = useState(open);
-  // visible: đang ở trạng thái "hiện" hay "ẩn" (chỉ ảnh hưởng animation mobile)
+  // visible: đang ở trạng thái "hiện" hay "ẩn"
   const [visible, setVisible] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -72,7 +72,7 @@ export default function MobileMyOrderMenu({ open, onClose }: CartMenuProps) {
   const dragStartY = useRef(0);
   const dragDeltaY = useRef(0);
 
-  // Click vào 1 đơn hàng: điều hướng sang trang chi tiết - dùng chung cho mọi màn hình
+  // Click vào 1 đơn hàng: điều hướng sang trang chi tiết
   const handleOrderRowClick = (orderId: number) => {
     setSelectedOrderId(orderId);
   };
@@ -181,12 +181,6 @@ function formatDate(dateString: string): string {
         return;
       }
 
-      if (!user?.latestAddress) {
-        setError("Không tìm thấy thông tin đơn hàng cho số điện thoại này");
-        setPendingUser(null);
-        return;
-      }
-
       setPendingUser(user);
     } catch (err) {
       console.error(err);
@@ -196,7 +190,6 @@ function formatDate(dateString: string): string {
     }
   };
 
-  // Đóng sheet bằng kéo tay - chỉ đóng, không xử lý gì thêm
   const handleDismiss = () => {
     HandleClose();
   };
@@ -321,7 +314,8 @@ function formatDate(dateString: string): string {
             {/* Đơn hàng */}
             <div 
             className={`p-2 rounded-lg bg-white drop-shadow-2xl 
-                ${order.status === 'COMPLETED' ? 'border-t-5 border-[#34C759]' : ''}`}
+                ${order.status === 'COMPLETED' ? 'border-t-5 border-[#34C759]' : ''}
+                ${order.status === 'CANCELLED' ? 'border-t-5 border-[#FF5F57]' : ''}`}
             >
                 <div className="flex justify-between items-center">
                     <p className="font-vollkorn font-semibold text-[16px]">
@@ -344,7 +338,7 @@ function formatDate(dateString: string): string {
                 </div>
 
                 <div className="pb-[2vh]">
-                    <OrderStepper status={order.status} />
+                    <OrderStepper status={order.status} cancelReason= {order.cancelReason} cancelledAt={order.cancelledAt} />
                 </div>          
             </div>
 
@@ -367,12 +361,12 @@ function formatDate(dateString: string): string {
                         <p className="font-medium">Phương thức nhận bánh</p>
                         <p className="text-[#3D2008]/75 text-[13px]">{fortmatShippingMethod(order.shippingMethod)}</p>
                     </div>
-                    <div className="flex flex-col gap-3 text-sm">
-                    {order.address && (
+                <div className="flex flex-col gap-3 text-sm">
+                    {order.address && (order.address.houseNumber || order.address.street || order.address.ward || order.address.district) && (
                         <div className="flex justify-between w-full">
                             <p>Địa điểm nhận bánh</p>
                             <p className="[text-decoration-skip-ink:none] underline text-[#3D2008]/75 w-1/2 text-[11px]"
-                            >{order.address?.houseNumber}, đường {order.address?.street}, phường {order.address?.ward}, Tp.{order.address?.district}</p>
+                            >{order.address.houseNumber}, đường {order.address.street}, phường {order.address.ward}, Tp.{order.address.district}</p>
                         </div>
                     )}
                     <div className="flex justify-between w-full">
@@ -394,14 +388,13 @@ function formatDate(dateString: string): string {
 
     const renderOrderCard = (order: OrderContext) => {
     const statusInfo = formatStatus(order.status);
-    const isClickable = order.status !== "CANCELLED";
 
     return (
         <div
           key={order.orderId}
-          onClick={() => isClickable && handleOrderRowClick(order.orderId)}
+          onClick={() => handleOrderRowClick(order.orderId)}
           className={`border border-[#FFFDF7] bg-[#FFFDF7] rounded-lg p-3 text-[#3D2008] drop-shadow-2xl
-          ${isClickable ? "cursor-pointer hover:bg-[#F5F0E6] transition-colors" : ""}`}
+          cursor-pointer hover:bg-[#F5F0E6] transition-colors`}
         >
             <div className="flex justify-between items-center">
                 <div className="flex flex-col">
@@ -414,22 +407,11 @@ function formatDate(dateString: string): string {
                         {statusInfo.text}
                     </span>
                 </div>
-                <div className="flex">
-                    {order.status === "COMPLETED" && (
-                        <p className="text-[#3D2008] font-semibold text-lg">
-                        {order.totalMoney.toLocaleString("vi-VN")}
-                        </p>
-                    )}
-
-                    {order.status === "CANCELLED" && (
-                        <p className="text-[#3D2008]/50 font-semibold text-lg">
-                        {order.totalMoney.toLocaleString("vi-VN")}
-                        </p>
-                    )}
-
-                    {isClickable && (
-                        <ChevronRight size={25} className="text-[#3D2008]" />
-                    )}
+                <div className="flex items-center gap-2">
+                    <p className={`${order.status === "CANCELLED" ? "text-[#3D2008]/50" : "text-[#3D2008]"} font-semibold text-lg`}>
+                    {order.totalMoney.toLocaleString("vi-VN")}
+                    </p>
+                    <ChevronRight size={25} className="text-[#3D2008]" />
                 </div>
             </div>
 
@@ -460,7 +442,7 @@ function formatDate(dateString: string): string {
       max-lg:[transition:transform_var(--myorder-sheet-duration,300ms)_cubic-bezier(0.32,0.72,0,1)]
       `}
     >
-      {/* Drag handle - chỉ hiện trên mobile, kéo được để đóng sheet */}
+      {/* Drag handle */}
       <div
         className="hidden max-lg:flex justify-center items-center pt-2.5 pb-1.5 sticky top-0 z-10
         bg-[#FFFDF7] touch-none select-none cursor-grab active:cursor-grabbing"
@@ -513,7 +495,7 @@ function formatDate(dateString: string): string {
           </div>
         </div>
       ) : selectedOrder ? (
-        /* ===== Trang chi tiết - dùng chung cho mọi màn hình ===== */
+        /* Trang chi tiết */
         <div className="p-4 text-[#3D2008] flex flex-col gap-4">
           <button
             type="button"
@@ -543,8 +525,11 @@ function formatDate(dateString: string): string {
                       <p className="text-[#3D2008]/75">{formatPhone(pendingUser?.phone ?? "")}</p>
                   </div>
 
-                  <p className="text-[#3D2008]/75">
-                  {pendingUser?.latestAddress?.houseNumber}, đường {pendingUser?.latestAddress?.street}, phường {pendingUser?.latestAddress?.ward}, quận {pendingUser?.latestAddress?.district} </p>
+                  {pendingUser?.latestAddress && (
+                    <p className="text-[#3D2008]/75">
+                    {pendingUser.latestAddress.houseNumber}, đường {pendingUser.latestAddress.street}, phường {pendingUser.latestAddress.ward}, quận {pendingUser.latestAddress.district}
+                    </p>
+                  )}
               </div>
           </div>
           {orders.length === 0 && <p>Không có đơn hàng nào</p>}

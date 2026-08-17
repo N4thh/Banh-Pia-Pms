@@ -64,7 +64,8 @@ export default function Order() {
         violations: SlotViolation[];
     } | null>(null);
     const [pendingDate, setPendingDate] = useState<string | null>(null);
-    const { setValue, getValues } = useFormContext<CheckoutFormValues>();    
+    const { setValue, getValues } = useFormContext<CheckoutFormValues>();
+    
     const fetchSlots = async () => { 
         const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/availability/slots`
@@ -296,7 +297,7 @@ export default function Order() {
                     <div className="w-full lg:w-1/2">
                         <label className={`flex w-full cursor-pointer  justify-between rounded-lg border-2 p-2 transition-colors duration-200 ${
                             shippingMethod === "PICKUP"
-                                ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]"
+                                ? "bg-[#3D2008] text-[#FDF6E8] border-[#FDF6E8] ring-1 ring-[#3D2008]"
                                 : "bg-white  border-[#3D2008]/25"
                         }`}>
                             <p>Đến lấy</p>
@@ -310,9 +311,9 @@ export default function Order() {
                 
                     </div>
                     <div className="w-full lg:w-1/2">
-                        <label className={`flex w-full cursor-pointer  justify-between rounded-lg border-2 p-2 transition-colors duration-200 ${
+                        <label className={`flex w-full cursor-pointer justify-between rounded-lg border-2 p-2 transition-colors duration-200 ${
                             shippingMethod === "DELIVERY"
-                                ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]"
+                                ? "bg-[#3D2008] text-[#FDF6E8] border-[#FDF6E8] ring-1 ring-[#3D2008]"
                                 : "bg-white  border-[#3D2008]/25"
                         }`}>
                             <p>Giao đến</p>
@@ -448,7 +449,7 @@ export default function Order() {
                                 w-[27.5vw] xs:w-[22vw] sm:w-[18vw] md:w-[13vw] lg:w-[7vw]
                                 text-[11px] sm:text-[10px] md:text-[11px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px]
                                 ${pendingDate === slot.date || slotByDay?.date === slot.date
-                                    ? "bg-[#3D2008] text-white border-[#FDF6E8] ring-1 ring-[#3D2008]" 
+                                    ? "bg-[#3D2008] text-[#FDF6E8] border-[#FDF6E8] ring-1 ring-[#3D2008]" 
                                     : "bg-white border-[#3D2008]/25 hover:border-[#3D2008]"
                                 }`}
                         > <div className="flex flex-col font-medium items-center sm:items-start">{formatDate(slot.date)} <span
@@ -464,7 +465,8 @@ export default function Order() {
                     text-[17px] sm:text-[18px] md:text-[19px] lg:text-[20px] xl:text-[21px] 2xl:text-[22px]">
                     Ghi chú cho đơn bánh
                 </p>
-                <textarea 
+                <textarea
+                {...register("note")}
                 placeholder="Thêm ghi chú cho đơn bánh..."
                 className="border p-2 rounded-md h-[20vh] resize-none overflow-y-auto no-scrollbar "
                 />
@@ -487,7 +489,7 @@ export default function Order() {
                     <button
                         onClick={() => handleNext()}
                         disabled={loading}
-                        className="flex items-center gap-2 bg-[#C01F1F] text-white py-3 px-6 rounded-lg"
+                        className="flex items-center gap-2 bg-[#C01F1F] text-[#FDF6E8] py-3 px-6 rounded-lg"
                         >
                         {loading && <LoaderCircle className="h-5 w-5 animate-spin" />}
                         {loading ? "Đang xử lý..." : "Đặt hàng"}

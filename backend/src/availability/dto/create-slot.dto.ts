@@ -1,11 +1,13 @@
-import { IsDateString, IsInt, IsPositive } from "class-validator";
+import { ArrayMinSize, IsArray, IsDateString, IsInt, IsPositive } from "class-validator";
 
 export class CreateSlotDto { 
     @IsInt()
     cakeId !: number;
 
-    @IsDateString()
-    date !: string; 
+    @IsArray()
+    @IsDateString({}, { each: true })
+    @ArrayMinSize(1)
+    dates!: string[];
 
     @IsInt()
     @IsPositive()

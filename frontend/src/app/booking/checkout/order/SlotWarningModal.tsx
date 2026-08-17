@@ -106,7 +106,7 @@ export default function SlotWarningModal({
                         type="button"
                         onClick={onGoBack}
                         className="w-full py-3.5 px-6 rounded-xl font-semibold border border-[#C01F1F]
-                            text-white bg-[#C01F1F]
+                            text-[#FDF6E8] bg-[#C01F1F]
                             text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px]
                             hover:bg-[#A61B1B] active:bg-[#8B1515] transition-colors"
                     >
