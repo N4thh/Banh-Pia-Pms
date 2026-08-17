@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
+import { Check } from "lucide-react";
 
 export type StatsWeekSelection = {
   startDate: string;
@@ -186,7 +187,7 @@ export default function StatsCalendar({
               >
                 <span className="font-medium">Tuần {week.weekNumber}</span>
                 <span>
-                  {formatDate(week.startDate)} → {formatDate(week.endDate)}
+                  {formatDate(week.startDate)} đến {formatDate(week.endDate)}
                 </span>
                 <span
                   aria-label={checked ? "Đã chọn" : "Chưa chọn"}
@@ -194,7 +195,7 @@ export default function StatsCalendar({
                     checked ? "border-[#FDF6E8]" : "border-[#3D2008]/40"
                   }`}
                 >
-                  {checked ? "✓" : ""}
+                  {checked ? (<Check/> ) : ""}
                 </span>
               </button>
             );

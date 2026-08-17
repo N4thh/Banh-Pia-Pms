@@ -75,7 +75,7 @@ export const formatShortDate = (date: string | Date) => {
     return `${Number(day)}/${month.padStart(2, "0")}`;
   }
 
-  return `${date.getUTCDate()}/${String(
+  return `${String(date.getUTCDate()).padStart(2, "0")}/${String(
     date.getUTCMonth() + 1,
   ).padStart(2, "0")}`;
 };

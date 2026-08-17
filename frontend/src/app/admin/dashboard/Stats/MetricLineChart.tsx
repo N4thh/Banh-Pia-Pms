@@ -135,28 +135,34 @@ export default function MetricLineChart({ daily }: { daily: DailyStat[] }) {
           ))}
         </select>
       </div>
-      <ReactECharts option={option} style={{ height: 300, width: "100%" }} />
+      
+      <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+        <div className="min-w-150">
+          <ReactECharts option={option} style={{ height: 300, width: "100%" }} />
+        </div>
+      </div>
+      
       <div className="flex justify-between text-xs text-[#3D2008]">
-        <span className="flex flex-col items-center gap-1
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">{metric.label}: 
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+          text-[12px] 2xl:text-[13px]">{metric.label} 
           <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
+            text-[14px] xl:text-[15px] 2xl:text-[16px]"
             >{formatMetricValue(total * metric.divisor, metric.isMoney)}
           </span>
         </span>
 
-        <span className="flex flex-col items-center gap-1
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">Trung bình mỗi ngày: 
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+           text-[12px] 2xl:text-[13px]">Trung bình mỗi ngày
           <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
+            text-[14px] xl:text-[15px] 2xl:text-[16px]">
             {formatMetricValue(avg * metric.divisor, metric.isMoney)}
           </span> 
         </span>
 
-        <span className="flex flex-col items-center gap-1
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">Ngày cao nhất: 
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+          text-[12px] 2xl:text-[13px]">Ngày cao nhất
           <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">{maxDay}
+            text-[14px] xl:text-[15px] 2xl:text-[16px]">{maxDay}
           </span>
         </span>
       </div>

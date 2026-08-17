@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChartNoAxesColumn, LogOut, Plus, ReceiptText, X } from "lucide-react";
+import { CalendarDays, ChartNoAxesColumn, LogOut, Plus, ReceiptText, X } from "lucide-react";
 import { vi } from "date-fns/locale";
 import { registerLocale } from "react-datepicker";
 import StatForm from "../Stats/StatForm";
@@ -56,6 +56,12 @@ export default function MobileAdminDashboard(props: Props) {
       ? `${restoreDate}-${restoreCakeId}`
       : null;
 
+  //format:
+  const formatDate = (dateString: string) => {
+    const [, month, day] = dateString.split("-");
+    return `${day}/${month}`;
+  };
+  
   useEffect(() => {
     if (!restoreSlotKey || restoredSlotKey.current === restoreSlotKey) return;
 
@@ -122,7 +128,7 @@ export default function MobileAdminDashboard(props: Props) {
   const pendingCakesToday =
     String(props.stats?.pendingCakeToday ?? 0) + " bánh";
   const statsRangeLabel = statsSelection
-    ? `${statsSelection.weeks} tuần - ${formatShortDate(statsSelection.startDate)} - ${formatShortDate(statsSelection.endDate)}`
+    ? `${statsSelection.weeks} tuần\n ${formatDate(statsSelection.startDate)} đến ${formatDate(statsSelection.endDate)}`
     : "Chọn tuần thống kê";
 
   return (
@@ -200,19 +206,21 @@ export default function MobileAdminDashboard(props: Props) {
               </p>
             )}
           </>
-        ) : (
+        ) : ( /* Trang Thống kê */
           <section className="mt-6">
+            {/* Calendar button */}
             <button
               type="button"
               onClick={() => setStatsCalendarOpen(true)}
-              className="flex w-full justify-between border border-[#3D2008]/20 bg-white px-4 py-3 text-left text-sm"
+              className="flex w-full justify-between items-center rounded-lg bg-[#3D2008] text-[#FDF6E8] px-4 py-3 text-left text-sm"
             >
-              <span className="font-semibold">Lịch</span>
-              <span className="text-[#3D2008]/65">{statsRangeLabel}</span>
+              <span className="font-semibold text-[22px]">Lịch</span>
+              <span>{statsRangeLabel}</span>
             </button>
-            <h2 className="mt-6 font-semibold">Thống kê</h2>
-            <p className="mt-1 text-sm text-[#3D2008]/65">
-              {statsRangeLabel}
+
+            <h2 className="mt-6 font-semibold text-[22px]">Thống kê</h2>
+            <p className="flex gap-1 items-center mt-1 text-sm font-medium text-[#3D2008]">
+              <CalendarDays /> {statsRangeLabel}
             </p>
 
             {statsSelection ? (

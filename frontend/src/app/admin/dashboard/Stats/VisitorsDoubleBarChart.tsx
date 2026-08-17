@@ -85,33 +85,35 @@ export default function VisitorsDoubleBarChart({ data }: { data: DailyVisitorSta
       <div className="mb-2">
         <h2 className="text-base font-medium">Lượng khách truy cập trong tuần</h2>
       </div>
-      <ReactECharts option={option} style={{ height: 300, width: "100%" }} />
-      <div className="mt-2 flex justify-between text-xs text-[#3D2008]/65">
-        <span className="flex flex-col items-center
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">Tổng: 
-          <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
+
+      <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+        <div className="min-w-150">
+          <ReactECharts option={option} style={{ height: 300, width: "100%" }} />
+        </div>
+      </div>
+
+      <div className="mt-2 flex justify-between text-xs text-[#3D2008]">
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+          text-[11px] 2xl:text-[13px]">Tổng 
+          <span className="font-medium text-[14px] 2xl:text-[16px]"
             >{totalVisits} người
           </span>
         </span>
-        <span className="flex flex-col items-center
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">TB/ngày: 
-          <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">{average}
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+         text-[11px] 2xl:text-[13px]">TB/ngày 
+          <span className="font-medium text-[14px] 2xl:text-[16px]">{average}
 
           </span>
         </span>
-        <span className="flex flex-col items-center
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">Sôi động nhất: 
-          <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+          text-[11px] 2xl:text-[13px]">Sôi động nhất
+          <span className="font-medium text-[14px] 2xl:text-[16px]"
             >{LABELS[peakIndex]}
           </span>
         </span>
-        <span className="flex flex-col items-center
-          text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px] 2xl:text-[13px]">Tỷ lệ chuyển đổi: 
-          <span className="font-medium
-            text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]"
+        <span className="flex flex-col items-center gap-0.5 lg:gap-1
+          text-[11px] 2xl:text-[13px]">Tỷ lệ chuyển đổi 
+          <span className="font-medium text-[14px] 2xl:text-[16px]"
             >{conversionRate}%
           </span>
         </span>
