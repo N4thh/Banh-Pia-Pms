@@ -93,29 +93,27 @@ export default function MobileAdminDashboard(props: Props) {
   ]);
 
   const orderWeekLabel = useMemo(() => {
-    const slots = props.weeks
-      .flatMap((week) => week.slots)
-      .sort((a, b) => a.date.localeCompare(b.date));
+    if (!props.weeks.length) return { number: 0, range: "Chưa có slot" };
 
-    if (!slots.length) return { number: 0, range: "Chưa có slot" };
-
-    const start = slots[0].date;
-    const selected = props.selectedSlot?.date ?? start;
-    const startDate = new Date(`${start}T00:00:00Z`);
-    const selectedDate = new Date(`${selected}T00:00:00Z`);
-    const offset = Math.max(
-      0,
-      Math.floor((selectedDate.getTime() - startDate.getTime()) / 86400000),
-    );
-    const number = Math.floor(offset / 7) + 1;
-    const end = new Date(startDate);
-    end.setUTCDate(end.getUTCDate() + number * 7 - 1);
+    const selectedWeek = props.selectedSlot
+      ? props.weeks.find((week) =>
+          week.slots.some(
+            (slot) =>
+              slot.date === props.selectedSlot?.date &&
+              slot.cake.cakeId === props.selectedSlot.cake.cakeId,
+          ),
+        )
+      : undefined;
+    const week =
+      selectedWeek ??
+      props.weeks.find((item) => item.weekNumber === props.openWeekNumber) ??
+      props.weeks[0];
 
     return {
-      number,
-      range: `${formatShortDate(start)} đến ${formatShortDate(end)}`,
+      number: week.weekNumber,
+      range: `${formatShortDate(week.weekStart)} đến ${formatShortDate(week.weekEnd)}`,
     };
-  }, [props.weeks, props.selectedSlot]);
+  }, [props.weeks, props.selectedSlot, props.openWeekNumber]);
 
   const totalRevenue =
     Number(props.stats?.totalRevenue ?? 0).toLocaleString("vi-VN") + " đ";

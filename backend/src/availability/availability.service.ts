@@ -236,10 +236,7 @@ export class AvailabilityService {
   }
 
   async getAdminCalendar() {
-    const businessToday = getBusinessDateOnly();
-    const today = toPrismaDate(businessToday);
-
-    return this.getCalendarSlots({ date: { gte: today } });
+    return this.getCalendarSlots({});
   }
 
   async getStatsCalendar() {

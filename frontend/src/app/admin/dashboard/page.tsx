@@ -11,6 +11,11 @@ import DetailOrder from "./Orders/OrderForm"
 import StatForm from "./Stats/StatForm";
 import MobileAdminDashboard from "./mobile/mb-Dasboard";
 import { CalendarDays, ChevronDown, LogOut, Minus, Plus, X } from "lucide-react";
+import {
+  addDays,
+  getMonday,
+  getWeekNumberFromAnchor,
+} from "@/src/utils/calendarWeeks";
 
 registerLocale("vi", vi);
 
@@ -54,48 +59,33 @@ const getTodayVN = (): string => {
   }).format(new Date());
 };
 
-const getMonday = (dateString: string): string => {
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  const dayOfWeek = date.getUTCDay();
-  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  date.setUTCDate(date.getUTCDate() + diff);
-  return date.toISOString().slice(0, 10);
-};
-
-const addDays = (dateString: string, amount: number): string => {
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  date.setUTCDate(date.getUTCDate() + amount);
-  return date.toISOString().slice(0, 10);
-};
-
 const formatDate = (dateString: string): string => {
   const [, month, day] = dateString.split("-");
   return `${day}/${month}`;
 };
 
 const groupSlotsByWeek = (slots: SlotDate[], today: string): WeekGroup[] => {
-  const futureSlots = slots.filter((slot) => slot.date >= today);
+  const sortedSlots = [...slots].sort((a, b) => a.date.localeCompare(b.date));
+  if (sortedSlots.length === 0) return [];
+
+  const firstWeekStart = getMonday(sortedSlots[0].date);
   const weekMap = new Map<string, SlotDate[]>();
 
-  for (const slot of futureSlots) {
+  for (const slot of sortedSlots) {
+    if (slot.date < today) continue;
+
     const weekStart = getMonday(slot.date);
     const currentSlots = weekMap.get(weekStart) ?? [];
     weekMap.set(weekStart, [...currentSlots, slot]);
   }
 
-    return [...weekMap.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([weekStart, weekSlots], index) => ({
-            weekNumber: index + 1,
-            weekStart,
-            weekEnd: addDays(weekStart, 6),
-            slots: weekSlots.map((s) => ({
-            date: s.date,
-            cake: s.cake,
-            orderCount: s.orderCount,
-        })).sort((a, b) => a.date.localeCompare(b.date)),
+  return [...weekMap.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([weekStart, weekSlots]) => ({
+      weekNumber: getWeekNumberFromAnchor(firstWeekStart, weekStart),
+      weekStart,
+      weekEnd: addDays(weekStart, 6),
+      slots: weekSlots.sort((a, b) => a.date.localeCompare(b.date)),
     }));
 };
 
@@ -174,9 +164,11 @@ export default function AdminDashboard() {
                 today,
             );
             setWeeks(grouped);
-            if (grouped.length > 0) {
-                setOpenWeekNumber(grouped[0].weekNumber);
-            }
+            setOpenWeekNumber((previous) =>
+                grouped.some((week) => week.weekNumber === previous)
+                    ? previous
+                    : (grouped[0]?.weekNumber ?? null),
+            );
         } catch {
             // im lặng nếu chưa có slot, sẽ hiện thông báo trong UI
         }

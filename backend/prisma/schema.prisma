@@ -130,6 +130,8 @@ model Order {
 
   items OrderItem[]
   paymentLink PaymentLink?
+
+  @@index([paymentMethod, status, receiveDate])
 } 
 
 model OrderItem {

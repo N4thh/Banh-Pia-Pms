@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { axiosClient } from "@/src/api/axios-client";
 import { Check } from "lucide-react";
+import {
+  addDays,
+  getMonday,
+  getWeekNumberFromAnchor,
+} from "@/src/utils/calendarWeeks";
 
 export type StatsWeekSelection = {
   startDate: string;
@@ -21,21 +26,6 @@ const getTodayVN = () =>
     timeZone: "Asia/Ho_Chi_Minh",
   }).format(new Date());
 
-const getMonday = (dateString: string) => {
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  const jsDay = date.getUTCDay();
-  date.setUTCDate(date.getUTCDate() + (jsDay === 0 ? -6 : 1 - jsDay));
-  return date.toISOString().slice(0, 10);
-};
-
-const addDays = (dateString: string, amount: number) => {
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  date.setUTCDate(date.getUTCDate() + amount);
-  return date.toISOString().slice(0, 10);
-};
-
 const formatDate = (dateString: string) => {
   const [, month, day] = dateString.split("-");
   return `${day}/${month}`;
@@ -46,8 +36,8 @@ function buildCompletedWeeks(items: SlotCalendarItem[], today: string): StatsCal
   if (dates.length === 0) return [];
 
   const result: StatsCalendarWeek[] = [];
-  let currentStart = getMonday(dates[0]);
-  let weekNumber = 1;
+  const firstWeekStart = getMonday(dates[0]);
+  let currentStart = firstWeekStart;
 
   while (currentStart <= today) {
     const currentEnd = addDays(currentStart, 6);
@@ -57,12 +47,11 @@ function buildCompletedWeeks(items: SlotCalendarItem[], today: string): StatsCal
 
     if (currentEnd <= today && fullWeek) {
       result.push({
-        weekNumber,
+        weekNumber: getWeekNumberFromAnchor(firstWeekStart, currentStart),
         startDate: currentStart,
         endDate: currentEnd,
         weeks: 1,
       });
-      weekNumber += 1;
     }
 
     currentStart = addDays(currentStart, 7);

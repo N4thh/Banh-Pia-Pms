@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AvailabilityService } from 'src/availability/availability.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,6 +15,11 @@ import {
 } from './constants/booking-event.constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CancelOrderDto } from './dto/cancel-order.dto';
+import {
+  getBusinessDateOnly,
+  normalizeDateOnly,
+  toPrismaDate,
+} from 'src/common/utils/date-only.util';
 
 @Injectable()
 export class BookingService {
@@ -80,14 +89,19 @@ export class BookingService {
         });
       }
 
-     
-      const finalStatus =  OrderStatus.NEW;
+      const receiveDate = toPrismaDate(dto.receiveDate);
+      const isCashOrderDue =
+        dto.paymentMethod === 'CASH' &&
+        normalizeDateOnly(receiveDate) <= getBusinessDateOnly();
+      const finalStatus = isCashOrderDue
+        ? OrderStatus.PROCESSING
+        : OrderStatus.NEW;
       const order = await tx.order.create({
         data: {
           userId: user.id,
           addressId: finalAddressId,
           totalMoney: totalMoney,
-          receiveDate: new Date(dto.receiveDate),
+          receiveDate,
           status: finalStatus,
           shippingMethod: dto.shippingMethod,
           paymentMethod: dto.paymentMethod,
@@ -124,7 +138,7 @@ export class BookingService {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
-      }),      
+      }),
       paymentMethod: result.order.paymentMethod,
       items: result.itemStatuses.map((item) => ({
         cakeId: item.cakeId,
@@ -142,23 +156,24 @@ export class BookingService {
 
   async getOrderById(id: number) {
     const order = await this.prisma.order.findUnique({
-      where: {id: id},
-      include: { 
-        user: true, 
-        address: true, 
+      where: { id: id },
+      include: {
+        user: true,
+        address: true,
         items: {
-          include: {cake: true}
+          include: { cake: true },
         },
         paymentLink: true,
-      }
-    })
-    
-    if(!order)
+      },
+    });
+
+    if (!order)
       throw new NotFoundException(`Không tìm thấy order với id: ${id}`);
 
-    const finalCancelReason = order.cancelReasonNote !== null
-      ? order.cancelReasonNote
-      : order.cancelReason;
+    const finalCancelReason =
+      order.cancelReasonNote !== null
+        ? order.cancelReasonNote
+        : order.cancelReason;
 
     return {
       id: order.id,
@@ -175,28 +190,32 @@ export class BookingService {
         fullName: order.user.fullName,
         phone: order.user.phone,
       },
-      address: order.address ? {
-        houseNumber: order.address.houseNumber,
-        street: order.address.street,
-        ward: order.address.ward,
-        district: order.address.district,
-      } : null,
-      items: order.items.map(item => ({
+      address: order.address
+        ? {
+            houseNumber: order.address.houseNumber,
+            street: order.address.street,
+            ward: order.address.ward,
+            district: order.address.district,
+          }
+        : null,
+      items: order.items.map((item) => ({
         cakeId: item.cakeId,
         cakeName: item.cake.kind,
         quantity: item.quantity,
-        eggCount: item.eggCount, 
+        eggCount: item.eggCount,
         priceAtPurchase: Number(item.priceAtPurchase),
       })),
-      paymentLink: order.paymentLink ? {
-        qrCode: order.paymentLink.qrCode,
-        checkoutUrl: order.paymentLink.checkoutUrl,
-        status: order.paymentLink.status,
-        amountPaid: Number(order.paymentLink.amountPaid),
-        amountRemaining: Number(order.paymentLink.amountRemaining),
-        createdAt: order.paymentLink.createdAt,
-        canceledAt: order.paymentLink.canceledAt,
-      } : null,
+      paymentLink: order.paymentLink
+        ? {
+            qrCode: order.paymentLink.qrCode,
+            checkoutUrl: order.paymentLink.checkoutUrl,
+            status: order.paymentLink.status,
+            amountPaid: Number(order.paymentLink.amountPaid),
+            amountRemaining: Number(order.paymentLink.amountRemaining),
+            createdAt: order.paymentLink.createdAt,
+            canceledAt: order.paymentLink.canceledAt,
+          }
+        : null,
     };
   }
 
@@ -220,7 +239,7 @@ export class BookingService {
       },
     });
     if (order.length === 0)
-      throw new NotFoundException("Không tìm thấy đơn hàng");
+      throw new NotFoundException('Không tìm thấy đơn hàng');
 
     return order.map((o) => ({
       orderId: o.id,
@@ -244,20 +263,19 @@ export class BookingService {
     }));
   }
 
-  async cancelOrderById(orderId: number, adminId: number, dto: CancelOrderDto) { 
+  async cancelOrderById(orderId: number, adminId: number, dto: CancelOrderDto) {
     const order = await this.prisma.order.findUnique({
-      where: {id: orderId},
+      where: { id: orderId },
       include: { items: true },
     });
-    
-    if(!order)
-      throw new NotFoundException('Đơn hàng không tồn tại!'); 
+
+    if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
     if (order.status === OrderStatus.CANCELLED) {
       throw new BadRequestException('Đơn hàng đã bị hủy trước đó');
     }
-    if(order.status === OrderStatus.COMPLETED) { 
-      throw new BadRequestException('Không thể hủy đơn đã hoàn thành'); 
+    if (order.status === OrderStatus.COMPLETED) {
+      throw new BadRequestException('Không thể hủy đơn đã hoàn thành');
     }
 
     // Trả slot trước khi update order
@@ -269,44 +287,47 @@ export class BookingService {
           item.quantity,
         );
       } catch (err: any) {
-        console.error(`[Cancel] Lỗi trả slot cake #${item.cakeId}: ${err.message}`);
+        console.error(
+          `[Cancel] Lỗi trả slot cake #${item.cakeId}: ${err.message}`,
+        );
       }
     }
 
     return this.prisma.order.update({
-      where: {id: orderId}, 
+      where: { id: orderId },
       data: {
-        status: OrderStatus.CANCELLED, 
-        cancelReason: dto.cancelReason, 
-        cancelReasonNote: 
-          dto.cancelReason === CancelReason.OTHER ? dto.cancelReasonNote : null, 
+        status: OrderStatus.CANCELLED,
+        cancelReason: dto.cancelReason,
+        cancelReasonNote:
+          dto.cancelReason === CancelReason.OTHER ? dto.cancelReasonNote : null,
         cancelledAt: new Date(),
         cancelledBy: adminId,
       },
     });
   }
-  async completedOrderById(orderId: number) { 
+  async completedOrderById(orderId: number) {
     const order = await this.prisma.order.findUnique({
-      where: {id: orderId}, 
+      where: { id: orderId },
     });
 
-    if(!order) 
-      throw new NotFoundException('Đơn hàng không tồn tại!');
+    if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
-    if (order.status === OrderStatus.CANCELLED) 
+    if (order.status === OrderStatus.CANCELLED)
       throw new BadRequestException('Không thể hoàn thành đơn đã hủy');
 
-    if (order.status === OrderStatus.COMPLETED) 
+    if (order.status === OrderStatus.COMPLETED)
       throw new BadRequestException('Không thể hoàn thành đơn đã hoàn tất');
 
-    if (order.status === OrderStatus.NEW) 
-      throw new BadRequestException('Chỉ đơn "Đang xử lý" mới có thể hoàn tất, vui lòng xem lại!');
+    if (order.status === OrderStatus.NEW)
+      throw new BadRequestException(
+        'Chỉ đơn "Đang xử lý" mới có thể hoàn tất, vui lòng xem lại!',
+      );
 
     return this.prisma.order.update({
-      where: { id: orderId}, 
-      data: { 
-        status: OrderStatus.COMPLETED, 
-      }
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.COMPLETED,
+      },
     });
   }
 }
