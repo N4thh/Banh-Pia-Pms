@@ -21,8 +21,8 @@ const SHEET_DURATION_VAR = "--saurieng-sheet-duration";
 export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengProps) {
     const [quantity, setQuantity] = useState(0);
     const [saltedEgg, setSaltedEgg] = useState(0);
-    const basePrice = 70000;
-    const totalPrice = basePrice + saltedEgg * 10000;
+    const basePrice = 80000;
+    const totalPrice = basePrice + saltedEgg * 5000;
 
     // render: có truyền open=true xuống Modal hay không (trì hoãn lúc đóng
     // để kịp chạy animation slide-down trước khi Modal thực sự unmount)
@@ -107,13 +107,13 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
             open={render}
             onClose={onClose}
             panelClassName={`
-                rounded-2xl w-full max-w-[60vw] max-h-[90vh] h-auto
+                rounded-2xl w-full max-w-[60vw] max-h-[95vh] h-auto
                 bg-[#FFFDF7]
 
                 max-lg:!fixed max-lg:!inset-x-0 max-lg:!bottom-0 max-lg:!top-auto
                 max-lg:!left-auto max-lg:!right-auto max-lg:!m-0
                 max-lg:!w-full max-lg:!max-w-none
-                max-lg:!h-[80vh] max-lg:!max-h-[80vh]
+                max-lg:!h-[85vh] max-lg:!max-h-[85vh]
                 max-lg:!rounded-t-3xl max-lg:!rounded-b-none
                 max-lg:will-change-transform
                 max-lg:[transform:translateY(var(--saurieng-sheet-y,100%))]
@@ -135,7 +135,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
 
                 <div className="flex flex-col md:flex-row h-full md:h-[70vh] gap-3 md:gap-5 p-2 md:p-4 min-h-0 flex-1 lg:flex-none">
                     {/* image */}
-                    <div className="w-full md:w-1/2 h-[25vh] md:h-full border border-[#D9D9D9] bg-[#D9D9D9] rounded-2xl shrink-0">
+                    <div className="w-full md:w-1/2 h-[30vh] md:h-full border border-[#D9D9D9] bg-[#D9D9D9] rounded-2xl shrink-0">
                     </div>
                         <div className="shrink-0">
                             <h2 className="font-vollkorn font-semibold
@@ -159,7 +159,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 0 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 0 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(0)}>
                             Không thêm trứng muối</button>
@@ -168,28 +168,28 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 1 ?  "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 1 ?  "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(1)}>
-                            Thêm 1 trứng muối <span>+10.000đ /bánh</span></button>
+                            Thêm 1 trứng muối <span>+5.000đ /bánh</span></button>
 
                             <button className={`w-full flex justify-between items-center  px-4 py-2 border rounded-2xl
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px] shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 2 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 2 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(2)}>
-                            Thêm 2 trứng muối <span>+20.000đ /bánh</span></button>
+                            Thêm 2 trứng muối <span>+10.000đ /bánh</span></button>
 
                             <button className={`w-full flex justify-between items-center  px-4 py-2 border rounded-2xl
                             text-[13px] sm:text-[14px] md:text-[15px] lg:text-[16px] xl:text-[17px] 2xl:text-[18px]shrink-0
                             transition-all duration-200
                             ${
-                                saltedEgg === 3 ? "bg-[#A61B1B] text-white border-[#A61B1B]" : ""
+                                saltedEgg === 3 ? "bg-[#A61B1B] text-[#FDF6E8] border-[#A61B1B]" : ""
                             }`}
                             onClick={() => setSaltedEgg(3)}>
-                            Thêm 3 trứng muối <span>+30.000đ /bánh</span></button>
+                            Thêm 3 trứng muối <span>+15.000đ /bánh</span></button>
 
                         </div>
                         {/* bot */}
@@ -200,14 +200,14 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                                         text-[22px] sm:text-[23px] md:text-[24px] lg:text-[25px] xl:text-[26px] 2xl:text-[27px]
                                         transition-all duration-200">
                                         {totalPrice.toLocaleString("vi-VN")}đ</span>
-                                    <span className="font-light text-[#E5C980] text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] xl:text-[18px] 2xl:text-[19px]">
+                                    <span className="font-light relative -top-1 ml-1 text-[#E5C980] text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] xl:text-[18px] 2xl:text-[19px]">
                                     /bánh</span>
                                 </p>
                                 <div className="flex items-center justify-between gap-2 border rounded-2xl px-1 py-0.5 border-[#3D2008] w-23">
                                     <button
                                     type="button"
                                     onClick={() => setQuantity((prev) => Math.max(0,prev - 1))}
-                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white
+                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8]
                                     h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"> <Minus size={22} />
                                     </button>
 
@@ -215,7 +215,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
 
                                     <button
                                     type="button"
-                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-white 
+                                    className="transition-all duration-150 hover:scale-90 bg-[#3D2008] rounded-full text-[#FDF6E8] 
                                     h-6 w-6 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2"
                                     onClick={() => setQuantity((prev) => prev + 1)}
                                     > <Plus size={20} />
@@ -241,9 +241,9 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                                     onAddToCart();
                                     onClose();
                                 }}
-                                className="w-full rounded-2xl py-2 font-semibold border border-[#F7EACC]
+                                className="w-full rounded-2xl py-3 mt-2 font-semibold border border-[#F7EACC]
                                 bg-[#C01F1F] text-[#FDF6E8]
-                                text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[16px] 2xl:text-[18px]
+                                text-[15px] sm:text-[15px] md:text-[15px] lg:text-[15px] xl:text-[16px] 2xl:text-[18px]
                                 disabled:cursor-not-allowed
                                 hover:bg-[#D62424] active:bg-[#A61B1B] disabled:bg-[#E08E8B] transition-colors"
                             >

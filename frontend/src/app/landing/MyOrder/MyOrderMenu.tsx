@@ -31,6 +31,8 @@ interface OrderContext {
   receiveDate: string;
   paymentMethod: string;
   shippingMethod: string;
+  cancelReason: string;
+  cancelledAt: string;
   address: Address | null;
   items: OrderItem[];
 }
@@ -91,7 +93,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
     return `${date.getDate()}/${date.getMonth() + 1}`;
   }
 
-  const formatStatus = (status: string) => {
+  const formatOrderStatus = (status: string) => {
         switch (status) {
             case "NEW":
             return {
@@ -163,12 +165,6 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
         return;
       }
 
-      if (!user?.latestAddress) {
-        setError("Không tìm thấy thông tin đơn hàng cho số điện thoại này");
-        setPendingUser(null);
-        return;
-      }
-
       setPendingUser(user);
     } catch (err) {
       console.error(err);
@@ -221,7 +217,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
     <Modal
       open={open}
       onClose={HandleClose}
-      panelClassName={`rounded-2xl w-full max-h-[90vh] h-auto overflow-y-auto
+      panelClassName={`rounded-2xl w-full max-h-[90vh] h-auto overflow-y-auto no-scrollbar
       border border-[#FFFDF7] rounded-lg bg-[#FFFDF7] ${showOrderModal ? "max-w-[50vw]" : "max-w-[30vw]"}`}
     >
       {!showOrderModal ? (
@@ -283,8 +279,11 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                         <p className="text-[#3D2008]/75">{formatPhone(pendingUser?.phone ?? "")}</p>
                     </div>
                     
-                    <p className="text-[#3D2008]/75">
-                    {pendingUser?.latestAddress?.houseNumber}, đường {pendingUser?.latestAddress?.street}, phường {pendingUser?.latestAddress?.ward}, quận {pendingUser?.latestAddress?.district} </p>
+                    {pendingUser?.latestAddress && (
+                      <p className="text-[#3D2008]/75">
+                      {pendingUser.latestAddress.houseNumber}, đường {pendingUser.latestAddress.street}, phường {pendingUser.latestAddress.ward}, quận {pendingUser.latestAddress.district}
+                      </p>
+                    )}
                 </div>
             </div>
           {orders.length === 0 && <p>Không có đơn hàng nào</p>}
@@ -302,7 +301,7 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
             );
 
             const renderOrder = (order: OrderContext) => {
-                const statusInfo = formatStatus(order.status);
+                const statusInfo = formatOrderStatus(order.status);
                 const isExpanded = expandedOrders.has(order.orderId); 
                 const total = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -323,20 +322,18 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                               {statusInfo.text}
                             </span>
 
-                            {order.status !== "CANCELLED" && (
-                              <button
-                                type="button"
-                                onClick={() => toggleOrderStepper(order.orderId)}
-                                className="p-1 hover:bg-[#E2DCD3] rounded-full transition-colors flex items-center justify-center"
-                              >
-                                <ChevronDown
-                                  size={16}
-                                  className={`transition-transform duration-300 ${
-                                    isExpanded ? "rotate-180" : "rotate-0"
-                                  }`}
-                                />
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => toggleOrderStepper(order.orderId)}
+                              className="p-1 hover:bg-[#E2DCD3] rounded-full transition-colors flex items-center justify-center"
+                            >
+                              <ChevronDown
+                                size={16}
+                                className={`transition-transform duration-300 ${
+                                  isExpanded ? "rotate-180" : "rotate-0"
+                                }`}
+                              />
+                            </button>
                           </div>
                         </div>
                        
@@ -355,65 +352,61 @@ export default function MyOrderMenu({ open, onClose }: CartMenuProps) {
                         </div>
 
                           {/* Info Detail */}
-                         {order.status !== "CANCELLED" && (
-                            <>
-                              <div
-                               className={`overflow-hidden transition-all duration-300 flex flex-col ${
-                                  isExpanded ? "max-h-250 opacity-100 mt-3" : "max-h-0 opacity-0"
-                                }`}>
-                                {/* Progess */}
-                                 <div className="border-b pb-[2vh]">
-                                   <OrderStepper status={order.status} />
-                                 </div>
-                                 {/* OrderInfo */}
-                                 <div className="border-b border-[#3D2008]/25 pb-[2vh] flex flex-col pt-[1vh] gap-[1vh]">
-                                    <p className="font-medium
-                                    text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
-                                    >Giỏ hàng</p>
+                          <div
+                           className={`overflow-hidden transition-all duration-300 flex flex-col ${
+                              isExpanded ? "max-h-250 opacity-100 mt-3" : "max-h-0 opacity-0"
+                            }`}>
+                            {/* Progess */}
+                             <div className="border-b pb-[2vh]">
+                               <OrderStepper status={order.status} cancelReason= {order.cancelReason} cancelledAt={order.cancelledAt} />
+                             </div>
+                             {/* OrderInfo */}
+                             <div className="border-b border-[#3D2008]/25 pb-[2vh] flex flex-col pt-[1vh] gap-[1vh]">
+                                <p className="font-medium
+                                text-[12px] sm:text-[13px] md:text-[14px] lg:text-[15px] xl:text-[16px] 2xl:text-[17px]"
+                                >Giỏ hàng</p>
 
-                                    <OrderDetail orderId={order.orderId}/>
-                                 </div>
+                                <OrderDetail orderId={order.orderId}/>
+                             </div>
 
-                                 {/* PaymentInfo */}
-                                  <div className="border-b border-[#3D2008]/25 pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
-                                  text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
-                                      <p className="font-medium">Phương thức thanh toán</p>
-                                      <p className="text-[#3D2008]/75">{formatPaymentMethod(order.paymentMethod)}</p>
-                                  </div>
-
-                                  <div className="flex flex-col gap-[1vh]">
-                                    <div className=" pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
-                                    text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
-                                        <p className="font-medium">Phương thức nhận bánh</p>
-                                        <p className="text-[#3D2008]/75">{fortmatShippingMethod(order.shippingMethod)}</p>
-                                    </div>
-
-                                    <div className="flex flex-col gap-[0.5vh]
-                                    text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
-                                      {order.address && (
-                                        <div className="flex justify-between w-full">
-                                            <p>Địa điểm nhận bánh</p>
-                                            <p className="[text-decoration-skip-ink:none] underline text-[#3D2008]/75 w-1/2"
-                                            >{order.address?.houseNumber}, đường {order.address?.street}, phường {order.address?.ward}, Tp.{order.address?.district}</p>
-                                        </div>
-                                      )}
-
-                                      <div className="flex justify-between w-full">
-                                          <p>Thời gian nhận bánh</p>
-                                          <p className="text-[#3D2008]/75"
-                                          >Từ 7:00 đến 13:00</p>
-                                      </div>
-
-                                      <div className="flex justify-between w-full">
-                                          <p>Liên hệ để nhận bánh</p>
-                                          <p className="text-[#3D2008]/75 "
-                                          >(+84) 33 871 0915</p>
-                                      </div>
-                                    </div>
-                                  </div>
+                             {/* PaymentInfo */}
+                              <div className="border-b border-[#3D2008]/25 pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
+                              text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
+                                  <p className="font-medium">Phương thức thanh toán</p>
+                                  <p className="text-[#3D2008]/75">{formatPaymentMethod(order.paymentMethod)}</p>
                               </div>
-                            </>
-                        )}
+
+                              <div className="flex flex-col gap-[1vh]">
+                                <div className=" pb-[2vh] flex justify-between items-center w-full pt-[1vh] gap-[1vh]
+                                text-[11px] sm:text-[12px] md:text-[13px] lg:text-[14px] xl:text-[15px] 2xl:text-[16px]">
+                                    <p className="font-medium">Phương thức nhận bánh</p>
+                                    <p className="text-[#3D2008]/75">{fortmatShippingMethod(order.shippingMethod)}</p>
+                                </div>
+
+                                <div className="flex flex-col gap-[0.5vh]
+                                text-[10px] sm:text-[11px] md:text-[12px] lg:text-[13px] xl:text-[14px] 2xl:text-[15px]">
+                                  {order.address && (order.address.houseNumber || order.address.street || order.address.ward || order.address.district) && (
+                                    <div className="flex justify-between w-full">
+                                        <p>Địa điểm nhận bánh</p>
+                                        <p className="[text-decoration-skip-ink:none] underline text-[#3D2008]/75 w-1/2"
+                                        >{order.address.houseNumber}, đường {order.address.street}, phường {order.address.ward}, Tp.{order.address.district}</p>
+                                    </div>
+                                  )}
+
+                                  <div className="flex justify-between w-full">
+                                      <p>Thời gian nhận bánh</p>
+                                      <p className="text-[#3D2008]/75"
+                                      >Từ 7:00 đến 13:00</p>
+                                  </div>
+
+                                  <div className="flex justify-between w-full">
+                                      <p>Liên hệ để nhận bánh</p>
+                                      <p className="text-[#3D2008]/75 "
+                                      >(+84) 33 871 0915</p>
+                                  </div>
+                                </div>
+                              </div>
+                          </div>
                                                                 
                     </div>
                 );

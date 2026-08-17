@@ -15,7 +15,7 @@ export default function MobileLandingPage() {
   }
 
     return (
-        <div className="relative w-full text-white overflow-x-hidden bg-[#630002]">
+        <div className="relative w-full text-[#FDF6E8] overflow-x-hidden bg-[#630002]">
 
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden 
             bg-[radial-gradient(ellipse_100vw_100vh_at_top,#F7EACC_0%,#CF0000_20%,#630002_150%)]

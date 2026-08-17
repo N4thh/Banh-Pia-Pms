@@ -19,9 +19,14 @@ export class CustomerService {
       };
     }
 
-    const latestAddress = user.addresses.length > 0
-    ? user.addresses[user.addresses.length - 1]
-    : null;
+    // Lấy địa chỉ từ đơn gần nhất có addressId (bỏ qua đơn PICKUP không có địa chỉ)
+    const latestOrderWithAddress = await this.prisma.order.findFirst({
+      where: { userId: user.id, addressId: { not: null } },
+      orderBy: { orderDate: 'desc' },
+      include: { address: true },
+    });
+
+    const latestAddress = latestOrderWithAddress?.address ?? null;
 
     return {
       isNewUser: false,

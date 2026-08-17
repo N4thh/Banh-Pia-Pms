@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from "react";
+import { CSSProperties, ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 type ModalProps = {
@@ -8,6 +8,7 @@ type ModalProps = {
     onClose: () => void;
     children: ReactNode;
     panelClassName?: string;
+    panelStyle?: CSSProperties;
     closeOnOverlayClick?: boolean;
     containerClassName?: string;
 };
@@ -17,6 +18,7 @@ export default function Modal({
     onClose,
     children,
     panelClassName = "",
+    panelStyle,
     closeOnOverlayClick = true,
     containerClassName,
 }: ModalProps) {
@@ -37,13 +39,14 @@ export default function Modal({
         <div
             role="dialog"
             aria-modal="true"
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ${containerClassName}`}
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50  ${containerClassName}`}
             onClick={() => {
                 if (closeOnOverlayClick) onClose();
             }}
         >
             <div
                 className={panelClassName}
+                style={panelStyle}
                 onClick={(e) => e.stopPropagation()}
             >
                 {children}
