@@ -22,13 +22,14 @@ services:
     build: ./backend
     container_name: piacoloan_backend_app
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
+      PORT: 3001
       DATABASE_URL: "postgresql://na_admin:N4th159_password_postgres@postgres-db:5432/banh_pia_pms_db?schema=public"
       REDIS_HOST: "redis-cache"
       REDIS_PORT: 6379
-      JWT_AT_SECRET: "your-jwt-access-token-secret-key-min-32-chars"
-      JWT_RT_SECRET: "your-jwt-refresh-token-secret-key-min-32-chars"
+      JWT_AT_SECRET: "pia-pms-super-secret-access-token-key"
+      JWT_RT_SECRET: "pia-pms-super-secret-refresh-token-key"
     depends_on:
       - postgres-db
       - redis-cache
