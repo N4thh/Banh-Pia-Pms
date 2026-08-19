@@ -33,6 +33,17 @@ services:
     depends_on:
       - postgres-db
       - redis-cache
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: /api
+      FRONTEND_URL: ${FRONTEND_URL}
+    depends_on:
+      - nestjs-app
 volumes:
   postgres_data:
 
