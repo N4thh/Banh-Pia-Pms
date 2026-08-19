@@ -23,7 +23,7 @@ services:
       timeout: 3s
       retries: 10
   nestjs-app:
-    build: .
+    build: ./backend
     ports:
       - "3001:3001"
     restart: unless-stopped
@@ -40,7 +40,7 @@ services:
       redis-cache: 
         condition: service_healthy
   frontend:
-    build: .
+    build: ./frontend
     ports:
       - "3000:3000"
     restart: unless-stopped
