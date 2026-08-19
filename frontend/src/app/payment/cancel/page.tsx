@@ -1,11 +1,13 @@
 "use client";
 
-import { XCircle } from "lucide-react";
+import { Suspense } from "react";
+import { XCircle, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function CancelPage() {
+function CancelContent() {
     const router = useRouter();
-    const orderId = useSearchParams().get("orderId");
+    const searchParams = useSearchParams();
+    const orderId = searchParams.get("orderId");
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-[#3D2008]">
@@ -25,5 +27,17 @@ export default function CancelPage() {
                 </button>           
             </div>
         </div>
+    );
+}
+
+export default function CancelPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex justify-center items-center">
+                <Loader2 className="animate-spin text-[#C01F1F]" size={48} />
+            </div>
+        }>
+            <CancelContent />
+        </Suspense>
     );
 }
