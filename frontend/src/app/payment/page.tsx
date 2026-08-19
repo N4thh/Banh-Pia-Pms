@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import PaymentLink from "./payment-link-bank"
 import { Loader2 } from "lucide-react";
@@ -30,13 +30,13 @@ interface OrderContext {
     } | null;
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
     const router = useRouter(); 
     const [order, setOrder] = useState<OrderContext | null>(null);
     const [paymentLink, setPaymentLink] = useState<{ qrCode: string; checkoutUrl: string } | null>(null);
     const [secondsLeft, setSecondsLeft] = useState(600);
 
-    //fetchData
+    // fetchData
     const searchParams = useSearchParams();
     const orderId = searchParams.get("orderId");
 
@@ -47,7 +47,7 @@ export default function PaymentPage() {
         
         const fetchOrder = async () => {
             try {
-                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/booking/${orderId}`)
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/booking/${orderId}`);
             
                 if (!cancelled) setOrder(res.data);
             } catch (err: any) {
@@ -62,7 +62,7 @@ export default function PaymentPage() {
         return () => { cancelled = true; };
     }, [orderId]);
 
-    //Create Payment Link - chỉ tạo mới khi chưa có
+    // Create Payment Link - chỉ tạo mới khi chưa có
     const createLink = async (orderId: string) => {
         try {
             const response = await axios.post(
@@ -81,6 +81,7 @@ export default function PaymentPage() {
             }
         }
     }
+
     useEffect(() => {
         if (!orderId || !order) return;
         if (order.paymentMethod !== "BANK_TRANSFER") return;
@@ -95,6 +96,7 @@ export default function PaymentPage() {
 
         createLink(orderId);
     }, [orderId, order]);
+
     useEffect(() => {
         if (!order || order.paymentMethod !== "BANK_TRANSFER") return;
 
@@ -110,6 +112,7 @@ export default function PaymentPage() {
 
         return () => clearInterval(interval);
     }, [order, router]);
+
     useEffect(() => {
         if (secondsLeft <= 0 && order?.paymentMethod === "BANK_TRANSFER" && orderId) {
             router.push(`/payment/cancel?orderId=${orderId}`);
@@ -136,5 +139,17 @@ export default function PaymentPage() {
             paymentLink={paymentLink}
             secondsLeft={secondsLeft}
         />
+    );
+}
+
+export default function PaymentPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-screen">
+                <Loader2 className="animate-spin" size={48} />
+            </div>
+        }>
+            <PaymentContent />
+        </Suspense>
     );
 }
