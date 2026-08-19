@@ -1,11 +1,9 @@
 "use client";
 
 import axios from "axios";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 
 function formatDateShortVN(isoDate: string): string {
@@ -14,12 +12,14 @@ function formatDateShortVN(isoDate: string): string {
 
     return `${day}/${month}`;
 }
+
 interface Address {
     houseNumber: string;
     street: string;
     ward: string;
     district: string;
 }
+
 interface OrderItem {
     cakeId: number;
     cakeName: string;
@@ -40,8 +40,7 @@ interface OrderContext {
     address: Address;
 }
 
-
-export default function SuccessBankPage() {
+function SuccessBankContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const orderId = searchParams.get("orderId");
@@ -58,7 +57,6 @@ export default function SuccessBankPage() {
 
     const totalQuantity = order?.items.reduce((total, item) => total + item.quantity, 0);
 
-
     useEffect(() => {
         if (!orderId) return;
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/booking/${orderId}`)
@@ -72,9 +70,11 @@ export default function SuccessBankPage() {
     });
 
     if (!order) {
-        return <div className="flex justify-center items-center min-h-screen">
-            <Loader2 className="animate-spin" size={48} />
-        </div>;
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <Loader2 className="animate-spin" size={48} />
+            </div>
+        );
     }
     
     return (
@@ -305,5 +305,17 @@ export default function SuccessBankPage() {
                 Về trang chủ
             </button>  
         </div>
+    );
+}
+
+export default function SuccessBankPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-screen">
+                <Loader2 className="animate-spin text-[#C01F1F]" size={48} />
+            </div>
+        }>
+            <SuccessBankContent />
+        </Suspense>
     );
 }
