@@ -2,7 +2,7 @@ import axios from "axios";
 import { clearAdminAuth, getAdminAccessToken, refreshAccessToken } from "../utils/adminAuth";
 
 export const axiosClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://www.piacoloan.info',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
   headers: {
     "Content-Type": "application/json",
   },
