@@ -92,7 +92,7 @@ export default function MobileSheet({
       >
         <span className="h-1.5 w-18 rounded-full bg-[#3D2008]/25" />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-[5vw] pb-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-[5vw] pb-[calc(24px+env(safe-area-inset-bottom))]">
         {children}
       </div>
     </Modal>

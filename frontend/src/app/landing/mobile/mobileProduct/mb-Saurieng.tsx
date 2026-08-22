@@ -147,7 +147,7 @@ export default function MobileSaurieng({ open, onClose, onAddToCart }: SauriengP
                                 Béo Ngậy, Thơm Nức Mũi, Đậm Đà Đến Miếng Cuối Cùng!
                             </p>
                         </div>
-                    <div className="w-full md:w-1/2  flex flex-col gap-3 md:gap-4 min-h-0 flex-1 overflow-hidden py-2">
+                    <div className="w-full md:w-1/2  flex flex-col gap-3 md:gap-4 min-h-0 flex-1 overflow-hidden py-2 pb-[calc(24px+env(safe-area-inset-bottom))]">
                         {/* top */}
 
                         {/* mid */}

@@ -6,6 +6,8 @@ import Guide from "./landing/Guide/GuideBG";
 import Footer from "./landing/Footer";
 import Header from "../components/Header";
 import MobileLandingPage from "./landing/mobile/page";
+import Image from "next/image";
+
 
 export default function HomePage() {
   const [cartRefreshTrigger, setCartRefreshTrigger] = useState(0);
@@ -29,14 +31,25 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[url('/landing1/Backgroundpattern.png')] bg-repeat bg-size-[800_800px] opacity-20 mix-blend-overlay" />
 
           <div
-            className="absolute left-1/2 -translate-x-1/2 bg-[url('/landing1/moon.png')] bg-contain bg-no-repeat z-20"
+            className="absolute left-1/2 -translate-x-1/2 z-20"
             style={{
               width: "min(42vw, 805px)",
               height: "min(42vw, 805px)",
               top: "calc(min(42vw, 805px) / -2.5)",
-              filter: "brightness(1.02)",
             }}
-          />
+          >
+            <Image
+              src="/landing1/moon.webp"
+              alt="Moon decoration"
+              fill
+              sizes="(max-width: 1916px) 42vw, 805px"
+              style={{
+                objectFit: "contain",
+                filter: "brightness(1.02)",
+              }}
+              priority
+            />
+          </div>
 
           <div
             className="absolute top-0 left-1/2 -translate-x-1/2 z-10 bg-[url('/landing1/cloud.png')] bg-contain bg-no-repeat"

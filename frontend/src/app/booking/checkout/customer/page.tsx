@@ -362,7 +362,7 @@ export default function Customer() {
                             onPointerMove={handleDragMove}
                             onPointerUp={handleDragEnd}
                             onPointerCancel={handleDragEnd}
-                            className={`bg-[#E6F2F8] rounded-t-2xl rounded-b-none p-6 w-full text-[#3D2008] flex flex-col gap-4 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                            className={`bg-[#E6F2F8] rounded-t-2xl rounded-b-none p-6 pb-[calc(24px+env(safe-area-inset-bottom))] w-full text-[#3D2008] flex flex-col gap-4 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
                                 visiblePendingModal ? "translate-y-0" : "translate-y-full"
                             }`}
                         >

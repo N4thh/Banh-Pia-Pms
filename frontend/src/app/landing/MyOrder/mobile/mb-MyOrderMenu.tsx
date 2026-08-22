@@ -455,7 +455,7 @@ function formatDate(dateString: string): string {
       </div>
 
       {!showOrderModal ? (
-        <div className="flex flex-col p-4 gap-[2vh] text-[#3D2008]">
+        <div className="flex flex-col p-4 pb-[calc(24px+env(safe-area-inset-bottom))] gap-[2vh] text-[#3D2008]">
           <div>
             <p className="font-vollkorn font-semibold text-lg">
               Kiểm tra đơn hàng
@@ -496,7 +496,7 @@ function formatDate(dateString: string): string {
         </div>
       ) : selectedOrder ? (
         /* Trang chi tiết */
-        <div className="p-4 text-[#3D2008] flex flex-col gap-4">
+        <div className="p-4 pb-[calc(24px+env(safe-area-inset-bottom))] text-[#3D2008] flex flex-col gap-4">
           <button
             type="button"
             onClick={handleBackToList}
@@ -510,8 +510,8 @@ function formatDate(dateString: string): string {
           {renderOrderDetailBody(selectedOrder)}
         </div>
       ) : (
-        <div className="p-4 text-[#3D2008] flex flex-col gap-4">
-          <p className="font-vollkorn font-semibold text-[22px]"
+        <div className="p-4 pb-[calc(24px+env(safe-area-inset-bottom))] text-[#3D2008] flex flex-col gap-4">
+           <p className="font-vollkorn font-semibold text-[22px]"
           >Xin chào, đây là đơn hàng của bạn</p>
 
           <div className="flex gap-3">
