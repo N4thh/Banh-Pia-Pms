@@ -2,7 +2,7 @@ import { Clock, MapPin, Phone, Sparkles, UserRound } from "lucide-react";
 export default function MobileFooter(){ 
     return (
         <section
-        className=" relative h-[25vh] w-full overflow-hidden flex justify-center items-center
+        className=" relative h-[35vh] w-full overflow-hidden flex justify-center items-center
             bg-[radial-gradient(ellipse_180vw_45vh_at_top,#A01818_3%,#C01F1F_22%,#EDC6AD_61%,#F7EACC_80%,#FDF6E8_100%)]"
             style={{
             clipPath: "ellipse(150% 100% at 50% 100%)",

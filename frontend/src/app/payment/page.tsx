@@ -34,6 +34,7 @@ function PaymentContent() {
     const router = useRouter(); 
     const [order, setOrder] = useState<OrderContext | null>(null);
     const [paymentLink, setPaymentLink] = useState<{ qrCode: string; checkoutUrl: string } | null>(null);
+    const [paymentLinkLoading, setPaymentLinkLoading] = useState(true);
     const [secondsLeft, setSecondsLeft] = useState(600);
 
     // fetchData
@@ -65,6 +66,7 @@ function PaymentContent() {
     // Create Payment Link - chỉ tạo mới khi chưa có
     const createLink = async (orderId: string) => {
         try {
+            setPaymentLinkLoading(true);
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_API_URL}/payment/create-link/${orderId}`
             );
@@ -79,6 +81,8 @@ function PaymentContent() {
                     });
                 }
             }
+        } finally {
+            setPaymentLinkLoading(false);
         }
     }
 
@@ -91,6 +95,7 @@ function PaymentContent() {
                 qrCode: order.paymentLink.qrCode,
                 checkoutUrl: order.paymentLink.checkoutUrl,
             });
+            setPaymentLinkLoading(false);
             return;
         }
 
@@ -114,10 +119,12 @@ function PaymentContent() {
     }, [order, router]);
 
     useEffect(() => {
-        if (secondsLeft <= 0 && order?.paymentMethod === "BANK_TRANSFER" && orderId) {
+        // Chỉ redirect khi order đã load xong, paymentLink đã load xong, và thực sự hết hạn
+        if (!order || paymentLinkLoading) return;
+        if (secondsLeft <= 0 && order.paymentMethod === "BANK_TRANSFER" && orderId) {
             router.push(`/payment/cancel?orderId=${orderId}`);
         }
-    }, [secondsLeft, router, order?.paymentMethod, orderId]);
+    }, [secondsLeft, router, order, orderId, paymentLinkLoading]);
 
     // loading
     if (!order) {
@@ -137,6 +144,7 @@ function PaymentContent() {
         <PaymentLink
             order={order}
             paymentLink={paymentLink}
+            paymentLinkLoading={paymentLinkLoading}
             secondsLeft={secondsLeft}
         />
     );

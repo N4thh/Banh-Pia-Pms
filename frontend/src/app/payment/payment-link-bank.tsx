@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { QRCodeGenerator } from '@makozi/react-qr-code-generator';
 import Header from "@/src/components/Header";
 import CancelPage from "./cancel/page";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 
 interface OrderItem {
     cakeId: number;
@@ -26,10 +26,11 @@ interface OrderContext {
 interface Props {
     order: OrderContext;
     paymentLink: { qrCode: string; checkoutUrl: string } | null;
+    paymentLinkLoading: boolean;
     secondsLeft: number;
 }
 
-export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) {
+export default function PaymentLink({ order, paymentLink, paymentLinkLoading, secondsLeft }: Props) {
     const router = useRouter();
     const minutes = Math.floor(secondsLeft / 60);
     const seconds = secondsLeft % 60;
@@ -39,13 +40,19 @@ export default function PaymentLink({ order, paymentLink, secondsLeft }: Props) 
         return `${count} trứng muối`;
     }
 
+    if (paymentLinkLoading) {
+        return (
+            <div className="min-h-screen flex justify-center items-center text-[#3D2008]">
+                <Loader2 className="animate-spin" size={48} />
+            </div>
+        );
+    }
+
     if(order.status === "PROCESSING" || order.status === "COMPLETED") {
-        router.push(`/payment/success-bank?orderId=${order.id}`);
         return null;
     }
-    if(order.status === "CANCELLED") { 
-        return <CancelPage  
-        />
+    if(order.status === "CANCELLED") {
+        return <CancelPage />;
     }
 
     return (

@@ -27,11 +27,30 @@ export class PaymentService {
     });
   }
   async CreatePaymentLink(orderId: number) {
+    this.logger.log(`[PAYOS] Yêu cầu tạo link thanh toán cho đơn #${orderId}`);
+
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
     if (!order) {
       throw new BadRequestException(`Không tìm thấy đơn hàng #${orderId}`);
+    }
+
+    // Validate config trước khi gọi PayOS
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    if (!frontendUrl) {
+      this.logger.error('[PAYOS] FRONTEND_URL chưa được cấu hình');
+      throw new InternalServerErrorException('FRONTEND_URL is not configured');
+    }
+
+    const payosClientId = process.env.PAYOS_CLIENT_ID;
+    const payosApiKey = process.env.PAYOS_API_KEY;
+    const payosChecksumKey = process.env.PAYOS_CHECKSUM_KEY;
+    if (!payosClientId || !payosApiKey || !payosChecksumKey) {
+      this.logger.error(
+        `[PAYOS] Thiếu PayOS credentials - CLIENT_ID: ${!!payosClientId}, API_KEY: ${!!payosApiKey}, CHECKSUM: ${!!payosChecksumKey}`,
+      );
+      throw new InternalServerErrorException('PayOS credentials are not configured');
     }
 
     // Kiểm tra link hiện tại — tránh lỗi PayOS 231 (đơn đã tồn tại)
@@ -52,10 +71,11 @@ export class PaymentService {
       await this.prisma.paymentLink.delete({ where: { orderId } });
     }
 
-    const amountInVnd = Number(order.totalMoney) * 1000;
-    const frontendUrl = this.configService.get<string>("FRONTEND_URL");
-    if(!frontendUrl)
-      throw new InternalServerErrorException("FRONTEND_URL is not configured");
+    // PayOS yêu cầu amount >= 1000 VND
+    const amountInVnd = Math.round(Number(order.totalMoney) * 1000);
+    if (amountInVnd < 1000) {
+      throw new BadRequestException('Tổng tiền đơn hàng không hợp lệ cho thanh toán online');
+    }
 
     // PayOS lưu orderCode độc lập với database. Không dùng orderId trực tiếp,
     // vì khi reset database, auto-increment có thể sinh lại orderId cũ.
@@ -69,6 +89,8 @@ export class PaymentService {
       cancelUrl: `${frontendUrl}/payment/cancel?orderId=${orderId}`,
       returnUrl: `${frontendUrl}/payment/success-bank?orderId=${orderId}`,
     };
+
+    this.logger.log(`[PAYOS] Đơn #${orderId} - amount=${amountInVnd} VND`);
 
     try {
       const paymentLinkData =
@@ -85,7 +107,7 @@ export class PaymentService {
       });
 
       this.logger.log(
-        `[PAYOS] Da tao link thanh cong voi don hang #${orderId}`,
+        `[PAYOS] Tạo link thành công cho đơn #${orderId}, linkId=${saveLink.id}`,
       );
 
       return {
@@ -93,8 +115,12 @@ export class PaymentService {
         qrCode: saveLink.qrCode,
       };
     } catch (err: any) {
-      this.logger.error(`Loi tao link payOS: ${err.message}`);
-      throw new InternalServerErrorException('Loi cong thanh toan');
+      // Log chi tiết hơn để debug trên production
+      this.logger.error(
+        `[PAYOS] Lỗi tạo link cho đơn #${orderId}: ${err.message}`,
+        err.stack,
+      );
+      throw new InternalServerErrorException('Lỗi cổng thanh toán');
     }
   }
   
